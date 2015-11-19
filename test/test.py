@@ -17,6 +17,8 @@ from wort.vsm import VSMVectorizer
 
 def vectorize_kafka():
 
+	# TODO: Check if PMI calculation is correct, compare to: https://github.com/mbatchkarov/DiscoUtils/blob/master/discoutils/reweighting.py
+
 	docs = [
 		'i sat on a table',
 		'the cat sat on the mat.',
