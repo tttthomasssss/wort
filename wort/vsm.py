@@ -1,4 +1,5 @@
 __author__ = 'thomas'
+from types import GeneratorType
 import array
 import os
 
@@ -258,6 +259,12 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		return self.T_
 
 	def fit(self, raw_documents, y=None):
+
+		# Shameless copy/paste from Radims word2vec Tutorial, no generators matey, need multi-pass!!!
+		if raw_documents is not None:
+			if isinstance(raw_documents, GeneratorType):
+				raise TypeError("You can't pass a generator as the sentences argument. Try an iterator.")
+
 		self._construct_cooccurrence_matrix(raw_documents)
 
 		# Construct Co-Occurrence Matrix

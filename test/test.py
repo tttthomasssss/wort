@@ -4,7 +4,7 @@ import codecs
 import csv
 import os
 
-from nltk.tokenize import word_tokenize
+#from nltk.tokenize import word_tokenize
 from scipy import sparse
 from scipy.spatial import distance
 from sklearn.datasets import fetch_20newsgroups
@@ -13,6 +13,18 @@ import numpy as np
 
 from common import paths
 from wort.vsm import VSMVectorizer
+from wort.corpus_readers import WikipediaReader
+
+def test_wikipedia():
+	from pprint import pprint
+	import sys
+	pprint(sys.path)
+	p = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wikipedia_utf8_filtered_20pageviews.csv')
+	#wiki = WikipediaReader(p)
+
+	vec = VSMVectorizer(window_size=5)
+	print(vec)
+	#vec.fit(wiki)
 
 
 def vectorize_kafka():
@@ -56,4 +68,5 @@ def vectorize_kafka():
 
 
 if (__name__ == '__main__'):
-	vectorize_kafka()
+	#vectorize_kafka()
+	test_wikipedia()
