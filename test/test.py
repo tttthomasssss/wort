@@ -1,4 +1,3 @@
-from __future__ import division
 __author__ = 'thomas'
 import os
 
