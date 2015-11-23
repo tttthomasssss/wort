@@ -1,2 +1,4 @@
 *.pyc
 .idea/*
+cluster_setup
+cluster_setup/*

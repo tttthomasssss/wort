@@ -1,13 +1,8 @@
 from __future__ import division
 __author__ = 'thomas'
-import codecs
-import csv
 import os
 
-#from nltk.tokenize import word_tokenize
-from scipy import sparse
 from scipy.spatial import distance
-from sklearn.datasets import fetch_20newsgroups
 import joblib
 import numpy as np
 
@@ -16,15 +11,18 @@ from wort.vsm import VSMVectorizer
 from wort.corpus_readers import WikipediaReader
 
 def test_wikipedia():
-	from pprint import pprint
-	import sys
-	pprint(sys.path)
 	p = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wikipedia_utf8_filtered_20pageviews.csv')
-	#wiki = WikipediaReader(p)
+	wiki = WikipediaReader(p)
 
 	vec = VSMVectorizer(window_size=5)
 	print(vec)
-	#vec.fit(wiki)
+	M = vec.fit(wiki)
+
+	out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors')
+	if (not os.path.exists(out_path)):
+		os.makedirs(out_path)
+
+	joblib.dump(M, os.path.join(out_path, 'wikipedia_test'))
 
 
 def vectorize_kafka():

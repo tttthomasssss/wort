@@ -1,5 +1,8 @@
 __author__ = 'thomas'
 import csv
+import sys
+
+csv.field_size_limit(sys.maxsize)
 
 
 class WikipediaReader(object):
@@ -11,4 +14,4 @@ class WikipediaReader(object):
 			csv_reader = csv.reader(wiki_file)
 
 			for line in csv_reader:
-				yield line
+				yield line[1]
