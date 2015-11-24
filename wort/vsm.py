@@ -7,6 +7,7 @@ from scipy import sparse
 from sklearn.base import BaseEstimator
 from sklearn.feature_extraction.text import VectorizerMixin
 from sparsesvd import sparsesvd
+import joblib
 import numpy as np
 
 # TODO: SVD based on http://www.aclweb.org/anthology/Q/Q15/Q15-1016.pdf, esp. chapter 7, practical recommendations
@@ -24,7 +25,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 	def __init__(self, window_size, weighting='ppmi', min_frequency=0, lowercase=True, stop_words=None, encoding='utf-8',
 				 max_features=None, preprocessor=None, tokenizer=None, analyzer='word', binary=False, sppmi_shift=1,
 				 token_pattern=r'(?u)\b\w\w+\b', decode_error='strict', strip_accents=None, input='content',
-				 ngram_range=(1, 1), cds=1, svd_dim=None, svd_eig_weighting=1, add_context_vectors=True):
+				 ngram_range=(1, 1), cds=1, svd_dim=None, svd_eig_weighting=1, add_context_vectors=True,
+				 cache_intermediary_results=False, cache_path=None):
 
 		self.window_size = window_size
 		self.weighting = weighting
@@ -47,6 +49,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.svd_dim = svd_dim
 		self.svd_eig_weighting = svd_eig_weighting
 		self.add_context_vectors = add_context_vectors
+		self.cache_intermediary_results = cache_intermediary_results
+		self.cache_path = cache_path
 
 		self.inverted_index_ = {}
 		self.index_ = {}
@@ -89,6 +93,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# to reflect the true vocab count
 		n_vocab += 1
 
+		print('Finished Extracting vocabulary! n_vocab={}'.format(n_vocab))
+
 		W = np.array(w, dtype=np.uint32)
 		self.index_ = dict(zip(self.inverted_index_.values(), self.inverted_index_.keys()))
 
@@ -99,6 +105,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			W = self._delete_from_vocab(W, idx)
 
 			n_vocab -= len(idx)
+
+		print('Finished Filtering extremes! n_vocab={}'.format(n_vocab))
 
 		# Max Features Filter
 		if (self.max_features is not None and self.max_features < n_vocab):
@@ -146,6 +154,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		self.M_ = sparse.coo_matrix((data, (rows, cols)))
 
+		print('M.shape={}'.format(self.M_.shape))
+
 		# Apply Binarisation
 		if (self.binary):
 			self.M_ = np.minimum(self.M_, 1)
@@ -161,6 +171,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			return PMI - np.log(self.sppmi_shift)
 
 	def _weight_transformation(self):
+		print('Applying {} weight transformation...'.format(self.weighting))
+
 		self.T_ = sparse.lil_matrix(self.M_.shape, dtype=np.float64)
 
 		# Joint Probability for all co-occurrences, P(w, c) = P(c | w) * P(w) = P(w | c) * P(c)
@@ -185,6 +197,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		# Apply SVD
 		if (self.svd_dim is not None):
+			print('Applying SVD...')
 			Ut, S, Vt = sparsesvd(self.T_.tocsc(), self.svd_dim)
 
 			# Perform Context Weighting
@@ -210,7 +223,34 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		self._construct_cooccurrence_matrix(raw_documents)
 
+		if (self.cache_intermediary_results):
+			print('Caching co-occurrence matrix to path: {}...'.format(os.path.join(self.cache_path, 'M_cooccurrence.joblib')))
+			joblib.dump(self.M_, os.path.join(self.cache_path, 'M_cooccurrence.joblib'))
+			print('Finished caching co-occurence matrix!')
+
+			print('Caching word probability distribution to path: {}...'.format(os.path.join(self.cache_path, 'p_w.joblib')))
+			joblib.dump(self.p_w_, os.path.join(self.cache_path, 'p_w.joblib'))
+			print('Finished caching word probability distribution!')
+
+			print('Caching index to path: {}...'.format(os.path.join(self.cache_path, 'index.joblib')))
+			joblib.dump(self.index_, os.path.join(self.cache_path, 'index.joblib'))
+			print('Finished caching index!')
+
+			print('Caching inverted index to path: {}...'.format(os.path.join(self.cache_path, 'inverted_index.joblib')))
+			joblib.dump(self.inverted_index_, os.path.join(self.cache_path, 'inverted_index.joblib'))
+			print('Finished caching inverted index!')
+
 		# Apply weighting transformation
+		self._weight_transformation()
+
+		return self
+
+	def weight_transformation_from_cache(self):
+		self.M_ = joblib.load(os.path.join(self.cache_path, 'M_cooccurrence.joblib'))
+		self.p_w_ = joblib.load(os.path.join(self.cache_path, 'p_w.joblib'))
+		self.index_ = joblib.load(os.path.join(self.cache_path, 'index.joblib'))
+		self.inverted_index_ = joblib.load(os.path.join(self.cache_path, 'inverted_index.joblib'))
+
 		self._weight_transformation()
 
 		return self

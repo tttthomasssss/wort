@@ -13,13 +13,13 @@ def test_wikipedia():
 	p = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wikipedia_utf8_filtered_20pageviews.csv')
 	wiki = WikipediaReader(p)
 
-	vec = VSMVectorizer(window_size=5)
-	print(vec)
-	M = vec.fit(wiki)
-
 	out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors')
 	if (not os.path.exists(out_path)):
 		os.makedirs(out_path)
+
+	vec = VSMVectorizer(window_size=5, min_frequency=50, cache_intermediary_results=True, cache_path=out_path)
+	print(vec)
+	M = vec.fit(wiki)
 
 	joblib.dump(M, os.path.join(out_path, 'wikipedia_test'))
 
