@@ -19,7 +19,12 @@ def test_wikipedia():
 
 	vec = VSMVectorizer(window_size=5, min_frequency=50, cache_intermediary_results=True, cache_path=out_path)
 	print(vec)
-	M = vec.fit(wiki)
+
+	# New fit
+	#M = vec.fit(wiki)
+
+	# From cache
+	M = vec.weight_transformation_from_cache()
 
 	joblib.dump(M, os.path.join(out_path, 'wikipedia_test'))
 
