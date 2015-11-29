@@ -179,6 +179,10 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# Joint Probability for all co-occurrences, P(w, c) = P(c | w) * P(w) = P(w | c) * P(c)
 		# Doing it this way, keeps P_w_c a sparse matrix: http://stackoverflow.com/questions/3247775/how-to-elementwise-multiply-a-scipy-sparse-matrix-by-a-broadcasted-dense-1d-arra
 		P_w = sparse.lil_matrix(self.M_.shape)
+		print('p_w_ shape={}'.format(self.p_w_.shape))
+		print('M_Shape={}'.format(self.M_.shape))
+		print('p_w_ reshape={}'.format(self.p_w_.reshape(-1, 1).shape))
+		print('M sum={}'.format(self.M_.sum(axis=1).shape))
 		print('New p_w_ shape={}; M.sum(axis=1) shape={}'.format(self.p_w_.reshape(-1, 1).shape, self.M_.sum(axis=1).shape)) # TODO: THE ERROR IS IN ONE OF THE TWO CALLS!!!!!!!!
 		P_w.setdiag((self.p_w_.reshape(-1, 1) / self.M_.sum(axis=1)))
 		P_w_c = P_w * self.M_
