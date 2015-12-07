@@ -182,7 +182,10 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		print('p_w_ shape={}'.format(self.p_w_.shape))
 		print('M_Shape={}'.format(self.M_.shape))
 		print('p_w_ reshape={}'.format(self.p_w_.reshape(-1, 1).shape))
-		print('M sum={}'.format(self.M_.sum(axis=1).shape))
+		print('M type: {}'.format(type(self.M_)))
+		print('MAX: {}'.format(self.M_.max()))
+		print('MIN: {}'.format(self.M_.min()))
+		print('M sum={}'.format(self.M_.sum(axis=1).shape)) # TODO: Shit goes wrong here!!!!!!!!
 		print('New p_w_ shape={}; M.sum(axis=1) shape={}'.format(self.p_w_.reshape(-1, 1).shape, self.M_.sum(axis=1).shape)) # TODO: THE ERROR IS IN ONE OF THE TWO CALLS!!!!!!!!
 		P_w.setdiag((self.p_w_.reshape(-1, 1) / self.M_.sum(axis=1)))
 		P_w_c = P_w * self.M_
