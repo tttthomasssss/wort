@@ -7,7 +7,7 @@ from scipy import sparse
 from sklearn.base import BaseEstimator
 from sklearn.feature_extraction.text import VectorizerMixin
 from sparsesvd import sparsesvd
-import joblib
+import dill
 import numpy as np
 
 # TODO: SVD based on http://www.aclweb.org/anthology/Q/Q15/Q15-1016.pdf, esp. chapter 7, practical recommendations
@@ -233,20 +233,20 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self._construct_cooccurrence_matrix(raw_documents)
 
 		if (self.cache_intermediary_results):
-			print('Caching co-occurrence matrix to path: {}...'.format(os.path.join(self.cache_path, 'M_cooccurrence.joblib')))
-			joblib.dump(self.M_, os.path.join(self.cache_path, 'M_cooccurrence.joblib'))
+			print('Caching co-occurrence matrix to path: {}...'.format(os.path.join(self.cache_path, 'M_cooccurrence.dill')))
+			dill.dump(self.M_, open(os.path.join(self.cache_path, 'M_cooccurrence.dill'), 'wb'))
 			print('Finished caching co-occurence matrix!')
 
-			print('Caching word probability distribution to path: {}...'.format(os.path.join(self.cache_path, 'p_w.joblib')))
-			joblib.dump(self.p_w_, os.path.join(self.cache_path, 'p_w.joblib'))
+			print('Caching word probability distribution to path: {}...'.format(os.path.join(self.cache_path, 'p_w.dill')))
+			dill.dump(self.p_w_, open(os.path.join(self.cache_path, 'p_w.dill'), 'wb'))
 			print('Finished caching word probability distribution!')
 
-			print('Caching index to path: {}...'.format(os.path.join(self.cache_path, 'index.joblib')))
-			joblib.dump(self.index_, os.path.join(self.cache_path, 'index.joblib'))
+			print('Caching index to path: {}...'.format(os.path.join(self.cache_path, 'index.dill')))
+			dill.dump(self.index_, open(os.path.join(self.cache_path, 'index.dill'), 'wb'))
 			print('Finished caching index!')
 
-			print('Caching inverted index to path: {}...'.format(os.path.join(self.cache_path, 'inverted_index.joblib')))
-			joblib.dump(self.inverted_index_, os.path.join(self.cache_path, 'inverted_index.joblib'))
+			print('Caching inverted index to path: {}...'.format(os.path.join(self.cache_path, 'inverted_index.dill')))
+			dill.dump(self.inverted_index_, open(os.path.join(self.cache_path, 'inverted_index.dill'), 'wb'))
 			print('Finished caching inverted index!')
 
 		# Apply weighting transformation
@@ -254,13 +254,16 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		return self
 
-	def weight_transformation_from_cache(self):
-		self.M_ = joblib.load(os.path.join(self.cache_path, 'M_cooccurrence.joblib'))
-		self.p_w_ = joblib.load(os.path.join(self.cache_path, 'p_w.joblib'))
-		self.index_ = joblib.load(os.path.join(self.cache_path, 'index.joblib'))
-		self.inverted_index_ = joblib.load(os.path.join(self.cache_path, 'inverted_index.joblib'))
+	def weight_transformation_from_cache(self, cache_transformed_model=False):
+		self.M_ = dill.load(open(os.path.join(self.cache_path, 'M_cooccurrence.dill'), 'rb'))
+		self.p_w_ = dill.load(open(os.path.join(self.cache_path, 'p_w.dill'), 'rb'))
+		self.index_ = dill.load(open(os.path.join(self.cache_path, 'index.dill'), 'rb'))
+		self.inverted_index_ = dill.load(open(os.path.join(self.cache_path, 'inverted_index.dill'), 'rb'))
 
 		self._weight_transformation()
+
+		if (cache_transformed_model):
+			dill.dump(self.T_, open(os.path.join(self.cache_path, 'M_weight_transformed.dill'), 'wb'))
 
 		return self
 

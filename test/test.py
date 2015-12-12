@@ -2,13 +2,21 @@ __author__ = 'thomas'
 import os
 
 from scipy.spatial import distance
-import joblib
+import dill
 import numpy as np
 
 from common import paths
+from discoutils.thesaurus_loader import Vectors
+
 from wort.vsm import VSMVectorizer
 from wort.corpus_readers import MovieReviewReader
 from wort.corpus_readers import WikipediaReader
+
+
+def test_nearest_neighbours():
+	cache_path = os.path.join(paths.get_dataset_path(), 'movie_reviews', 'wort_vectors')
+
+	vecs = Vectors.from_wort_cache(cache_path)
 
 
 def test_movie_reviews():
@@ -20,11 +28,14 @@ def test_movie_reviews():
 		os.makedirs(out_path)
 
 	vec = VSMVectorizer(window_size=5, min_frequency=50, cache_intermediary_results=True, cache_path=out_path)
-	M = vec.fit(mr)
+	vec.fit(mr)
 
-	print(M.shape)
-	print(M.max())
-	print(M.min())
+	# From cache
+	vec.weight_transformation_from_cache(cache_transformed_model=True)
+
+	# HACK
+	#T = vec.T_
+
 
 
 def test_wikipedia():
@@ -44,7 +55,7 @@ def test_wikipedia():
 	# From cache
 	M = vec.weight_transformation_from_cache()
 
-	joblib.dump(M, os.path.join(out_path, 'wikipedia_test'))
+	dill.dump(M, open(os.path.join(out_path, 'wikipedia_test'), 'wb'))
 
 
 def vectorize_kafka():
@@ -90,4 +101,5 @@ def vectorize_kafka():
 if (__name__ == '__main__'):
 	#vectorize_kafka()
 	#test_wikipedia()
-	test_movie_reviews()
+	#test_movie_reviews()
+	test_nearest_neighbours()
