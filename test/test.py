@@ -7,7 +7,25 @@ import numpy as np
 
 from common import paths
 from wort.vsm import VSMVectorizer
+from wort.corpus_readers import MovieReviewReader
 from wort.corpus_readers import WikipediaReader
+
+
+def test_movie_reviews():
+	p = os.path.join(os.path.join(paths.get_dataset_path(), 'movie_reviews', 'aclImdb', 'unlabelled_docs'))
+	mr = MovieReviewReader(p)
+
+	out_path = os.path.join(paths.get_dataset_path(), 'movie_reviews', 'wort_vectors')
+	if (not os.path.exists(out_path)):
+		os.makedirs(out_path)
+
+	vec = VSMVectorizer(window_size=5, min_frequency=50, cache_intermediary_results=True, cache_path=out_path)
+	M = vec.fit(mr)
+
+	print(M.shape)
+	print(M.max())
+	print(M.min())
+
 
 def test_wikipedia():
 	p = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wikipedia_utf8_filtered_20pageviews.csv')
@@ -71,4 +89,5 @@ def vectorize_kafka():
 
 if (__name__ == '__main__'):
 	#vectorize_kafka()
-	test_wikipedia()
+	#test_wikipedia()
+	test_movie_reviews()
