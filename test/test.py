@@ -11,6 +11,20 @@ from wort.corpus_readers import MovieReviewReader
 from wort.corpus_readers import WikipediaReader
 
 
+def test_movie_reviews_from_cache():
+	base_path = os.path.join(paths.get_dataset_path(), 'movie_reviews', 'wort_vectors')
+	vec = VSMVectorizer(window_size=5, min_frequency=50, cache_intermediary_results=True, cache_path=base_path)
+	vec.weight_transformation_from_cache()
+
+	print(vec.M_.shape)
+	print(vec.M_.max())
+	print(vec.M_.min())
+	print('------------------')
+	print(vec.T_.shape)
+	print(vec.T_.max())
+	print(vec.T_.min())
+
+
 def test_movie_reviews():
 	p = os.path.join(os.path.join(paths.get_dataset_path(), 'movie_reviews', 'aclImdb', 'unlabelled_docs'))
 	mr = MovieReviewReader(p)
@@ -90,4 +104,5 @@ def vectorize_kafka():
 if (__name__ == '__main__'):
 	#vectorize_kafka()
 	#test_wikipedia()
-	test_movie_reviews()
+	#test_movie_reviews()
+	test_movie_reviews_from_cache()

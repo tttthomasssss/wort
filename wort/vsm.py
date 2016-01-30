@@ -148,6 +148,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 					cols.append(buffer[j])
 					data.append(1)
 
+		# TODO: Something is going wrong with the counting!!!!!!!! Try with a smaller corpus
+
 		print('Creating sparse matrix...')
 		data = np.array(data, dtype=np.uint32, copy=False)
 		rows = np.array(rows, dtype=np.uint32, copy=False)
@@ -234,19 +236,19 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		if (self.cache_intermediary_results):
 			print('Caching co-occurrence matrix to path: {}...'.format(os.path.join(self.cache_path, 'M_cooccurrence.joblib')))
-			joblib.dump(self.M_, os.path.join(self.cache_path, 'M_cooccurrence.joblib'))
+			joblib.dump(self.M_, os.path.join(self.cache_path, 'M_cooccurrence.joblib'), compress=3)
 			print('Finished caching co-occurence matrix!')
 
 			print('Caching word probability distribution to path: {}...'.format(os.path.join(self.cache_path, 'p_w.joblib')))
-			joblib.dump(self.p_w_, os.path.join(self.cache_path, 'p_w.joblib'))
+			joblib.dump(self.p_w_, os.path.join(self.cache_path, 'p_w.joblib'), compress=3)
 			print('Finished caching word probability distribution!')
 
 			print('Caching index to path: {}...'.format(os.path.join(self.cache_path, 'index.joblib')))
-			joblib.dump(self.index_, os.path.join(self.cache_path, 'index.joblib'))
+			joblib.dump(self.index_, os.path.join(self.cache_path, 'index.joblib'), compress=3)
 			print('Finished caching index!')
 
 			print('Caching inverted index to path: {}...'.format(os.path.join(self.cache_path, 'inverted_index.joblib')))
-			joblib.dump(self.inverted_index_, os.path.join(self.cache_path, 'inverted_index.joblib'))
+			joblib.dump(self.inverted_index_, os.path.join(self.cache_path, 'inverted_index.joblib'), compress=3)
 			print('Finished caching inverted index!')
 
 		# Apply weighting transformation
