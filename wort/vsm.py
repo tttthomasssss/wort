@@ -208,7 +208,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		# Joint Probability for all co-occurrences, P(w, c) = P(c | w) * P(w) = P(w | c) * P(c)
 		# Doing it this way, keeps P_w_c a sparse matrix: http://stackoverflow.com/questions/3247775/how-to-elementwise-multiply-a-scipy-sparse-matrix-by-a-broadcasted-dense-1d-arra
-		P_w = sparse.lil_matrix(self.M_.shape)
+		P_w = sparse.lil_matrix(self.M_.shape, dtype=np.float64)
 		logging.info('M sum={}'.format(self.M_.sum(axis=1).shape)) # TODO: Shit goes wrong here!!!!!!!!
 		logging.info('M sum max={}'.format(np.amax(self.M_.sum(axis=1))))
 		logging.info('M_dtype={}; M_sum_dtype={}'.format(self.M_.dtype, self.M_.sum(axis=1).dtype))
