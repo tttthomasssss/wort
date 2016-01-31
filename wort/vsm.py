@@ -141,7 +141,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		# Max Features Filter
 		if (self.max_features is not None and self.max_features < n_vocab):
-			idx = np.argpartition(-W)[self.max_features + 1:]
+			idx = np.argpartition(-W)[self.max_features+1:]
 			W = self._delete_from_vocab(W, idx)
 
 			n_vocab -= len(idx)
@@ -156,7 +156,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# This can be parallelised (inverted_index is shared and immutable and the rest is just a matrix)
 		rows = array.array('i')
 		cols = array.array('i')
-		data = array.array('i')
+		data = array.array('i') # TODO: Needs to be a float if dynamic context window weighting is applied
 
 		for doc in raw_documents:
 			buffer = array.array('i')
@@ -171,13 +171,13 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				for j in range(max(i-self.window_size, 0), i):
 					rows.append(buffer[i])
 					cols.append(buffer[j])
-					data.append(1)
+					data.append(1) # TODO: Apply dynamic context window weighting here!
 
 				# Forward co-occurrences
-				for j in range(i+1, min(i + self.window_size + 1, l)):
+				for j in range(i+1, min(i+self.window_size+1, l)):
 					rows.append(buffer[i])
 					cols.append(buffer[j])
-					data.append(1)
+					data.append(1) # TODO: Apply dynamic context window weighting here!
 
 		logging.info('Creating sparse matrix...')
 		data = np.array(data, dtype=np.uint32, copy=False)
