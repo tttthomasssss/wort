@@ -117,7 +117,7 @@ def test_wikipedia():
 
 def vectorize_wikipedia():
 	p = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wikipedia_utf8_filtered_20pageviews_lc_noid.tsv')
-	wiki_reader = CSVStreamReader(p)
+	wiki_reader = CSVStreamReader(p, delimiter='\t')
 
 	out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors')
 	if (not os.path.exists(out_path)):

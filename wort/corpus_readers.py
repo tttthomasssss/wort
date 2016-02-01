@@ -17,7 +17,7 @@ class CSVStreamReader(object):
 			csv_reader = csv.reader(wiki_file, delimiter=self.delimiter)
 
 			for line in csv_reader:
-				yield line[1]
+				yield line[0]
 
 
 class MovieReviewReader(object):
