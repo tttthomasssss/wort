@@ -6,6 +6,8 @@ from scipy import sparse
 import numpy as np
 import tables
 
+# TODO: The file appending thing is a bit ugly, should add some custom naming facilities...
+
 
 def sparse_matrix_to_hdf(obj, path):
 	if (sparse.isspmatrix_csr(obj) or sparse.isspmatrix_csc(obj)):

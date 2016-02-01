@@ -149,7 +149,10 @@ def vectorize_wikipedia():
 
 	vec.fit(wiki_reader)
 
-	joblib.dump(vec, os.path.join(out_path, 'VSMVectorizer.joblib'), compress=3)
+	transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors', 'transformed_vectors')
+	if (not os.path.exists(transformed_out_path)):
+		os.makedirs(transformed_out_path)
+	utils.sparse_matrix_to_hdf(vec.T_, transformed_out_path)
 
 
 def vectorize_kafka():
@@ -193,11 +196,11 @@ def vectorize_kafka():
 
 
 if (__name__ == '__main__'):
-	#vectorize_wikipedia()
+	vectorize_wikipedia()
 	#vectorize_kafka()
 	#test_wikipedia()
 	#test_movie_reviews()
 	#test_movie_reviews_from_cache()
 	#test_frost()
 	#test_discoutils_loader()
-	test_hdf()
+	#test_hdf()
