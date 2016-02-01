@@ -1,15 +1,37 @@
 __author__ = 'thomas'
 import os
 
+from scipy import sparse
 from scipy.spatial import distance
 import joblib
 import numpy as np
 
 from common import paths
+from wort import utils
 from wort.vsm import VSMVectorizer
 from wort.corpus_readers import FrostReader
 from wort.corpus_readers import MovieReviewReader
 from wort.corpus_readers import CSVStreamReader
+
+
+def test_hdf():
+	X = np.maximum(0, np.random.rand(5000, 5000) - 0.5)
+
+	X_csr = sparse.csr_matrix(X)
+	X_coo = sparse.coo_matrix(X)
+
+	# To hdf
+	print('to hdf...')
+	utils.sparse_matrix_to_hdf(X_coo, os.path.join(paths.get_dataset_path(), '_temp'))
+	utils.sparse_matrix_to_hdf(X_csr, os.path.join(paths.get_dataset_path(), '_temp'))
+
+	# From hdf
+	print('from hdf...')
+	XX_csr = utils.hdf_to_sparse_matrix(os.path.join(paths.get_dataset_path(), '_temp'), 'csr')
+	XX_coo = utils.hdf_to_sparse_matrix(os.path.join(paths.get_dataset_path(), '_temp'), 'coo')
+
+	print('CSR check={}'.format(np.all(XX_csr==X_csr)))
+	print('COO check={}'.format(np.all(XX_coo==X_coo)))
 
 
 def test_discoutils_loader():
@@ -171,10 +193,11 @@ def vectorize_kafka():
 
 
 if (__name__ == '__main__'):
-	vectorize_wikipedia()
+	#vectorize_wikipedia()
 	#vectorize_kafka()
 	#test_wikipedia()
 	#test_movie_reviews()
 	#test_movie_reviews_from_cache()
 	#test_frost()
 	#test_discoutils_loader()
+	test_hdf()

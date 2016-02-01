@@ -13,6 +13,8 @@ from tqdm import *
 import joblib
 import numpy as np
 
+from wort import utils
+
 # TODO: SVD based on http://www.aclweb.org/anthology/Q/Q15/Q15-1016.pdf, esp. chapter 7, practical recommendations
 	# Context Window Weighting (constant vs harmonic vs aggressive vs distance)
 	# Subsampling
@@ -261,8 +263,9 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self._construct_cooccurrence_matrix(raw_documents)
 
 		if (self.cache_intermediary_results):
-			logging.info('Caching co-occurrence matrix to path: {}...'.format(os.path.join(self.cache_path, 'M_cooccurrence.joblib')))
-			joblib.dump(self.M_, os.path.join(self.cache_path, 'M_cooccurrence.joblib'), compress=3)
+			# Store the matrix bits and pieces in several different files due to performance and size
+			logging.info('Caching co-occurrence matrix to path: {}...'.format(self.cache_path))
+			utils.sparse_matrix_to_hdf(self.M_, self.cache_path)
 			logging.info('Finished caching co-occurence matrix!')
 
 			logging.info('Caching word probability distribution to path: {}...'.format(os.path.join(self.cache_path, 'p_w.joblib')))
