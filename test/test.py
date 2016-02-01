@@ -115,6 +115,21 @@ def test_wikipedia():
 	joblib.dump(M, os.path.join(out_path, 'wikipedia_test'))
 
 
+def vectorize_wikipedia():
+	p = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wikipedia_utf8_filtered_20pageviews_lc_noid.tsv')
+	wiki_reader = CSVStreamReader(p)
+
+	out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors')
+	if (not os.path.exists(out_path)):
+		os.makedirs(out_path)
+
+	vec = VSMVectorizer(window_size=5, min_frequency=50, cache_intermediary_results=True, cache_path=out_path)
+
+	vec.fit(wiki_reader)
+
+	joblib.dump(vec, os.path.join(out_path, 'VSMVectorizer.joblib'), compress=3)
+
+
 def vectorize_kafka():
 
 	# TODO: Check if PMI calculation is correct, compare to: https://github.com/mbatchkarov/DiscoUtils/blob/master/discoutils/reweighting.py
@@ -156,9 +171,10 @@ def vectorize_kafka():
 
 
 if (__name__ == '__main__'):
+	vectorize_wikipedia()
 	#vectorize_kafka()
 	#test_wikipedia()
-	test_movie_reviews()
+	#test_movie_reviews()
 	#test_movie_reviews_from_cache()
 	#test_frost()
-	test_discoutils_loader()
+	#test_discoutils_loader()
