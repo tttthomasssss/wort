@@ -9,6 +9,7 @@ from scipy import sparse
 from sklearn.base import BaseEstimator
 from sklearn.feature_extraction.text import VectorizerMixin
 from sparsesvd import sparsesvd
+from tqdm import *
 import joblib
 import numpy as np
 
@@ -108,7 +109,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		# Extract vocabulary
 		logging.info('Extracting vocabulary...')
-		for doc in raw_documents:
+		for doc in tqdm(raw_documents):
 			for feature in analyser(doc):
 				idx = self.inverted_index_.get(feature, n_vocab + 1)
 
@@ -158,7 +159,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		cols = array.array('i')
 		data = array.array('i') # TODO: Needs to be a float if dynamic context window weighting is applied
 
-		for doc in raw_documents:
+		for doc in tqdm(raw_documents):
 			buffer = array.array('i')
 			for feature in analyser(doc):
 				if (feature in self.inverted_index_):
