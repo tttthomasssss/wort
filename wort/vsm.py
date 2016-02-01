@@ -324,6 +324,5 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 	def get_inverted_index(self):
 		return self.inverted_index_
 
-	def get_vector(self, entry):
-		self.T_[self.inverted_index_[entry]]
-
+	def __getitem__(self, item):
+		self.T_[self.inverted_index_[item]]
