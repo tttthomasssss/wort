@@ -145,7 +145,7 @@ def vectorize_wikipedia():
 	if (not os.path.exists(out_path)):
 		os.makedirs(out_path)
 
-	vec = VSMVectorizer(window_size=5, min_frequency=50, cache_intermediary_results=True, cache_path=out_path)
+	vec = VSMVectorizer(window_size=5, min_frequency=100, cache_intermediary_results=True, cache_path=out_path)
 
 	vec.fit(wiki_reader)
 
