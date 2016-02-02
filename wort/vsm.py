@@ -184,7 +184,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		# Max Features Filter
 		if (self.max_features is not None and self.max_features < n_vocab):
-			idx = np.argpartition(-W, self.max_features)[self.max_features+1:]
+			idx = np.argpartition(-W, self.max_features)[self.max_features:]
 			W = self._delete_from_vocab(W, idx)
 
 			n_vocab -= len(idx)
