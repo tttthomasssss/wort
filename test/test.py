@@ -141,18 +141,18 @@ def vectorize_wikipedia():
 	p = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wikipedia_utf8_filtered_20pageviews_lc_noid.tsv')
 	wiki_reader = CSVStreamReader(p, delimiter='\t')
 
-	out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors_max_feat')
+	out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors_min_freq_100')
 	if (not os.path.exists(out_path)):
 		os.makedirs(out_path)
 
-	vec = VSMVectorizer(window_size=5, max_features=10000, cache_intermediary_results=True, cache_path=out_path)
+	vec = VSMVectorizer(window_size=5, min_frequency=100, cache_intermediary_results=True, cache_path=out_path)
 
 	vec.fit(wiki_reader)
 
-	transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors', 'transformed_vectors_max_feat')
+	transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors', 'transformed_vectors_min_freq_100')
 	if (not os.path.exists(transformed_out_path)):
 		os.makedirs(transformed_out_path)
-	utils.sparse_matrix_to_hdf(vec.T_, transformed_out_path)
+	utils.sparse_matrix_to_hdf(sparse.csr_matrix(vec.T_), transformed_out_path)
 
 
 def vectorize_kafka():
