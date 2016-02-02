@@ -182,14 +182,14 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 			n_vocab -= len(idx)
 
-		logging.info('Finished Filtering extremes! n_vocab={}'.format(n_vocab))
-
 		# Max Features Filter
 		if (self.max_features is not None and self.max_features < n_vocab):
 			idx = np.argpartition(-W)[self.max_features+1:]
 			W = self._delete_from_vocab(W, idx)
 
 			n_vocab -= len(idx)
+
+		logging.info('Finished Filtering extremes! n_vocab={}'.format(n_vocab))
 
 		self.p_w_ = W / W.sum()
 		self.vocab_count_ = n_vocab
