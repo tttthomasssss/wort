@@ -16,7 +16,6 @@ import numpy as np
 from wort import utils
 
 # TODO: SVD based on http://www.aclweb.org/anthology/Q/Q15/Q15-1016.pdf, esp. chapter 7, practical recommendations
-	# Context Window Weighting (constant vs harmonic vs aggressive vs distance)
 	# Subsampling
 	# Normalisation
 	# Hellinger PCA
@@ -35,6 +34,37 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				 ngram_range=(1, 1), cds=1., dim_reduction=None, svd_dim=None, svd_eig_weighting=1,
 				 context_window_weighting='constant', add_context_vectors=True, cache_intermediary_results=False,
 				 cache_path=None, log_level=logging.INFO, log_file=None):
+		"""
+		TODO: documentation...
+		:param window_size:
+		:param weighting:
+		:param min_frequency:
+		:param lowercase:
+		:param stop_words:
+		:param encoding:
+		:param max_features:
+		:param preprocessor:
+		:param tokenizer:
+		:param analyzer:
+		:param binary:
+		:param sppmi_shift:
+		:param token_pattern:
+		:param decode_error:
+		:param strip_accents:
+		:param input:
+		:param ngram_range:
+		:param cds:
+		:param dim_reduction:
+		:param svd_dim:
+		:param svd_eig_weighting:
+		:param context_window_weighting: weighting of the context window under consideration (must be either "constant", "harmonic", "distance" or "aggressive")
+		:param add_context_vectors:
+		:param cache_intermediary_results:
+		:param cache_path:
+		:param log_level:
+		:param log_file:
+		:return:
+		"""
 
 		self.window_size = window_size
 		self.weighting = weighting
@@ -103,6 +133,18 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		return W
 
+	def _constant_window_weighting(self, _):
+		return 1
+
+	def _aggressive_window_weighting(self, distance):
+		return 2 ** (1 - distance)
+
+	def _harmonic_window_weighting(self, distance):
+		return 1. / distance # Thats what GloVe is doing
+
+	def _distance_window_weighting(self, distance):
+		return distance / self.window_size # Thats what word2vec is doing
+
 	def _construct_cooccurrence_matrix(self, raw_documents):
 		analyser = self.build_analyzer()
 
@@ -159,7 +201,9 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# This can be parallelised (inverted_index is shared and immutable and the rest is just a matrix)
 		rows = array.array('i')
 		cols = array.array('i')
-		data = array.array('i') # TODO: Needs to be a float if dynamic context window weighting is applied
+		data = array.array('i' if self.context_window_weighting == 'constant' else 'f')
+
+		window_weighting_fn = getattr(self, '_{}_window_weighting'.format(self.context_window_weighting))
 
 		for doc in tqdm(raw_documents):
 			buffer = array.array('i')
@@ -174,20 +218,20 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				for j in range(max(i-self.window_size, 0), i):
 					rows.append(buffer[i])
 					cols.append(buffer[j])
-					data.append(1) # TODO: Apply dynamic context window weighting here!
+					data.append(window_weighting_fn(self.window_size-j))
 
 				# Forward co-occurrences
 				for j in range(i+1, min(i+self.window_size+1, l)):
 					rows.append(buffer[i])
 					cols.append(buffer[j])
-					data.append(1) # TODO: Apply dynamic context window weighting here!
+					data.append(j-self.window_size)
 
 		logging.info('Creating sparse matrix...')
-		data = np.array(data, dtype=np.uint64, copy=False)
+		data = np.array(data, dtype=np.uint64 if self.context_window_weighting == 'constant' else np.float64, copy=False)
 		rows = np.array(rows, dtype=np.uint64, copy=False)
 		cols = np.array(cols, dtype=np.uint64, copy=False)
 
-		self.M_ = sparse.coo_matrix((data, (rows, cols)), dtype=np.uint64).tocsr() # Scipy seems to not handle numeric overflow in a very graceful manner
+		self.M_ = sparse.coo_matrix((data, (rows, cols)), dtype=np.uint64 if self.context_window_weighting == 'constant' else np.float64).tocsr() # Scipy seems to not handle numeric overflow in a very graceful manner
 		logging.info('M.shape={}'.format(self.M_.shape))
 
 		# Apply Binarisation
