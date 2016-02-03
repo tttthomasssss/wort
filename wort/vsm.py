@@ -390,3 +390,19 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 	def __getitem__(self, item):
 		self.T_[self.inverted_index_[item]]
+
+	@classmethod
+	def load_from_file(cls, path, as_dict=False):
+		model = VSMVectorizer(window_size=5)
+
+		model.T_ = utils.hdf_to_numpy(os.path.join(path, 'T.hdf'))
+		model.index_ = joblib.load(os.path.join(path, 'index.joblib'))
+		model.inverted_index_ = joblib.load(os.path.join(path, 'inverted_index.joblib'))
+		model.p_w_ = joblib.load(os.path.join(path, 'p_w.joblib'))
+
+		return model
+
+	def save_to_file(self, path, as_dict=False):
+		# If as_dict=True, call to_dict on self.T_ prior to serialisation
+		# Store a few type infos in a metadata file, e.g. the type of self.T_
+		pass # Get all params as well

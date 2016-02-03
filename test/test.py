@@ -40,10 +40,11 @@ def test_discoutils_loader():
 
 	#vecs = vector_utils.load_vector_cache('/Users/thomas/DevSandbox/EpicDataShelf/tag-lab/mitchell_lapata_2010/cached_filtered_vectors/wikipedia_lc_1_lemma-True_pos-False_vectors_filtered_min_count-50_min_features-50_cache.joblib')
 	#disco_vectors = Vectors.from_dict_of_dicts(d=vecs)
-	in_path = os.path.join(paths.get_dataset_path(), 'movie_reviews', 'wort_vectors')
+	#in_path = os.path.join(paths.get_dataset_path(), 'movie_reviews', 'wort_vectors')
 	#in_path = os.path.join(paths.get_dataset_path(), 'frost')
-	print('Loading Model from {}'.format(os.path.join(in_path, 'VSMVectorizer.joblib')))
-	vec = joblib.load(os.path.join(in_path, 'VSMVectorizer.joblib'))
+	in_path = os.path.join(paths.get_dataset_path(), 'wikipedia/wort_models')
+	print('Loading Model from {}'.format(os.path.join(in_path, '')))
+	vec = VSMVectorizer.load_from_file(in_path)
 	print(vec.T_.shape)
 
 	disco_vectors = Vectors.from_wort_model(vec)
@@ -94,7 +95,7 @@ def transform_wikipedia_from_cache():
 	vec = vec.weight_transformation_from_cache()
 	logging.info('Transformed cache...')
 
-	transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors_min_freq', 'transformed_vectors_min_freq_100')
+	transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors_min_freq_100', 'transformed_vectors_min_freq_100')
 	if (not os.path.exists(transformed_out_path)):
 		os.makedirs(transformed_out_path)
 
@@ -104,7 +105,7 @@ def transform_wikipedia_from_cache():
 	else:
 		utils.numpy_to_hdf(vec.T_, transformed_out_path, 'T')
 	logging.info('stored')
-	
+
 
 def test_movie_reviews_from_cache():
 	base_path = os.path.join(paths.get_dataset_path(), 'movie_reviews', 'wort_vectors')
@@ -220,12 +221,12 @@ def vectorize_kafka():
 
 
 if (__name__ == '__main__'):
-	transform_wikipedia_from_cache()
+	#transform_wikipedia_from_cache()
 	#vectorize_wikipedia()
 	#vectorize_kafka()
 	#test_wikipedia()
 	#test_movie_reviews()
 	#test_movie_reviews_from_cache()
 	#test_frost()
-	#test_discoutils_loader()
+	test_discoutils_loader()
 	#test_hdf()
