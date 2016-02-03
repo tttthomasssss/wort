@@ -15,23 +15,26 @@ from wort.corpus_readers import CSVStreamReader
 
 
 def test_hdf():
-	X = np.maximum(0, np.random.rand(5000, 5000) - 0.5)
+	X = np.maximum(0, np.random.rand(5, 5) - 0.5)
 
 	X_csr = sparse.csr_matrix(X)
 	X_coo = sparse.coo_matrix(X)
 
 	# To hdf
 	print('to hdf...')
-	utils.sparse_matrix_to_hdf(X_coo, os.path.join(paths.get_dataset_path(), '_temp'))
-	utils.sparse_matrix_to_hdf(X_csr, os.path.join(paths.get_dataset_path(), '_temp'))
+	#utils.sparse_matrix_to_hdf(X_coo, os.path.join(paths.get_dataset_path(), '_temp'))
+	#utils.sparse_matrix_to_hdf(X_csr, os.path.join(paths.get_dataset_path(), '_temp'))
+	utils.numpy_to_hdf(X, os.path.join(paths.get_dataset_path(), '_temp'), 'X')
 
 	# From hdf
 	print('from hdf...')
-	XX_csr = utils.hdf_to_sparse_matrix(os.path.join(paths.get_dataset_path(), '_temp'), 'csr')
-	XX_coo = utils.hdf_to_sparse_matrix(os.path.join(paths.get_dataset_path(), '_temp'), 'coo')
+	#XX_csr = utils.hdf_to_sparse_matrix(os.path.join(paths.get_dataset_path(), '_temp'), 'csr')
+	#XX_coo = utils.hdf_to_sparse_matrix(os.path.join(paths.get_dataset_path(), '_temp'), 'coo')
+	XX = utils.hdf_to_numpy(os.path.join(paths.get_dataset_path(), '_temp'), 'X')
 
-	print('CSR check={}'.format(np.all(XX_csr==X_csr)))
-	print('COO check={}'.format(np.all(XX_coo==X_coo)))
+	#print('CSR check={}'.format(np.all(XX_csr==X_csr)))
+	#print('COO check={}'.format(np.all(XX_coo==X_coo)))
+	print('NUMPY check={}'.format(np.all(X==XX)))
 
 
 def test_discoutils_loader():

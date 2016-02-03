@@ -16,9 +16,9 @@ def numpy_to_hdf(obj, path, name):
 		arr[:] = obj
 
 
-def hdf_to_numpy(path):
-	with tables.open_file(path, 'r') as f:
-		arr = f.read()
+def hdf_to_numpy(path, name):
+	with tables.open_file(os.path.join(path, name), 'r') as f:
+		arr = np.array(getattr(f.root, name).read())
 
 	return arr
 

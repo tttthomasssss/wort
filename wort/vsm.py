@@ -395,7 +395,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 	def load_from_file(cls, path, as_dict=False):
 		model = VSMVectorizer(window_size=5)
 
-		model.T_ = utils.hdf_to_numpy(os.path.join(path, 'T.hdf'))
+		model.T_ = utils.hdf_to_numpy(path, 'T.hdf')
 		model.index_ = joblib.load(os.path.join(path, 'index.joblib'))
 		model.inverted_index_ = joblib.load(os.path.join(path, 'inverted_index.joblib'))
 		model.p_w_ = joblib.load(os.path.join(path, 'p_w.joblib'))
