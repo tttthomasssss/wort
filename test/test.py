@@ -97,8 +97,10 @@ def transform_wikipedia_from_cache():
 	transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors_min_freq', 'transformed_vectors_min_freq_100')
 	if (not os.path.exists(transformed_out_path)):
 		os.makedirs(transformed_out_path)
+	logging.info('to sparse...')
+	Ts = sparse.csr_matrix(vec.T_)
 	logging.info('Storing matrix of type={}...'.format(type(vec.T_)))
-	utils.sparse_matrix_to_hdf(sparse.csr_matrix(vec.T_), transformed_out_path)
+	utils.sparse_matrix_to_hdf(Ts, transformed_out_path)
 	logging.info('Stored Matrix!')
 
 
