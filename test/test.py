@@ -83,7 +83,7 @@ def test_frost():
 
 
 def transform_wikipedia_from_cache():
-	base_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors_min_freq')
+	base_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors_min_freq_100')
 	if (not os.path.exists(base_path)):
 		os.makedirs(base_path)
 
