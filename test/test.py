@@ -83,6 +83,8 @@ def test_frost():
 
 
 def transform_wikipedia_from_cache():
+	import logging
+	logging.basicConfig(format='%(asctime)s: %(levelname)s - %(message)s', datefmt='[%d/%m/%Y %H:%M:%S %p]', level=logging.INFO)
 	base_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors_min_freq_100')
 	if (not os.path.exists(base_path)):
 		os.makedirs(base_path)
@@ -90,11 +92,14 @@ def transform_wikipedia_from_cache():
 	vec = VSMVectorizer(window_size=5, min_frequency=100, cache_intermediary_results=True, cache_path=base_path)
 
 	vec = vec.weight_transformation_from_cache()
+	logging.info('Transformed cache...')
 
 	transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors_min_freq', 'transformed_vectors_min_freq_100')
 	if (not os.path.exists(transformed_out_path)):
 		os.makedirs(transformed_out_path)
+	logging.info('Storing matrix...')
 	utils.sparse_matrix_to_hdf(sparse.csr_matrix(vec.T_), transformed_out_path)
+	logging.info('Stored Matrix!')
 
 
 def test_movie_reviews_from_cache():
