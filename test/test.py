@@ -98,11 +98,12 @@ def transform_wikipedia_from_cache():
 	if (not os.path.exists(transformed_out_path)):
 		os.makedirs(transformed_out_path)
 	logging.info('to sparse...')
-	Ts = sparse.csr_matrix(vec.T_)
-	logging.info('Storing matrix of type={}...'.format(type(vec.T_)))
-	utils.sparse_matrix_to_hdf(Ts, transformed_out_path)
-	logging.info('Stored Matrix!')
 
+	if (sparse.issparse(vec.T_)):
+		utils.sparse_matrix_to_hdf(vec.T_, transformed_out_path)
+	else:
+		utils.numpy_to_hdf(vec.T_, transformed_out_path, 'T')
+	
 
 def test_movie_reviews_from_cache():
 	base_path = os.path.join(paths.get_dataset_path(), 'movie_reviews', 'wort_vectors')
