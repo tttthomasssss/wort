@@ -97,13 +97,14 @@ def transform_wikipedia_from_cache():
 	transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors_min_freq', 'transformed_vectors_min_freq_100')
 	if (not os.path.exists(transformed_out_path)):
 		os.makedirs(transformed_out_path)
-	logging.info('to sparse...')
 
+	logging.info('storing...')
 	if (sparse.issparse(vec.T_)):
 		utils.sparse_matrix_to_hdf(vec.T_, transformed_out_path)
 	else:
 		utils.numpy_to_hdf(vec.T_, transformed_out_path, 'T')
-
+	logging.info('stored')
+	
 
 def test_movie_reviews_from_cache():
 	base_path = os.path.join(paths.get_dataset_path(), 'movie_reviews', 'wort_vectors')
