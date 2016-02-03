@@ -330,7 +330,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		return self
 
 	def weight_transformation_from_cache(self):
-		self.M_ = joblib.load(os.path.join(self.cache_path, 'M_cooccurrence.joblib'))
+		#self.M_ = joblib.load(os.path.join(self.cache_path, 'M_cooccurrence.joblib'))
+		self.M_ = utils.hdf_to_sparse_csx_matrix(self.cache_path, sparse_format='csr')
 		self.p_w_ = joblib.load(os.path.join(self.cache_path, 'p_w.joblib'))
 		self.index_ = joblib.load(os.path.join(self.cache_path, 'index.joblib'))
 		self.inverted_index_ = joblib.load(os.path.join(self.cache_path, 'inverted_index.joblib'))
