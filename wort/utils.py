@@ -18,8 +18,10 @@ def numpy_to_hdf(obj, path, name):
 
 def hdf_to_numpy(path, name):
 	with tables.open_file(os.path.join(path, name), 'r') as f:
-		arr = np.array(getattr(f.root, name).read())
-
+		try: # TODO: QUICKHACK - REMOVE LATER!!!!!
+			arr = np.array(getattr(f.root, name).read())
+		except tables.exceptions.NoSuchNodeError:
+			arr = np.array(getattr(f.root, name.split('.')[0]).read())
 	return arr
 
 
