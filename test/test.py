@@ -82,6 +82,21 @@ def test_frost():
 	joblib.dump(vec, os.path.join(os.path.split(base_path)[0], 'VSMVectorizer.joblib'), compress=3)
 
 
+def transform_wikipedia_from_cache():
+	base_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors_min_freq')
+	if (not os.path.exists(base_path)):
+		os.makedirs(base_path)
+
+	vec = VSMVectorizer(window_size=5, min_frequency=100, cache_intermediary_results=True, cache_path=base_path)
+
+	vec = vec.weight_transformation_from_cache()
+
+	transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors_min_freq', 'transformed_vectors_min_freq_100')
+	if (not os.path.exists(transformed_out_path)):
+		os.makedirs(transformed_out_path)
+	utils.sparse_matrix_to_hdf(sparse.csr_matrix(vec.T_), transformed_out_path)
+
+
 def test_movie_reviews_from_cache():
 	base_path = os.path.join(paths.get_dataset_path(), 'movie_reviews', 'wort_vectors')
 	vec = VSMVectorizer(window_size=5, min_frequency=50, cache_intermediary_results=True, cache_path=base_path,
@@ -196,7 +211,8 @@ def vectorize_kafka():
 
 
 if (__name__ == '__main__'):
-	vectorize_wikipedia()
+	transform_wikipedia_from_cache()
+	#vectorize_wikipedia()
 	#vectorize_kafka()
 	#test_wikipedia()
 	#test_movie_reviews()
