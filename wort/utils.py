@@ -16,6 +16,13 @@ def numpy_to_hdf(obj, path, name):
 		arr[:] = obj
 
 
+def hdf_to_numpy(path):
+	with tables.open_file(path, 'r') as f:
+		arr = f.read()
+
+	return arr
+
+
 def sparse_matrix_to_hdf(obj, path):
 	if (sparse.isspmatrix_csr(obj) or sparse.isspmatrix_csc(obj)):
 		sparse_csx_matrix_to_hdf(obj, path)
