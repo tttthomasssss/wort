@@ -48,10 +48,12 @@ def test_discoutils_loader():
 	in_path = os.path.join(paths.get_dataset_path(), 'wikipedia/wort_models')
 	print('Loading Model from {}'.format(os.path.join(in_path, '')))
 	vec = VSMVectorizer.load_from_file(in_path)
-	print(vec.T_.shape)
+	print('Converting to DisCo representation...')
 
 	disco_vectors = Vectors.from_wort_model(vec)
+	print('Disco model done!')
 	disco_vectors.init_sims(n_neighbors=10, knn='brute', nn_metric='cosine')
+	print('init sims done!')
 
 	print('good: {}'.format(disco_vectors.get_nearest_neighbours('good')))
 	print('bad: {}'.format(disco_vectors.get_nearest_neighbours('bad')))
