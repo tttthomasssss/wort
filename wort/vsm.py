@@ -236,7 +236,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		# Apply Binarisation
 		if (self.binary):
-			self.M_ = np.minimum(self.M_, 1)
+			self.M_ = self.M_.minimum(1)
 
 	def _apply_weight_option(self, PMI, P_w_c, p_c):
 		if (self.weighting == 'ppmi'):
