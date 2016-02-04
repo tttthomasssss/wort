@@ -143,7 +143,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		return 1. / distance # Thats what GloVe is doing
 
 	def _distance_window_weighting(self, distance):
-		return distance / self.window_size # Thats what word2vec is doing
+		return (self.window_size - distance) / self.window_size # Thats what word2vec is doing
 
 	def _construct_cooccurrence_matrix(self, raw_documents):
 		analyser = self.build_analyzer()
@@ -269,7 +269,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		logging.info('Applying CDS...')
 
 		# Marginals for context (with optional context distribution smoothing)
-		p_c = self.p_w_ ** self.cds if self.cds != 1. else self.p_w_
+		p_c = self.p_w_ ** self.cds if self.cds != 1 else self.p_w_
 
 		logging.info('Calculating Marginals...')
 
@@ -280,17 +280,32 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		logging.info('Taking logs...')
 
 		# PMI matrix is then the log difference between the joints and the marginals
-		P_w_c.data = np.log(P_w_c.data) # P_w_c is a sparse matrix (csr)
-		P_wc_marginals = np.log(P_wc_marginals) # P_wc_marginals is dense (np.ndarray)
+		##----------------- O L D
+		#P_w_c.data = np.log(P_w_c.data) # P_w_c is a sparse matrix (csr)
+		#P_wc_marginals = np.log(P_wc_marginals) # P_wc_marginals is dense (np.ndarray)
 
-		logging.info('Subtracting...')
-
-		PMI = np.asarray(P_w_c - P_wc_marginals)
-
-		logging.info('Apply weight and threshold...')
+		#PMI = np.asarray(P_w_c - P_wc_marginals)
 
 		# Apply PMI variant (e.g. PPMI, SPPMI, PLMI or PNPMI) and apply threshold
-		self.T_ = np.maximum(0, self._apply_weight_option(PMI, P_w_c, p_c))
+		#self.T_ = np.maximum(0, self._apply_weight_option(PMI, P_w_c, p_c))
+		##------------------
+
+		##------------------ N E W
+		logging.info('Construction the COO PMI matrix')
+		# Construct another COO matrix and convert it to a CSR as we go and ...
+		data = np.log(P_w_c.data / P_wc_marginals[P_w_c.nonzero()]) # Doing the division first maintains the sparsity of the matrix
+		rows, cols = P_w_c.nonzero()
+
+		logging.info('Applying the PMI option')
+		# ...apply the PMI variant (e.g. PPMI, SPPMI, PLMI or PNPMI)
+		PMI = self._apply_weight_option(sparse.coo_matrix((data, (rows, cols)), dtype=np.float64).tocsr(), P_w_c, p_c)
+
+		logging.info('Applying the threshold [type(PMI)={}]...'.format(type(PMI)))
+		# Apply threshold
+		self.T_ = PMI.maximum(0)
+		logging.info('PMI ALL DONE [type(self.T_)={}]'.format(type(self.T_)))
+
+		##------------------
 
 		# Apply SVD
 		if (self.dim_reduction == 'svd'):
@@ -396,7 +411,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		model = VSMVectorizer(window_size=5)
 
 		logging.info('Loading hdf file...')
-		model.T_ = utils.hdf_to_numpy(path, 'T.hdf')
+		model.T_ = utils.hdf_to_sparse_csx_matrix(path, 'T.hdf')
 		logging.info('Loading rest...')
 		model.index_ = joblib.load(os.path.join(path, 'index.joblib'))
 		model.inverted_index_ = joblib.load(os.path.join(path, 'inverted_index.joblib'))
@@ -408,4 +423,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 	def save_to_file(self, path, as_dict=False):
 		# If as_dict=True, call to_dict on self.T_ prior to serialisation
 		# Store a few type infos in a metadata file, e.g. the type of self.T_
-		pass # Get all params as well
+		# Get all params as well
+		utils.sparse_csx_matrix_to_hdf(self.T_, os.path.join(path, 'T.hdf'))
+		joblib.dump(self.index_, os.path.join(path, 'index.joblib'), compress=3)
+		joblib.dump(self.inverted_index_, os.path.join(path, 'inverted_index.joblib'), compress=3)
+		joblib.dump(self.p_w_, os.path.join(path, 'p_w.joblib'), compress=3)

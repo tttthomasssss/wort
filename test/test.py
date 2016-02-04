@@ -168,6 +168,8 @@ def test_wikipedia():
 
 
 def vectorize_wikipedia():
+	from discoutils.thesaurus_loader import Vectors
+
 	p = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wikipedia_utf8_filtered_20pageviews_lc_noid.tsv')
 	wiki_reader = CSVStreamReader(p, delimiter='\t')
 
@@ -179,10 +181,40 @@ def vectorize_wikipedia():
 
 	vec.fit(wiki_reader)
 
-	transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors', 'transformed_vectors_min_freq_100')
+	transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_models_new')
 	if (not os.path.exists(transformed_out_path)):
 		os.makedirs(transformed_out_path)
-	utils.sparse_matrix_to_hdf(sparse.csr_matrix(vec.T_), transformed_out_path)
+
+	print('Saving to file')
+	vec.save_to_file(transformed_out_path)
+	print('Doing the DisCo business...')
+
+	disco_vectors = Vectors.from_wort_model(vec)
+	print('Disco model done!')
+	disco_vectors.init_sims(n_neighbors=10, knn='brute', nn_metric='cosine')
+	print('init sims done!')
+
+	print('good: {}'.format(disco_vectors.get_nearest_neighbours('good')))
+	print('bad: {}'.format(disco_vectors.get_nearest_neighbours('bad')))
+	print('terrible: {}'.format(disco_vectors.get_nearest_neighbours('terrible')))
+	print('boring: {}'.format(disco_vectors.get_nearest_neighbours('boring')))
+	print('exciting: {}'.format(disco_vectors.get_nearest_neighbours('exciting')))
+	print('movie: {}'.format(disco_vectors.get_nearest_neighbours('movie')))
+	print('film: {}'.format(disco_vectors.get_nearest_neighbours('film')))
+	print('book: {}'.format(disco_vectors.get_nearest_neighbours('book')))
+	print('watch: {}'.format(disco_vectors.get_nearest_neighbours('watch')))
+	print('hero: {}'.format(disco_vectors.get_nearest_neighbours('hero')))
+	print('heroine: {}'.format(disco_vectors.get_nearest_neighbours('heroine')))
+	print('music: {}'.format(disco_vectors.get_nearest_neighbours('music')))
+	print('plot: {}'.format(disco_vectors.get_nearest_neighbours('plot')))
+	print('cinematography: {}'.format(disco_vectors.get_nearest_neighbours('cinematography')))
+	print('actor: {}'.format(disco_vectors.get_nearest_neighbours('actor')))
+	print('star: {}'.format(disco_vectors.get_nearest_neighbours('star')))
+	print('blind: {}'.format(disco_vectors.get_nearest_neighbours('blind')))
+	print('friend: {}'.format(disco_vectors.get_nearest_neighbours('friend')))
+	print('companion: {}'.format(disco_vectors.get_nearest_neighbours('companion')))
+	print('cat: {}'.format(disco_vectors.get_nearest_neighbours('cat')))
+	print('dog: {}'.format(disco_vectors.get_nearest_neighbours('dog')))
 
 
 def vectorize_kafka():
@@ -227,11 +259,11 @@ def vectorize_kafka():
 
 if (__name__ == '__main__'):
 	#transform_wikipedia_from_cache()
-	#vectorize_wikipedia()
+	vectorize_wikipedia()
 	#vectorize_kafka()
 	#test_wikipedia()
 	#test_movie_reviews()
 	#test_movie_reviews_from_cache()
 	#test_frost()
-	test_discoutils_loader()
+	#test_discoutils_loader()
 	#test_hdf()
