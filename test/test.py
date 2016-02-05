@@ -1,6 +1,7 @@
 __author__ = 'thomas'
 import os
 
+from nltk.corpus import stopwords
 from scipy import sparse
 from scipy.spatial import distance
 import joblib
@@ -52,7 +53,7 @@ def test_discoutils_loader():
 
 	disco_vectors = Vectors.from_wort_model(vec)
 	print('Disco model done!')
-	disco_vectors.init_sims(n_neighbors=10, knn='brute', nn_metric='cosine')
+	disco_vectors.init_sims(n_neighbors=20, knn='brute', nn_metric='cosine')
 	print('init sims done!')
 
 	print('good: {}'.format(disco_vectors.get_nearest_neighbours('good')))
@@ -177,7 +178,7 @@ def vectorize_wikipedia():
 	if (not os.path.exists(out_path)):
 		os.makedirs(out_path)
 
-	vec = VSMVectorizer(window_size=5, min_frequency=100)
+	vec = VSMVectorizer(window_size=5, min_frequency=100, stop_words=stopwords.words('english'))
 
 	vec.fit(wiki_reader)
 
