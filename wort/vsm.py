@@ -424,7 +424,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# If as_dict=True, call to_dict on self.T_ prior to serialisation
 		# Store a few type infos in a metadata file, e.g. the type of self.T_
 		# Get all params as well
-		utils.sparse_csx_matrix_to_hdf(self.T_, os.path.join(path, 'T.hdf'))
+		utils.sparse_csx_matrix_to_hdf(self.T_, path, 'T.hdf')
 		joblib.dump(self.index_, os.path.join(path, 'index.joblib'), compress=3)
 		joblib.dump(self.inverted_index_, os.path.join(path, 'inverted_index.joblib'), compress=3)
 		joblib.dump(self.p_w_, os.path.join(path, 'p_w.joblib'), compress=3)
