@@ -177,7 +177,7 @@ def vectorize_wikipedia():
 	if (not os.path.exists(out_path)):
 		os.makedirs(out_path)
 
-	vec = VSMVectorizer(window_size=5, min_frequency=100, cache_intermediary_results=True, cache_path=out_path)
+	vec = VSMVectorizer(window_size=5, min_frequency=100)
 
 	vec.fit(wiki_reader)
 
@@ -185,10 +185,14 @@ def vectorize_wikipedia():
 	if (not os.path.exists(transformed_out_path)):
 		os.makedirs(transformed_out_path)
 
-	print('Saving to file')
-	vec.save_to_file(transformed_out_path)
-	print('Doing the DisCo business...')
+	try:
+		print('Saving to file')
+		vec.save_to_file(transformed_out_path)
+		print('Doing the DisCo business...')
+	except OSError as ex:
+		print('FAILFAILFAIL: {}'.format(ex))
 
+	print('DiscoDiscoDiscoDisco stuff')
 	disco_vectors = Vectors.from_wort_model(vec)
 	print('Disco model done!')
 	disco_vectors.init_sims(n_neighbors=10, knn='brute', nn_metric='cosine')

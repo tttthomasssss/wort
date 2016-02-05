@@ -25,11 +25,11 @@ def hdf_to_numpy(path, name):
 	return arr
 
 
-def sparse_matrix_to_hdf(obj, path):
+def sparse_matrix_to_hdf(obj, path, name):
 	if (sparse.isspmatrix_csr(obj) or sparse.isspmatrix_csc(obj)):
-		sparse_csx_matrix_to_hdf(obj, path)
+		sparse_csx_matrix_to_hdf(obj, path, name)
 	elif (sparse.isspmatrix_coo(obj)):
-		sparse_coo_matrix_to_hdf(obj, path)
+		sparse_coo_matrix_to_hdf(obj, path, name)
 	else:
 		raise ValueError('Type {} not yet supported for serialisation!'.format(type(obj)))
 
@@ -64,8 +64,8 @@ def _get_attrs_from_hdf_file(path, sparse_format, attributes):
 	return attrs
 
 
-def sparse_csx_matrix_to_hdf(obj, path):
-	with tables.open_file(os.path.join(path, 'csx_matrix.hdf'), 'a') as f:
+def sparse_csx_matrix_to_hdf(obj, path, name):
+	with tables.open_file(os.path.join(path, name), 'a') as f:
 		for attr in ['data', 'indices', 'indptr', 'shape']:
 			arr = np.asarray(getattr(obj, attr))
 			atom = tables.Atom.from_dtype(arr.dtype)
