@@ -82,8 +82,7 @@ def test_discoutils_loader():
 def test_frost():
 	base_path = os.path.join(paths.get_dataset_path(), 'frost', 'stopping_by_woods_on_a_snowy_evening.txt')
 	f = FrostReader(base_path)
-	vec = VSMVectorizer(window_size=3, min_frequency=2, cache_intermediary_results=True,
-						cache_path=os.path.split(base_path)[0])
+	vec = VSMVectorizer(window_size=3, min_frequency=1, context_window_weighting='aggressive')
 
 	vec.fit(f)
 	joblib.dump(vec, os.path.join(os.path.split(base_path)[0], 'VSMVectorizer.joblib'), compress=3)
@@ -264,11 +263,11 @@ def vectorize_kafka():
 
 if (__name__ == '__main__'):
 	#transform_wikipedia_from_cache()
-	vectorize_wikipedia()
+	#vectorize_wikipedia()
 	#vectorize_kafka()
 	#test_wikipedia()
 	#test_movie_reviews()
 	#test_movie_reviews_from_cache()
-	#test_frost()
+	test_frost()
 	#test_discoutils_loader()
 	#test_hdf()

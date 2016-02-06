@@ -215,16 +215,20 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			l = len(buffer)
 			for i in range(l):
 				# Backward co-occurrences
-				for j in range(max(i-self.window_size, 0), i):
+				logging.info('BACKWARD RANGE: {}'.format(list(range(max(i-self.window_size, 0), i))))
+				for distance, j in enumerate(range(max(i-self.window_size, 0), i), 1):
 					rows.append(buffer[i])
 					cols.append(buffer[j])
-					data.append(window_weighting_fn(self.window_size-j))
+					data.append(window_weighting_fn(distance))
+					logging.info('BWD DISTANCE: {}; WORD={}'.format(distance, self.index_[buffer[j]]))
 
 				# Forward co-occurrences
-				for j in range(i+1, min(i+self.window_size+1, l)):
+				logging.info('FORWARD RANGE: {}'.format(list(range(i+1, min(i+self.window_size+1, l)))))
+				for distance, j in enumerate(range(i+1, min(i+self.window_size+1, l)), 1):
 					rows.append(buffer[i])
 					cols.append(buffer[j])
-					data.append(j-self.window_size)
+					data.append(window_weighting_fn(distance))
+					logging.info('FWD DISTANCE: {}; WORD={}'.format(distance, self.index_[buffer[j]]))
 
 		logging.info('Creating sparse matrix...')
 		data = np.array(data, dtype=np.uint64 if self.context_window_weighting == 'constant' else np.float64, copy=False)
@@ -336,6 +340,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				raise TypeError("You can't pass a generator as the sentences argument. Try an iterator.")
 
 		self._construct_cooccurrence_matrix(raw_documents)
+
+		logging.info(self.M_.A)
 
 		if (self.cache_intermediary_results):
 			# Store the matrix bits and pieces in several different files due to performance and size
