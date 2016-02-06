@@ -27,6 +27,7 @@ from wort import utils
 	# Support other thresholds
 	# Better sklearn pipeline support (e.g. get_params())
 	# Check density structure of transformed matrix, if its too dense, sparsesvd is going to suck
+	# Compress hdf output
 class VSMVectorizer(BaseEstimator, VectorizerMixin):
 	def __init__(self, window_size, weighting='ppmi', min_frequency=0, lowercase=True, stop_words=None, encoding='utf-8',
 				 max_features=None, preprocessor=None, tokenizer=None, analyzer='word', binary=False, sppmi_shift=1,
