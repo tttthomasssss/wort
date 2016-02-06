@@ -324,7 +324,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			else:
 				self.T_ = W
 
-		logging.info('Returning [density={}]...'.format(np.count_nonzero(self.T_) / (self.T_.shape[0] * self.T_.shape[1])))
+		logging.info('Returning [density={}]...'.format(len(self.T_.nonzero()[0]) / (self.T_.shape[0] * self.T_.shape[1])))
 
 		return self.T_
 
