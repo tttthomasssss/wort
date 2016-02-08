@@ -177,11 +177,11 @@ def vectorize_wikipedia():
 	if (not os.path.exists(out_path)):
 		os.makedirs(out_path)
 
-	vec = VSMVectorizer(window_size=5, min_frequency=100)
+	vec = VSMVectorizer(window_size=5, min_frequency=100, stop_words=stopwords.words('english'))
 
 	vec.fit(wiki_reader)
 
-	transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_models_new')
+	transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_models_new_no_stops')
 	if (not os.path.exists(transformed_out_path)):
 		os.makedirs(transformed_out_path)
 
