@@ -173,7 +173,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		logging.info('Finished Extracting vocabulary! n_vocab={}'.format(n_vocab))
 
-		W = np.array(w, dtype=np.uint32)
+		W = np.array(w, dtype=np.uint64)
 		self.index_ = dict(zip(self.inverted_index_.values(), self.inverted_index_.keys()))
 
 		logging.info('Filtering extremes...')
