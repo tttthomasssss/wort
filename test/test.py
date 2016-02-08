@@ -177,7 +177,7 @@ def vectorize_wikipedia():
 	if (not os.path.exists(out_path)):
 		os.makedirs(out_path)
 
-	vec = VSMVectorizer(window_size=5, min_frequency=100, stop_words=stopwords.words('english'))
+	vec = VSMVectorizer(window_size=5, min_frequency=100)
 
 	vec.fit(wiki_reader)
 
@@ -263,11 +263,11 @@ def vectorize_kafka():
 
 if (__name__ == '__main__'):
 	#transform_wikipedia_from_cache()
-	#vectorize_wikipedia()
+	vectorize_wikipedia()
 	#vectorize_kafka()
 	#test_wikipedia()
 	#test_movie_reviews()
 	#test_movie_reviews_from_cache()
-	test_frost()
+	#test_frost()
 	#test_discoutils_loader()
 	#test_hdf()

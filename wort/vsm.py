@@ -28,6 +28,7 @@ from wort import utils
 	# Better sklearn pipeline support (e.g. get_params())
 	# Check density structure of transformed matrix, if its too dense, sparsesvd is going to suck
 	# Compress hdf output
+	# Cythonize spare matrix constructions(?)
 class VSMVectorizer(BaseEstimator, VectorizerMixin):
 	def __init__(self, window_size, weighting='ppmi', min_frequency=0, lowercase=True, stop_words=None, encoding='utf-8',
 				 max_features=None, preprocessor=None, tokenizer=None, analyzer='word', binary=False, sppmi_shift=1,
@@ -216,20 +217,20 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			l = len(buffer)
 			for i in range(l):
 				# Backward co-occurrences
-				logging.info('BACKWARD RANGE: {}'.format(list(range(max(i-self.window_size, 0), i))))
+				#logging.info('BACKWARD RANGE: {}'.format(list(range(max(i-self.window_size, 0), i))))
 				for distance, j in enumerate(range(max(i-self.window_size, 0), i), 1):
 					rows.append(buffer[i])
 					cols.append(buffer[j])
 					data.append(window_weighting_fn(distance))
-					logging.info('BWD DISTANCE: {}; WORD={}'.format(distance, self.index_[buffer[j]]))
+					#logging.info('BWD DISTANCE: {}; WORD={}'.format(distance, self.index_[buffer[j]]))
 
 				# Forward co-occurrences
-				logging.info('FORWARD RANGE: {}'.format(list(range(i+1, min(i+self.window_size+1, l)))))
+				#logging.info('FORWARD RANGE: {}'.format(list(range(i+1, min(i+self.window_size+1, l)))))
 				for distance, j in enumerate(range(i+1, min(i+self.window_size+1, l)), 1):
 					rows.append(buffer[i])
 					cols.append(buffer[j])
 					data.append(window_weighting_fn(distance))
-					logging.info('FWD DISTANCE: {}; WORD={}'.format(distance, self.index_[buffer[j]]))
+					#logging.info('FWD DISTANCE: {}; WORD={}'.format(distance, self.index_[buffer[j]]))
 
 		logging.info('Creating sparse matrix...')
 		data = np.array(data, dtype=np.uint64 if self.context_window_weighting == 'constant' else np.float64, copy=False)
@@ -280,7 +281,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 
 		# The product of all P(w) and P(c) marginals is the outer product of p_w and p_c
-		P_wc_marginals = np.outer(self.p_w_, p_c)
+		P_wc_marginals = np.outer(self.p_w_, p_c) # TODO: Cythonize?
 
 		logging.info('Taking logs...')
 
