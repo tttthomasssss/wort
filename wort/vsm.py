@@ -268,7 +268,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		logging.info('New p_w_ shape={}; M.sum(axis=1) shape={}'.format(self.p_w_.reshape(-1, 1).shape, self.M_.sum(axis=1).shape)) # TODO: THE ERROR IS IN ONE OF THE TWO CALLS!!!!!!!!
 		P_w.setdiag((self.p_w_.reshape(-1, 1) / self.M_.sum(axis=1)))
 
-		logging.info('Calculating Joints...')
+		logging.info('Calculating Joints...') #TODO: check if this is correct!
 
 		P_w_c = P_w * self.M_
 
@@ -284,17 +284,6 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		P_wc_marginals = np.outer(self.p_w_, p_c) # TODO: Cythonize?
 
 		logging.info('Taking logs...')
-
-		# PMI matrix is then the log difference between the joints and the marginals
-		##----------------- O L D
-		#P_w_c.data = np.log(P_w_c.data) # P_w_c is a sparse matrix (csr)
-		#P_wc_marginals = np.log(P_wc_marginals) # P_wc_marginals is dense (np.ndarray)
-
-		#PMI = np.asarray(P_w_c - P_wc_marginals)
-
-		# Apply PMI variant (e.g. PPMI, SPPMI, PLMI or PNPMI) and apply threshold
-		#self.T_ = np.maximum(0, self._apply_weight_option(PMI, P_w_c, p_c))
-		##------------------
 
 		##------------------ N E W
 		logging.info('Construction the COO PMI matrix')
