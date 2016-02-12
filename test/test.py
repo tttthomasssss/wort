@@ -15,6 +15,7 @@ from wort.vsm import VSMVectorizer
 from wort.corpus_readers import FrostReader
 from wort.corpus_readers import MovieReviewReader
 from wort.corpus_readers import CSVStreamReader
+from wort.datasets import fetch_miller_charles_30_dataset
 from wort.datasets import fetch_rubinstein_goodenough_65_dataset
 
 
@@ -278,6 +279,26 @@ def test_rg65_loader():
 	print(ds)
 
 
+def test_mc30_evaluation():
+	ds = fetch_miller_charles_30_dataset()
+
+	print('Loading Wort Model...')
+	p = '/Users/thomas/DevSandbox/EpicDataShelf/tag-lab/wikipedia/wort_models/wort_models_cds-0.75_pmi-ppmi_ws-5_wctx-harmonic'
+	wort_model = VSMVectorizer.load_from_file(path=p)
+	print('Wort model loaded!')
+
+	scores = []
+	human_sims = []
+	for w1, w2, sim in ds:
+		if (w1 not in wort_model or w2 not in wort_model):
+			print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
+		else:
+			human_sims.append(sim)
+			scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
+
+	print('Spearman Rho: {}'.format(spearmanr(np.array(human_sims), np.array(scores))))
+
+
 def test_rg65_evaluation():
 	ds = fetch_rubinstein_goodenough_65_dataset()
 
@@ -308,4 +329,5 @@ if (__name__ == '__main__'):
 	#test_discoutils_loader()
 	#test_hdf()
 	#test_rg65_loader()
-	test_rg65_evaluation()
+	#test_rg65_evaluation()
+	test_mc30_evaluation()
