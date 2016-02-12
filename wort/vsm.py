@@ -37,8 +37,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				 max_features=None, preprocessor=None, tokenizer=None, analyzer='word', binary=False, sppmi_shift=1,
 				 token_pattern=r'(?u)\b\w\w+\b', decode_error='strict', strip_accents=None, input='content',
 				 ngram_range=(1, 1), cds=1., dim_reduction=None, svd_dim=None, svd_eig_weighting=1,
-				 context_window_weighting='constant', add_context_vectors=True, cache_intermediary_results=False,
-				 cache_path=None, log_level=logging.INFO, log_file=None):
+				 context_window_weighting='constant', add_context_vectors=True, word_white_list = None,
+				 cache_intermediary_results=False, cache_path=None, log_level=logging.INFO, log_file=None):
 		"""
 		TODO: documentation...
 		:param window_size:
@@ -64,6 +64,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		:param svd_eig_weighting:
 		:param context_window_weighting: weighting of the context window under consideration (must be either "constant", "harmonic", "distance" or "aggressive")
 		:param add_context_vectors:
+		:param word_white_list:
 		:param cache_intermediary_results:
 		:param cache_path:
 		:param log_level:
@@ -94,6 +95,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.svd_eig_weighting = svd_eig_weighting
 		self.dim_reduction = dim_reduction
 		self.add_context_vectors = add_context_vectors
+		self.word_white_list = word_white_list
 		self.cache_intermediary_results = cache_intermediary_results
 		self.cache_path = cache_path
 
@@ -190,7 +192,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		logging.info('Filtering extremes...')
 		# Filter extremes
-		if (self.min_frequency > 0):
+		if (self.min_frequency > 0): #TODO take whitelist into account!!!
 			idx = np.where(W < self.min_frequency)[0]
 			W = self._delete_from_vocab(W, idx)
 
