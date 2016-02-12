@@ -34,30 +34,30 @@ def sparse_matrix_to_hdf(obj, path, name):
 		raise ValueError('Type {} not yet supported for serialisation!'.format(type(obj)))
 
 
-def hdf_to_sparse_matrix(path, sparse_format):
+def hdf_to_sparse_matrix(path, name, sparse_format):
 	if (sparse_format in ['csr', 'csc']):
-		return hdf_to_sparse_csx_matrix(path, sparse_format)
+		return hdf_to_sparse_csx_matrix(path, name, sparse_format)
 	elif (sparse_format == 'coo'):
-		return hdf_to_sparse_coo_matrix(path)
+		return hdf_to_sparse_coo_matrix(path, name)
 	else:
 		raise ValueError('Sparse format "{}" not yet supported for de-serialisation!'.format(sparse_format))
 
 
-def hdf_to_sparse_csx_matrix(path, sparse_format):
-	attrs = _get_attrs_from_hdf_file(path, 'csx', ['data', 'indices', 'indptr', 'shape'])
+def hdf_to_sparse_csx_matrix(path, name, sparse_format):
+	attrs = _get_attrs_from_hdf_file(path, name, 'csx', ['data', 'indices', 'indptr', 'shape'])
 	constructor = getattr(sparse, '{}_matrix'.format(sparse_format))
 
 	return constructor(tuple(attrs[:3]), shape=tuple(attrs[3]))
 
 
-def hdf_to_sparse_coo_matrix(path):
-	attrs = _get_attrs_from_hdf_file(path, 'coo', ['data', 'rows', 'cols', 'shape'])
+def hdf_to_sparse_coo_matrix(path, name):
+	attrs = _get_attrs_from_hdf_file(path, name, 'coo', ['data', 'rows', 'cols', 'shape'])
 
 	return sparse.coo_matrix((attrs[0], tuple(attrs[1:3])), shape=attrs[3])
 
 
-def _get_attrs_from_hdf_file(path, sparse_format, attributes):
-	with tables.open_file(os.path.join(path, '{}_matrix.hdf'.format(sparse_format)), 'r') as f:
+def _get_attrs_from_hdf_file(path, name, sparse_format, attributes):
+	with tables.open_file(os.path.join(path, name), 'r') as f:
 		attrs = []
 		for attr in attributes:
 			attrs.append(getattr(f.root, '{}_{}'.format(sparse_format, attr)).read())

@@ -6,6 +6,7 @@ import os
 import sys
 
 from scipy import sparse
+from scipy.special import expit as sigmoid
 from sklearn.base import BaseEstimator
 from sklearn.feature_extraction.text import VectorizerMixin
 from sparsesvd import sparsesvd
@@ -29,6 +30,8 @@ from wort import utils
 	# Check density structure of transformed matrix, if its too dense, sparsesvd is going to suck
 	# Compress hdf output
 	# Cythonize spare matrix constructions(?)
+	# Also serialise vocab as part of the model, makes a faster __contains__ lookup
+	# Whitelist param - force keep particular words that would be filtered out otherwise
 class VSMVectorizer(BaseEstimator, VectorizerMixin):
 	def __init__(self, window_size, weighting='ppmi', min_frequency=0, lowercase=True, stop_words=None, encoding='utf-8',
 				 max_features=None, preprocessor=None, tokenizer=None, analyzer='word', binary=False, sppmi_shift=1,
@@ -139,13 +142,22 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		return 1
 
 	def _aggressive_window_weighting(self, distance):
-		return 2 ** (1 - distance)
+		return 2 ** (1 - abs(distance))
+
+	def _very_aggressive_window_weighting(self, distance):
+		return 2 ** (1 - (distance ** 2))
 
 	def _harmonic_window_weighting(self, distance):
-		return 1. / distance # Thats what GloVe is doing
+		return 1. / abs(distance) # Thats what GloVe is doing
 
 	def _distance_window_weighting(self, distance):
-		return (self.window_size - distance) / self.window_size # Thats what word2vec is doing
+		return (self.window_size - abs(distance)) / self.window_size # Thats what word2vec is doing
+
+	def _sigmoid_window_weighting(self, distance):
+		return sigmoid(distance)
+
+	def _inverse_sigmoid_window_weighting(self, distance):
+		return 1 - sigmoid(distance)
 
 	def _construct_cooccurrence_matrix(self, raw_documents):
 		analyser = self.build_analyzer()
@@ -221,7 +233,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				for distance, j in enumerate(range(max(i-self.window_size, 0), i), 1):
 					rows.append(buffer[i])
 					cols.append(buffer[j])
-					data.append(window_weighting_fn(distance))
+					data.append(window_weighting_fn(-distance)) # The -distance is a bit of an ugly hack to support non-symmetric weighting
 					#logging.info('BWD DISTANCE: {}; WORD={}'.format(distance, self.index_[buffer[j]]))
 
 				# Forward co-occurrences
@@ -401,14 +413,17 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		return self.inverted_index_
 
 	def __getitem__(self, item):
-		self.T_[self.inverted_index_[item]]
+		return self.T_[self.inverted_index_[item]]
+
+	def __contains__(self, item):
+		return item in self.inverted_index_
 
 	@classmethod
 	def load_from_file(cls, path, as_dict=False):
 		model = VSMVectorizer(window_size=5)
 
 		logging.info('Loading hdf file...')
-		model.T_ = utils.hdf_to_sparse_csx_matrix(path, 'T.hdf')
+		model.T_ = utils.hdf_to_sparse_csx_matrix(path, 'T.hdf', sparse_format='csr') # TODO: static hack on sparse_format!!!
 		logging.info('Loading rest...')
 		model.index_ = joblib.load(os.path.join(path, 'index.joblib'))
 		model.inverted_index_ = joblib.load(os.path.join(path, 'inverted_index.joblib'))

@@ -8,11 +8,14 @@ import joblib
 import numpy as np
 
 from common import paths
+from scipy.spatial.distance import cosine
+from scipy.stats import spearmanr
 from wort import utils
 from wort.vsm import VSMVectorizer
 from wort.corpus_readers import FrostReader
 from wort.corpus_readers import MovieReviewReader
 from wort.corpus_readers import CSVStreamReader
+from wort.datasets import fetch_rubinstein_goodenough_65_dataset
 
 
 def test_hdf():
@@ -269,9 +272,34 @@ def vectorize_kafka():
 		print('\t[SIM=%.4f] WORD=%s; MOST SIMILAR=%s' % (min_dist, w, vec.index_[min_idx]))
 
 
+def test_rg65_loader():
+	ds = fetch_rubinstein_goodenough_65_dataset()
+
+	print(ds)
+
+
+def test_rg65_evaluation():
+	ds = fetch_rubinstein_goodenough_65_dataset()
+
+	print('Loading Wort Model...')
+	p = '/Users/thomas/DevSandbox/EpicDataShelf/tag-lab/wikipedia/wort_models/wort_models_cds-0.75_pmi-ppmi_ws-5_wctx-harmonic'
+	wort_model = VSMVectorizer.load_from_file(path=p)
+	print('Wort model loaded!')
+
+	scores = []
+	human_sims = []
+	for w1, w2, sim in ds:
+		if (w1 not in wort_model or w2 not in wort_model):
+			print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
+		else:
+			human_sims.append(sim)
+			scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
+
+	print('Spearman Rho: {}'.format(spearmanr(np.array(human_sims), np.array(scores))))
+
 if (__name__ == '__main__'):
 	#transform_wikipedia_from_cache()
-	vectorize_wikipedia()
+	#vectorize_wikipedia()
 	#vectorize_kafka()
 	#test_wikipedia()
 	#test_movie_reviews()
@@ -279,3 +307,5 @@ if (__name__ == '__main__'):
 	#test_frost()
 	#test_discoutils_loader()
 	#test_hdf()
+	#test_rg65_loader()
+	test_rg65_evaluation()
