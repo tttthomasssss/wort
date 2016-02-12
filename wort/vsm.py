@@ -264,7 +264,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		elif (self.weighting == 'pnpmi'):
 			raise NotImplementedError #(P_w_c[idx, row] * (1 / -(np.log(p_c)))) * pmi # TODO
 		elif (self.weighting == 'sppmi'):
-			return PMI - np.log(self.sppmi_shift)
+			PMI.data -= np.log(self.sppmi_shift) # Maintain sparsity structure!
+			return PMI
 
 	def _weight_transformation(self):
 		logging.info('Applying {} weight transformation...'.format(self.weighting))
