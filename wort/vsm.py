@@ -37,7 +37,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				 max_features=None, preprocessor=None, tokenizer=None, analyzer='word', binary=False, sppmi_shift=1,
 				 token_pattern=r'(?u)\b\w\w+\b', decode_error='strict', strip_accents=None, input='content',
 				 ngram_range=(1, 1), cds=1., dim_reduction=None, svd_dim=None, svd_eig_weighting=1,
-				 context_window_weighting='constant', add_context_vectors=True, word_white_list = None,
+				 context_window_weighting='constant', add_context_vectors=True, word_white_list=[],
 				 cache_intermediary_results=False, cache_path=None, log_level=logging.INFO, log_file=None):
 		"""
 		TODO: documentation...
@@ -166,12 +166,13 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		n_vocab = -1
 		w = array.array('i')
+		white_list_idx = set()
 
 		# Extract vocabulary
 		logging.info('Extracting vocabulary...')
 		for doc in tqdm(raw_documents):
 			for feature in analyser(doc):
-				idx = self.inverted_index_.get(feature, n_vocab + 1)
+				idx = self.inverted_index_.get(feature, n_vocab+1)
 
 				# Build vocab
 				if (idx > n_vocab):
@@ -181,6 +182,10 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				else:
 					w[idx] += 1
 
+				# Build white_list index
+				if (feature in self.word_white_list):
+					white_list_idx.add(idx)
+
 		# Vocab was used for indexing (hence, started at 0 for the first item (NOT init!)), so has to be incremented by 1
 		# to reflect the true vocab count
 		n_vocab += 1
@@ -188,12 +193,17 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		logging.info('Finished Extracting vocabulary! n_vocab={}'.format(n_vocab))
 
 		W = np.array(w, dtype=np.uint64)
+		L = np.array(white_list_idx, dtype=np.uint64)
 		self.index_ = dict(zip(self.inverted_index_.values(), self.inverted_index_.keys()))
 
 		logging.info('Filtering extremes...')
 		# Filter extremes
-		if (self.min_frequency > 0): #TODO take whitelist into account!!!
+		if (self.min_frequency > 0):
 			idx = np.where(W < self.min_frequency)[0]
+
+			if (len(self.word_white_list) > 0): # Take word_white_list into account - TODO: is there a better way?
+				idx = np.array(list(set(idx.tolist()) - white_list_idx))
+
 			W = self._delete_from_vocab(W, idx)
 
 			n_vocab -= len(idx)
@@ -201,6 +211,10 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# Max Features Filter
 		if (self.max_features is not None and self.max_features < n_vocab):
 			idx = np.argpartition(-W, self.max_features)[self.max_features:]
+
+			if (len(self.word_white_list) > 0): # Take word_white_list into account - TODO: is there a better way?
+				idx = np.array(list(set(idx.tolist()) - white_list_idx))
+
 			W = self._delete_from_vocab(W, idx)
 
 			n_vocab -= len(idx)
@@ -300,7 +314,6 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		logging.info('Taking logs...')
 
-		##------------------ N E W
 		logging.info('Construction the COO PMI matrix')
 		# Construct another COO matrix and convert it to a CSR as we go and ...
 		data = np.log(P_w_c.data / P_wc_marginals[P_w_c.nonzero()]) # Doing the division first maintains the sparsity of the matrix
@@ -314,8 +327,6 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# Apply threshold
 		self.T_ = PMI.maximum(0)
 		logging.info('PMI ALL DONE [type(self.T_)={}]'.format(type(self.T_)))
-
-		##------------------
 
 		# Apply SVD
 		if (self.dim_reduction == 'svd'):

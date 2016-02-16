@@ -173,6 +173,8 @@ def test_wikipedia():
 
 def vectorize_wikipedia():
 	from discoutils.thesaurus_loader import Vectors
+	from wort.datasets import get_miller_charles_30_words
+	from wort.datasets import get_rubinstein_goodenough_65_words
 
 	p = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wikipedia_utf8_filtered_20pageviews_lc_noid.tsv')
 	wiki_reader = CSVStreamReader(p, delimiter='\t')
@@ -181,56 +183,28 @@ def vectorize_wikipedia():
 	if (not os.path.exists(out_path)):
 		os.makedirs(out_path)
 
-	for cds in [0.75]:
-		for pmi_type in ['sppmi', 'ppmi']:
-			for window_size in [5, 10]:
-				for weighting in ['harmonic', 'distance', 'constant', 'aggressive']:
-					print('CONFIG: cds={}; pmi={}; window_size={}; context_weighting={}'.format(cds, pmi_type, window_size, weighting))
-					vec = VSMVectorizer(window_size=window_size, max_features=10000, stop_words=stopwords.words('english'),
-										cds=cds, weighting=pmi_type, context_window_weighting=weighting)
+	whitelist = list(get_miller_charles_30_words() | get_rubinstein_goodenough_65_words())
 
-					vec.fit(wiki_reader)
+	for pmi_type in ['sppmi', 'ppmi']:
+		for window_size in [2, 5]:
+			print('CONFIG: pmi_type={}; window_size={}...'.format(pmi_type, window_size))
+			vec = VSMVectorizer(window_size=window_size, min_frequency=100, cds=0.75, weighting=pmi_type, sppmi_shift=5,
+								word_white_list=whitelist)
 
-					transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_models_cds-{}_pmi-{}_ws-{}_wctx-{}'.format(
-						cds, pmi_type, window_size, weighting
-					))
-					if (not os.path.exists(transformed_out_path)):
-						os.makedirs(transformed_out_path)
+			vec.fit(wiki_reader)
 
-					try:
-						print('Saving to file')
-						vec.save_to_file(transformed_out_path)
-						print('Doing the DisCo business...')
-					except OSError as ex:
-						print('FAILFAILFAIL: {}'.format(ex))
+			transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_model_pmi-{}_window-{}'.format(
+				pmi_type, window_size
+			))
+			if (not os.path.exists(transformed_out_path)):
+				os.makedirs(transformed_out_path)
 
-					print('DiscoDiscoDiscoDisco stuff')
-					disco_vectors = Vectors.from_wort_model(vec)
-					print('Disco model done!')
-					disco_vectors.init_sims(n_neighbors=10, knn='brute', nn_metric='cosine')
-					print('init sims done!')
-
-					print('good: {}'.format(disco_vectors.get_nearest_neighbours('good')))
-					print('bad: {}'.format(disco_vectors.get_nearest_neighbours('bad')))
-					print('terrible: {}'.format(disco_vectors.get_nearest_neighbours('terrible')))
-					print('boring: {}'.format(disco_vectors.get_nearest_neighbours('boring')))
-					print('exciting: {}'.format(disco_vectors.get_nearest_neighbours('exciting')))
-					print('movie: {}'.format(disco_vectors.get_nearest_neighbours('movie')))
-					print('film: {}'.format(disco_vectors.get_nearest_neighbours('film')))
-					print('book: {}'.format(disco_vectors.get_nearest_neighbours('book')))
-					print('watch: {}'.format(disco_vectors.get_nearest_neighbours('watch')))
-					print('hero: {}'.format(disco_vectors.get_nearest_neighbours('hero')))
-					print('heroine: {}'.format(disco_vectors.get_nearest_neighbours('heroine')))
-					print('music: {}'.format(disco_vectors.get_nearest_neighbours('music')))
-					print('plot: {}'.format(disco_vectors.get_nearest_neighbours('plot')))
-					print('cinematography: {}'.format(disco_vectors.get_nearest_neighbours('cinematography')))
-					print('actor: {}'.format(disco_vectors.get_nearest_neighbours('actor')))
-					print('star: {}'.format(disco_vectors.get_nearest_neighbours('star')))
-					print('blind: {}'.format(disco_vectors.get_nearest_neighbours('blind')))
-					print('friend: {}'.format(disco_vectors.get_nearest_neighbours('friend')))
-					print('companion: {}'.format(disco_vectors.get_nearest_neighbours('companion')))
-					print('cat: {}'.format(disco_vectors.get_nearest_neighbours('cat')))
-					print('dog: {}'.format(disco_vectors.get_nearest_neighbours('dog')))
+			try:
+				print('Saving to file')
+				vec.save_to_file(transformed_out_path)
+				print('Doing the DisCo business...')
+			except OSError as ex:
+				print('FAILFAILFAIL: {}'.format(ex))
 
 
 def vectorize_kafka():
