@@ -37,7 +37,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				 max_features=None, preprocessor=None, tokenizer=None, analyzer='word', binary=False, sppmi_shift=1,
 				 token_pattern=r'(?u)\b\w\w+\b', decode_error='strict', strip_accents=None, input='content',
 				 ngram_range=(1, 1), cds=1., dim_reduction=None, svd_dim=None, svd_eig_weighting=1,
-				 context_window_weighting='constant', add_context_vectors=True, word_white_list=[],
+				 context_window_weighting='constant', add_context_vectors=True, word_white_list=set(),
 				 cache_intermediary_results=False, cache_path=None, log_level=logging.INFO, log_file=None):
 		"""
 		TODO: documentation...

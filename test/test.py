@@ -183,7 +183,7 @@ def vectorize_wikipedia():
 	if (not os.path.exists(out_path)):
 		os.makedirs(out_path)
 
-	whitelist = list(get_miller_charles_30_words() | get_rubinstein_goodenough_65_words())
+	whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words()
 
 	print('Word whitelist contains {} words!'.format(len(whitelist)))
 
