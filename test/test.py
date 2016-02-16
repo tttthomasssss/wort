@@ -185,6 +185,8 @@ def vectorize_wikipedia():
 
 	whitelist = list(get_miller_charles_30_words() | get_rubinstein_goodenough_65_words())
 
+	print('Word whitelist contains {} words!'.format(len(whitelist)))
+
 	for pmi_type in ['sppmi', 'ppmi']:
 		for window_size in [2, 5]:
 			print('CONFIG: pmi_type={}; window_size={}...'.format(pmi_type, window_size))
@@ -294,7 +296,7 @@ def test_rg65_evaluation():
 
 if (__name__ == '__main__'):
 	#transform_wikipedia_from_cache()
-	#vectorize_wikipedia()
+	vectorize_wikipedia()
 	#vectorize_kafka()
 	#test_wikipedia()
 	#test_movie_reviews()
@@ -304,4 +306,4 @@ if (__name__ == '__main__'):
 	#test_hdf()
 	#test_rg65_loader()
 	#test_rg65_evaluation()
-	test_mc30_evaluation()
+	#test_mc30_evaluation()
