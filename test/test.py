@@ -205,12 +205,12 @@ def vectorize_wikipedia():
 				if (not os.path.exists(transformed_out_path)):
 					os.makedirs(transformed_out_path)
 
-				try:
-					print('Saving to file')
-					vec.save_to_file(transformed_out_path)
-					print('Doing the DisCo business...')
-				except OSError as ex:
-					print('FAILFAILFAIL: {}'.format(ex))
+					try:
+						print('Saving to file')
+						vec.save_to_file(transformed_out_path)
+						print('Doing the DisCo business...')
+					except OSError as ex:
+						print('FAILFAILFAIL: {}'.format(ex))
 
 
 def vectorize_kafka():
