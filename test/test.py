@@ -284,7 +284,7 @@ def test_mc30_evaluation():
 		print('[MC30] Spearman Rho: {}'.format(spearman))
 		print('==================================================================================')
 
-		return scores_by_model
+	return scores_by_model
 
 
 def test_rg65_evaluation():
@@ -314,7 +314,7 @@ def test_rg65_evaluation():
 		print('[RG65] Spearman Rho: {}'.format(spearman))
 		print('==================================================================================')
 
-		return scores_by_model
+	return scores_by_model
 
 if (__name__ == '__main__'):
 	#transform_wikipedia_from_cache()
