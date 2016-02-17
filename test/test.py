@@ -186,30 +186,31 @@ def vectorize_wikipedia():
 	if (not os.path.exists(out_path)):
 		os.makedirs(out_path)
 
-	whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words()
+	whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words()
 
 	print('Word whitelist contains {} words!'.format(len(whitelist)))
 
-	for pmi_type in ['sppmi', 'ppmi']:
-		for window_size in [2, 5]:
-			print('CONFIG: pmi_type={}; window_size={}...'.format(pmi_type, window_size))
-			vec = VSMVectorizer(window_size=window_size, min_frequency=100, cds=0.75, weighting=pmi_type, sppmi_shift=5,
-								word_white_list=whitelist)
+	for dim_reduction in [None, 'svd']:
+		for pmi_type in ['sppmi', 'ppmi']:
+			for window_size in [2, 5]:
+				print('CONFIG: pmi_type={}; window_size={}; dim_reduction={}...'.format(pmi_type, window_size, dim_reduction))
+				vec = VSMVectorizer(window_size=window_size, min_frequency=100, cds=0.75, weighting=pmi_type, sppmi_shift=5,
+									word_white_list=whitelist, svd_dim=600, svd_eig_weighting=0.5, dim_reduction=dim_reduction)
 
-			vec.fit(wiki_reader)
+				vec.fit(wiki_reader)
 
-			transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_model_pmi-{}_window-{}'.format(
-				pmi_type, window_size
-			))
-			if (not os.path.exists(transformed_out_path)):
-				os.makedirs(transformed_out_path)
+				transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_model_pmi-{}_window-{}_dim-{}'.format(
+					pmi_type, window_size, dim_reduction
+				))
+				if (not os.path.exists(transformed_out_path)):
+					os.makedirs(transformed_out_path)
 
-			try:
-				print('Saving to file')
-				vec.save_to_file(transformed_out_path)
-				print('Doing the DisCo business...')
-			except OSError as ex:
-				print('FAILFAILFAIL: {}'.format(ex))
+				try:
+					print('Saving to file')
+					vec.save_to_file(transformed_out_path)
+					print('Doing the DisCo business...')
+				except OSError as ex:
+					print('FAILFAILFAIL: {}'.format(ex))
 
 
 def vectorize_kafka():
@@ -335,6 +336,7 @@ def test_ws353_loader():
 	ds = fetch_ws353_dataset(subset='set2')
 	print('Original Set 2:\n{}'.format(ds))
 
+
 def test_ws353_words_loader():
 	ds = get_ws353_words(similarity_type='similarity')
 	print('Similarity[len={}]:\n{}'.format(len(ds), ds))
@@ -353,7 +355,7 @@ def test_ws353_words_loader():
 
 if (__name__ == '__main__'):
 	#transform_wikipedia_from_cache()
-	#vectorize_wikipedia()
+	vectorize_wikipedia()
 	#vectorize_kafka()
 	#test_wikipedia()
 	#test_movie_reviews()
@@ -368,4 +370,4 @@ if (__name__ == '__main__'):
 	#print('RG65 SCORES: {}'.format(json.dumps(rg65_scores, indent=4)))
 	#print('MC30 SCORES: {}'.format(json.dumps(mc30_scores, indent=4)))
 
-	test_ws353_words_loader()
+	#test_ws353_words_loader()
