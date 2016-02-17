@@ -18,6 +18,8 @@ from wort.corpus_readers import MovieReviewReader
 from wort.corpus_readers import CSVStreamReader
 from wort.datasets import fetch_miller_charles_30_dataset
 from wort.datasets import fetch_rubinstein_goodenough_65_dataset
+from wort.datasets import fetch_ws353_dataset
+from wort.datasets import get_ws353_words
 
 
 def test_hdf():
@@ -316,6 +318,39 @@ def test_rg65_evaluation():
 
 	return scores_by_model
 
+
+def test_ws353_loader():
+	ds = fetch_ws353_dataset(similarity_type='similarity')
+	print('Similarity:\n{}'.format(ds))
+
+	ds = fetch_ws353_dataset(similarity_type='relatedness')
+	print('Relatedness:\n{}'.format(ds))
+
+	ds = fetch_ws353_dataset()
+	print('Original All:\n{}'.format(ds))
+
+	ds = fetch_ws353_dataset(subset='set1')
+	print('Original Set 1:\n{}'.format(ds))
+
+	ds = fetch_ws353_dataset(subset='set2')
+	print('Original Set 2:\n{}'.format(ds))
+
+def test_ws353_words_loader():
+	ds = get_ws353_words(similarity_type='similarity')
+	print('Similarity[len={}]:\n{}'.format(len(ds), ds))
+
+	ds = get_ws353_words(similarity_type='relatedness')
+	print('Relatedness[len={}]:\n{}'.format(len(ds), ds))
+
+	ds = get_ws353_words()
+	print('Original All[len={}]:\n{}'.format(len(ds), ds))
+
+	ds = get_ws353_words(subset='set1')
+	print('Original Set 1[len={}]:\n{}'.format(len(ds), ds))
+
+	ds = get_ws353_words(subset='set2')
+	print('Original Set 2[len={}]:\n{}'.format(len(ds), ds))
+
 if (__name__ == '__main__'):
 	#transform_wikipedia_from_cache()
 	#vectorize_wikipedia()
@@ -327,8 +362,10 @@ if (__name__ == '__main__'):
 	#test_discoutils_loader()
 	#test_hdf()
 	#test_rg65_loader()
-	rg65_scores = test_rg65_evaluation()
-	mc30_scores = test_mc30_evaluation()
+	#rg65_scores = test_rg65_evaluation()
+	#mc30_scores = test_mc30_evaluation()
+	#
+	#print('RG65 SCORES: {}'.format(json.dumps(rg65_scores, indent=4)))
+	#print('MC30 SCORES: {}'.format(json.dumps(mc30_scores, indent=4)))
 
-	print('RG65 SCORES: {}'.format(json.dumps(rg65_scores, indent=4)))
-	print('MC30 SCORES: {}'.format(json.dumps(mc30_scores, indent=4)))
+	test_ws353_words_loader()

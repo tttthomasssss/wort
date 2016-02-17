@@ -1,6 +1,50 @@
 __author__ = 'thomas'
+from io import BytesIO
+from zipfile import ZipFile
 import os
+import tarfile
 import urllib
+
+
+def get_ws353_words(data_home='~/.wort_data', subset='all', similarity_type=None):
+	data_home = os.path.expanduser(data_home) if '~' in data_home else data_home
+
+	if (similarity_type == 'similarity' or similarity_type == 'relatedness'):
+		if (not os.path.exists(os.path.join(data_home, 'ws353', 'wordsim353_sim_rel', 'ws353_{}_wort.txt'.format(similarity_type)))):
+			ds = fetch_ws353_dataset(data_home=data_home, subset=subset, similarity_type=similarity_type)
+
+			words = set()
+			for w1, w2, _ in ds:
+				if (w1 != ''):
+					words.add(w1)
+				if (w2 != ''):
+					words.add(w2)
+
+			with open(os.path.join(data_home, 'ws353', 'wordsim353_sim_rel', 'ws353_{}_wort.txt'.format(similarity_type)), 'w') as word_file:
+				for w in words:
+					word_file.write(w + '\n')
+		else:
+			with open(os.path.join(data_home, 'ws353', 'wordsim353_sim_rel', 'ws353_{}_wort.txt'.format(similarity_type)), 'r') as word_file:
+				words = set(word_file.read().split('\n'))
+	else:
+		if (not os.path.exists(os.path.join(data_home, 'ws353', 'original', 'ws353_{}_wort.txt'.format(subset)))):
+			ds = fetch_ws353_dataset(data_home=data_home, subset=subset, similarity_type=similarity_type)
+
+			words = set()
+			for w1, w2, _ in ds:
+				if (w1 != ''):
+					words.add(w1)
+				if (w2 != ''):
+					words.add(w2)
+
+			with open(os.path.join(data_home, 'ws353', 'original', 'ws353_{}_wort.txt'.format(subset)), 'w') as word_file:
+				for w in words:
+					word_file.write(w + '\n')
+		else:
+			with open(os.path.join(data_home, 'ws353', 'original', 'ws353_{}_wort.txt'.format(subset)), 'r') as word_file:
+				words = set(word_file.read().split('\n'))
+
+	return words
 
 
 def get_rubinstein_goodenough_65_words(data_home='~/.wort_data'):
@@ -45,13 +89,56 @@ def get_miller_charles_30_words(data_home='~/.wort_data'):
 	return words
 
 
-def fetch_ws353_dataset(data_home='~/.wort_data'):
-	url = 'http://www.cs.technion.ac.il/~gabr/resources/data/wordsim353/wordsim353.zip'
-
+def fetch_ws353_dataset(data_home='~/.wort_data', subset='all', similarity_type=None):
 	data_home = os.path.expanduser(data_home) if '~' in data_home else data_home
+	ds_home = os.path.join(data_home, 'ws353')
 
-	if (not os.path.exists(data_home)):
-		os.makedirs(data_home)
+	if (not os.path.exists(ds_home)):
+		os.makedirs(ds_home)
+
+	if (similarity_type == 'similarity' or similarity_type == 'relatedness'):
+		if (not os.path.exists(os.path.join(ds_home, 'wordsim353_sim_rel'))):
+			os.makedirs(os.path.join(ds_home, 'wordsim353_sim_rel'))
+
+			url = 'http://alfonseca.org/pubs/ws353simrel.tar.gz'
+			with urllib.request.urlopen(url) as ws353:
+				meta = ws353.info()
+				print('Downloading data from {} ({} mb)'.format(url, round(int(meta['Content-Length'])/1000)))
+
+				with tarfile.open(os.path.join(ds_home, 'simrel', 'ws353simrel.tar.gz'), 'r:gz', BytesIO(ws353.read())) as tar:
+					tar.extractall(path=os.path.join(ds_home))
+
+		fname = 'wordsim_similarity_goldstandard.txt' if (similarity_type == 'similarity') else 'wordsim_relatedness_goldstandard.txt'
+		fpath = os.path.join(ds_home, 'wordsim353_sim_rel')
+		skip_header = False
+
+	else:
+		if (not os.path.exists(os.path.join(ds_home, 'original'))):
+			os.makedirs(os.path.join(ds_home, 'original'))
+
+			url = 'http://www.cs.technion.ac.il/~gabr/resources/data/wordsim353/wordsim353.zip'
+			with urllib.request.urlopen(url) as ws353:
+				meta = ws353.info()
+				print('Downloading data from {} ({} mb)'.format(url, round(int(meta['Content-Length'])/1000)))
+
+				zip = ZipFile(BytesIO(ws353.read()))
+				zip.extractall(path=os.path.join(ds_home, 'original'))
+				zip.close()
+
+		fname = '{}.tab'.format(subset) if subset == 'set1' or subset == 'set2' else 'combined.tab'
+		fpath = os.path.join(ds_home, 'original')
+		skip_header = True
+
+	ds = []
+	with open(os.path.join(fpath, fname), 'r') as ws353_file:
+		if (skip_header):
+			next(ws353_file)
+
+		for line in ws353_file:
+			parts = line.strip().lower().split('\t')
+			ds.append((parts[0].strip(), parts[1].strip(), float(parts[2].strip())))
+
+	return ds
 
 
 def fetch_rubinstein_goodenough_65_dataset(data_home='~/.wort_data'):
@@ -64,6 +151,8 @@ def fetch_rubinstein_goodenough_65_dataset(data_home='~/.wort_data'):
 			os.makedirs(data_home)
 
 		with urllib.request.urlopen(url) as rg65:
+			meta = rg65.info()
+			print('Downloading data from {} ({} b)'.format(url, int(meta['Content-Length'])))
 			data = rg65.read().decode('utf-8')
 
 		with open(os.path.join(data_home, 'en_rg_65.txt'), 'w') as f_out:
@@ -90,8 +179,10 @@ def fetch_miller_charles_30_dataset(data_home='~/.wort_data'):
 		if (not os.path.exists(data_home)):
 			os.makedirs(data_home)
 
-		with urllib.request.urlopen(url) as rg65:
-			data = rg65.read().decode('utf-8')
+		with urllib.request.urlopen(url) as mc30:
+			meta = mc30.info()
+			print('Downloading data from {} ({} b)'.format(url, int(meta['Content-Length'])))
+			data = mc30.read().decode('utf-8')
 
 		with open(os.path.join(data_home, 'en_mc_30.txt'), 'w') as f_out:
 			f_out.write(data)
