@@ -194,16 +194,17 @@ def vectorize_wikipedia():
 		for pmi_type in ['sppmi', 'ppmi']:
 			for window_size in [2, 5]:
 				print('CONFIG: pmi_type={}; window_size={}; dim_reduction={}...'.format(pmi_type, window_size, dim_reduction))
-				vec = VSMVectorizer(window_size=window_size, min_frequency=100, cds=0.75, weighting=pmi_type, sppmi_shift=5,
-									word_white_list=whitelist, svd_dim=600, svd_eig_weighting=0.5, dim_reduction=dim_reduction)
-
-				vec.fit(wiki_reader)
-
 				transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_model_pmi-{}_window-{}_dim-{}'.format(
 					pmi_type, window_size, dim_reduction
 				))
 				if (not os.path.exists(transformed_out_path)):
-					os.makedirs(transformed_out_path)
+					vec = VSMVectorizer(window_size=window_size, min_frequency=100, cds=0.75, weighting=pmi_type, sppmi_shift=5,
+										word_white_list=whitelist, svd_dim=600, svd_eig_weighting=0.5, dim_reduction=dim_reduction)
+
+					vec.fit(wiki_reader)
+
+					if (not os.path.exists(transformed_out_path)):
+						os.makedirs(transformed_out_path)
 
 					try:
 						print('Saving to file')
@@ -211,6 +212,8 @@ def vectorize_wikipedia():
 						print('Doing the DisCo business...')
 					except OSError as ex:
 						print('FAILFAILFAIL: {}'.format(ex))
+				else:
+					print('{} already exists!'.format(transformed_out_path))
 
 
 def vectorize_kafka():
