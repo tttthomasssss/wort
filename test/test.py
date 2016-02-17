@@ -258,45 +258,52 @@ def test_rg65_loader():
 def test_mc30_evaluation():
 	ds = fetch_miller_charles_30_dataset()
 
-	print('Loading Wort Model...')
-	p = '/Users/thomas/DevSandbox/EpicDataShelf/tag-lab/wikipedia/wort_models/wort_models_cds-0.75_pmi-ppmi_ws-5_wctx-harmonic'
-	wort_model = VSMVectorizer.load_from_file(path=p)
-	print('Wort model loaded!')
+	base_path = paths.get_dataset_path()
 
-	scores = []
-	human_sims = []
-	for w1, w2, sim in ds:
-		if (w1 not in wort_model or w2 not in wort_model):
-			print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
-		else:
-			human_sims.append(sim)
-			scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
+	for wort_model in ['wort_model_pmi-ppmi_window-2', 'wort_model_pmi-ppmi_window-5', 'wort_model_pmi-sppmi_window-2', 'wort_model_pmi-sppmi_window-5']:
+		print('Loading Wort Model: {}...'.format(wort_model))
+		wort_path = os.path.join(base_path, wort_model)
+		wort_model = VSMVectorizer.load_from_file(path=wort_path)
+		print('Wort model loaded!')
 
-	print('Spearman Rho: {}'.format(spearmanr(np.array(human_sims), np.array(scores))))
+		scores = []
+		human_sims = []
+		for w1, w2, sim in ds:
+			if (w1 not in wort_model or w2 not in wort_model):
+				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
+			else:
+				human_sims.append(sim)
+				scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
+
+		print('[MC30] Spearman Rho: {}'.format(spearmanr(np.array(human_sims), np.array(scores))))
+		print('==================================================================================')
 
 
 def test_rg65_evaluation():
 	ds = fetch_rubinstein_goodenough_65_dataset()
+	base_path = paths.get_dataset_path()
 
-	print('Loading Wort Model...')
-	p = '/Users/thomas/DevSandbox/EpicDataShelf/tag-lab/wikipedia/wort_models/wort_models_cds-0.75_pmi-ppmi_ws-5_wctx-harmonic'
-	wort_model = VSMVectorizer.load_from_file(path=p)
-	print('Wort model loaded!')
+	for wort_model in ['wort_model_pmi-ppmi_window-2', 'wort_model_pmi-ppmi_window-5', 'wort_model_pmi-sppmi_window-2', 'wort_model_pmi-sppmi_window-5']:
+		print('Loading Wort Model: {}...'.format(wort_model))
+		wort_path = os.path.join(base_path, wort_model)
+		wort_model = VSMVectorizer.load_from_file(path=wort_path)
+		print('Wort model loaded!')
 
-	scores = []
-	human_sims = []
-	for w1, w2, sim in ds:
-		if (w1 not in wort_model or w2 not in wort_model):
-			print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
-		else:
-			human_sims.append(sim)
-			scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
+		scores = []
+		human_sims = []
+		for w1, w2, sim in ds:
+			if (w1 not in wort_model or w2 not in wort_model):
+				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
+			else:
+				human_sims.append(sim)
+				scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
 
-	print('Spearman Rho: {}'.format(spearmanr(np.array(human_sims), np.array(scores))))
+		print('[RG65] Spearman Rho: {}'.format(spearmanr(np.array(human_sims), np.array(scores))))
+		print('==================================================================================')
 
 if (__name__ == '__main__'):
 	#transform_wikipedia_from_cache()
-	vectorize_wikipedia()
+	#vectorize_wikipedia()
 	#vectorize_kafka()
 	#test_wikipedia()
 	#test_movie_reviews()
@@ -305,5 +312,5 @@ if (__name__ == '__main__'):
 	#test_discoutils_loader()
 	#test_hdf()
 	#test_rg65_loader()
-	#test_rg65_evaluation()
-	#test_mc30_evaluation()
+	test_rg65_evaluation()
+	test_mc30_evaluation()
