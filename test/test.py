@@ -1,4 +1,5 @@
 __author__ = 'thomas'
+import json
 import os
 
 from nltk.corpus import stopwords
@@ -261,6 +262,8 @@ def test_mc30_evaluation():
 
 	base_path = paths.get_dataset_path()
 
+	scores_by_model = {}
+
 	for wort_model in ['wort_model_pmi-ppmi_window-2', 'wort_model_pmi-ppmi_window-5', 'wort_model_pmi-sppmi_window-2', 'wort_model_pmi-sppmi_window-5']:
 		print('Loading Wort Model: {}...'.format(wort_model))
 		wort_path = os.path.join(base_path, 'wikipedia', wort_model)
@@ -276,8 +279,12 @@ def test_mc30_evaluation():
 				human_sims.append(sim)
 				scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
 
-		print('[MC30] Spearman Rho: {}'.format(spearmanr(np.array(human_sims), np.array(scores))))
+		spearman = spearmanr(np.array(human_sims), np.array(scores))
+		scores_by_model[wort_model] = spearman
+		print('[MC30] Spearman Rho: {}'.format(spearman))
 		print('==================================================================================')
+
+		return scores_by_model
 
 
 def test_rg65_evaluation():
@@ -285,6 +292,8 @@ def test_rg65_evaluation():
 	ds = fetch_rubinstein_goodenough_65_dataset()
 	base_path = paths.get_dataset_path()
 
+	scores_by_model = {}
+
 	for wort_model in ['wort_model_pmi-ppmi_window-2', 'wort_model_pmi-ppmi_window-5', 'wort_model_pmi-sppmi_window-2', 'wort_model_pmi-sppmi_window-5']:
 		print('Loading Wort Model: {}...'.format(wort_model))
 		wort_path = os.path.join(base_path, 'wikipedia', wort_model)
@@ -300,8 +309,12 @@ def test_rg65_evaluation():
 				human_sims.append(sim)
 				scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
 
-		print('[RG65] Spearman Rho: {}'.format(spearmanr(np.array(human_sims), np.array(scores))))
+		spearman = spearmanr(np.array(human_sims), np.array(scores))
+		scores_by_model[wort_model] = spearman
+		print('[RG65] Spearman Rho: {}'.format(spearman))
 		print('==================================================================================')
+
+		return scores_by_model
 
 if (__name__ == '__main__'):
 	#transform_wikipedia_from_cache()
@@ -314,5 +327,8 @@ if (__name__ == '__main__'):
 	#test_discoutils_loader()
 	#test_hdf()
 	#test_rg65_loader()
-	test_rg65_evaluation()
-	test_mc30_evaluation()
+	rg65_scores = test_rg65_evaluation()
+	mc30_scores = test_mc30_evaluation()
+
+	print('RG65 SCORES: {}'.format(json.dumps(rg65_scores, indent=4)))
+	print('MC30 SCORES: {}'.format(json.dumps(mc30_scores, indent=4)))
