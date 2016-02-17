@@ -264,9 +264,9 @@ def test_mc30_evaluation():
 
 	scores_by_model = {}
 
-	for wort_model in ['wort_model_pmi-ppmi_window-2', 'wort_model_pmi-ppmi_window-5', 'wort_model_pmi-sppmi_window-2', 'wort_model_pmi-sppmi_window-5']:
-		print('Loading Wort Model: {}...'.format(wort_model))
-		wort_path = os.path.join(base_path, 'wikipedia', wort_model)
+	for wort_model_name in ['wort_model_pmi-ppmi_window-2', 'wort_model_pmi-ppmi_window-5', 'wort_model_pmi-sppmi_window-2', 'wort_model_pmi-sppmi_window-5']:
+		print('Loading Wort Model: {}...'.format(wort_model_name))
+		wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
 		print('Wort model loaded!')
 
@@ -280,7 +280,7 @@ def test_mc30_evaluation():
 				scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
 
 		spearman = spearmanr(np.array(human_sims), np.array(scores))
-		scores_by_model[wort_model] = spearman
+		scores_by_model[wort_model_name] = spearman
 		print('[MC30] Spearman Rho: {}'.format(spearman))
 		print('==================================================================================')
 
@@ -294,9 +294,9 @@ def test_rg65_evaluation():
 
 	scores_by_model = {}
 
-	for wort_model in ['wort_model_pmi-ppmi_window-2', 'wort_model_pmi-ppmi_window-5', 'wort_model_pmi-sppmi_window-2', 'wort_model_pmi-sppmi_window-5']:
-		print('Loading Wort Model: {}...'.format(wort_model))
-		wort_path = os.path.join(base_path, 'wikipedia', wort_model)
+	for wort_model_name in ['wort_model_pmi-ppmi_window-2', 'wort_model_pmi-ppmi_window-5', 'wort_model_pmi-sppmi_window-2', 'wort_model_pmi-sppmi_window-5']:
+		print('Loading Wort Model: {}...'.format(wort_model_name))
+		wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
 		print('Wort model loaded!')
 
@@ -310,7 +310,7 @@ def test_rg65_evaluation():
 				scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
 
 		spearman = spearmanr(np.array(human_sims), np.array(scores))
-		scores_by_model[wort_model] = spearman
+		scores_by_model[wort_model_name] = spearman
 		print('[RG65] Spearman Rho: {}'.format(spearman))
 		print('==================================================================================')
 
