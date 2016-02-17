@@ -256,6 +256,7 @@ def test_rg65_loader():
 
 
 def test_mc30_evaluation():
+	print('MC30 Evaluation')
 	ds = fetch_miller_charles_30_dataset()
 
 	base_path = paths.get_dataset_path()
@@ -280,6 +281,7 @@ def test_mc30_evaluation():
 
 
 def test_rg65_evaluation():
+	print('RG65 Evaluation')
 	ds = fetch_rubinstein_goodenough_65_dataset()
 	base_path = paths.get_dataset_path()
 
