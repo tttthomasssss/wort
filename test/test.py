@@ -411,10 +411,13 @@ if (__name__ == '__main__'):
 	rg65_scores = test_rg65_evaluation()
 	mc30_scores = test_mc30_evaluation()
 	ws353_scores = test_ws353_evaluation()
-	
-	json.dump(rg65_scores, os.path.join(paths.get_out_path(), 'rg65_wort.json'), indent=4)
-	json.dump(mc30_scores, os.path.join(paths.get_out_path(), 'mc30_wort.json'), indent=4)
-	json.dump(ws353_scores, os.path.join(paths.get_out_path(), 'ws353_wort.json'), indent=4)
+
+	with open(os.path.join(paths.get_out_path(), 'rg65_wort.json'), 'w') as out_file:
+		json.dump(rg65_scores, out_file, indent=4)
+	with open(os.path.join(paths.get_out_path(), 'mc30_wort.json'), 'w') as out_file:
+		json.dump(mc30_scores, out_file, indent=4)
+	with open(os.path.join(paths.get_out_path(), 'ws353_wort.json'), 'w') as out_file:
+		json.dump(ws353_scores, out_file, indent=4)
 
 	print('RG65 SCORES: {}'.format(json.dumps(rg65_scores, indent=4)))
 	print('MC30 SCORES: {}'.format(json.dumps(mc30_scores, indent=4)))
