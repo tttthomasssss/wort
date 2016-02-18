@@ -16,9 +16,15 @@ from wort.vsm import VSMVectorizer
 from wort.corpus_readers import FrostReader
 from wort.corpus_readers import MovieReviewReader
 from wort.corpus_readers import CSVStreamReader
+from wort.datasets import fetch_men_dataset
 from wort.datasets import fetch_miller_charles_30_dataset
+from wort.datasets import fetch_mturk_dataset
+from wort.datasets import fetch_rare_words_dataset
 from wort.datasets import fetch_rubinstein_goodenough_65_dataset
 from wort.datasets import fetch_ws353_dataset
+from wort.datasets import get_men_words
+from wort.datasets import get_mturk_words
+from wort.datasets import get_rare_words
 from wort.datasets import get_ws353_words
 
 
@@ -186,19 +192,18 @@ def vectorize_wikipedia():
 	if (not os.path.exists(out_path)):
 		os.makedirs(out_path)
 
-	whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words()
+	whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words() | get_mturk_words() | get_men_words() | get_rare_words()
 
 	print('Word whitelist contains {} words!'.format(len(whitelist)))
-
-	for dim_reduction in [None, 'svd']:
-		for pmi_type in ['sppmi', 'ppmi']:
+	for pmi_type in ['sppmi', 'ppmi', 'plmi']:
+		for dim_reduction in [None, 'svd']:
 			for window_size in [2, 5]:
 				print('CONFIG: pmi_type={}; window_size={}; dim_reduction={}...'.format(pmi_type, window_size, dim_reduction))
 				transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_model_pmi-{}_window-{}_dim-{}'.format(
 					pmi_type, window_size, dim_reduction
 				))
 				if (not os.path.exists(transformed_out_path)):
-					vec = VSMVectorizer(window_size=window_size, min_frequency=100, cds=0.75, weighting=pmi_type, sppmi_shift=5,
+					vec = VSMVectorizer(window_size=window_size, min_frequency=60, cds=0.75, weighting=pmi_type, sppmi_shift=5,
 										word_white_list=whitelist, svd_dim=600, svd_eig_weighting=0.5, dim_reduction=dim_reduction)
 
 					vec.fit(wiki_reader)
@@ -329,6 +334,105 @@ def test_rg65_evaluation():
 	return scores_by_model
 
 
+def test_rw_evaluation():
+	print('RW Evaluation')
+	ds = fetch_rare_words_dataset()
+	base_path = paths.get_dataset_path()
+
+	scores_by_model = {}
+
+	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None', 'wort_model_pmi-ppmi_window-2_dim-svd',
+								'wort_model_pmi-ppmi_window-5_dim-None', 'wort_model_pmi-ppmi_window-5_dim-svd',
+								'wort_model_pmi-sppmi_window-2_dim-None', 'wort_model_pmi-sppmi_window-2_dim-svd',
+								'wort_model_pmi-sppmi_window-5_dim-None', 'wort_model_pmi-sppmi_window-5_dim-svd']:
+		print('Loading Wort Model: {}...'.format(wort_model_name))
+		wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
+		wort_model = VSMVectorizer.load_from_file(path=wort_path)
+		print('Wort model loaded!')
+
+		scores = []
+		human_sims = []
+		for w1, w2, sim in ds:
+			if (w1 not in wort_model or w2 not in wort_model):
+				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
+			else:
+				human_sims.append(sim)
+				scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
+
+		spearman = spearmanr(np.array(human_sims), np.array(scores))
+		scores_by_model[wort_model_name] = spearman
+		print('[RW] Spearman Rho: {}'.format(spearman))
+		print('==================================================================================')
+
+	return scores_by_model
+
+
+def test_men_evaluation():
+	print('MEN Evaluation')
+	ds = fetch_men_dataset()
+	base_path = paths.get_dataset_path()
+
+	scores_by_model = {}
+
+	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None', 'wort_model_pmi-ppmi_window-2_dim-svd',
+								'wort_model_pmi-ppmi_window-5_dim-None', 'wort_model_pmi-ppmi_window-5_dim-svd',
+								'wort_model_pmi-sppmi_window-2_dim-None', 'wort_model_pmi-sppmi_window-2_dim-svd',
+								'wort_model_pmi-sppmi_window-5_dim-None', 'wort_model_pmi-sppmi_window-5_dim-svd']:
+		print('Loading Wort Model: {}...'.format(wort_model_name))
+		wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
+		wort_model = VSMVectorizer.load_from_file(path=wort_path)
+		print('Wort model loaded!')
+
+		scores = []
+		human_sims = []
+		for w1, w2, sim in ds:
+			if (w1 not in wort_model or w2 not in wort_model):
+				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
+			else:
+				human_sims.append(sim)
+				scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
+
+		spearman = spearmanr(np.array(human_sims), np.array(scores))
+		scores_by_model[wort_model_name] = spearman
+		print('[MEN] Spearman Rho: {}'.format(spearman))
+		print('==================================================================================')
+
+	return scores_by_model
+
+
+def test_mturk_evaluation():
+	print('MTurk Evaluation')
+	ds = fetch_mturk_dataset()
+	base_path = paths.get_dataset_path()
+
+	scores_by_model = {}
+
+	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None', 'wort_model_pmi-ppmi_window-2_dim-svd',
+								'wort_model_pmi-ppmi_window-5_dim-None', 'wort_model_pmi-ppmi_window-5_dim-svd',
+								'wort_model_pmi-sppmi_window-2_dim-None', 'wort_model_pmi-sppmi_window-2_dim-svd',
+								'wort_model_pmi-sppmi_window-5_dim-None', 'wort_model_pmi-sppmi_window-5_dim-svd']:
+		print('Loading Wort Model: {}...'.format(wort_model_name))
+		wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
+		wort_model = VSMVectorizer.load_from_file(path=wort_path)
+		print('Wort model loaded!')
+
+		scores = []
+		human_sims = []
+		for w1, w2, sim in ds:
+			if (w1 not in wort_model or w2 not in wort_model):
+				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
+			else:
+				human_sims.append(sim)
+				scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
+
+		spearman = spearmanr(np.array(human_sims), np.array(scores))
+		scores_by_model[wort_model_name] = spearman
+		print('[MTurk] Spearman Rho: {}'.format(spearman))
+		print('==================================================================================')
+
+	return scores_by_model
+
+
 def test_ws353_evaluation():
 	print('WS353 Evaluation')
 	base_path = paths.get_dataset_path()
@@ -396,9 +500,37 @@ def test_ws353_words_loader():
 	ds = get_ws353_words(subset='set2')
 	print('Original Set 2[len={}]:\n{}'.format(len(ds), ds))
 
+
+def test_rw_loader():
+	ds = fetch_rare_words_dataset()
+	print(ds)
+
+	w = get_rare_words()
+	print(w)
+	print('====')
+
+
+def test_men_loader():
+	ds = fetch_men_dataset()
+	print(ds)
+
+	w = get_men_words()
+	print(w)
+	print('====')
+
+
+def test_mturk_loader():
+	ds = fetch_mturk_dataset()
+	print(ds)
+
+	w = get_mturk_words()
+	print(w)
+	print('====')
+
+
 if (__name__ == '__main__'):
 	#transform_wikipedia_from_cache()
-	#vectorize_wikipedia()
+	vectorize_wikipedia()
 	#vectorize_kafka()
 	#test_wikipedia()
 	#test_movie_reviews()
@@ -407,20 +539,41 @@ if (__name__ == '__main__'):
 	#test_discoutils_loader()
 	#test_hdf()
 	#test_rg65_loader()
+	#test_rw_loader()
+	#test_men_loader()
+	#test_mturk_loader()
+
 
 	rg65_scores = test_rg65_evaluation()
 	mc30_scores = test_mc30_evaluation()
 	ws353_scores = test_ws353_evaluation()
+	rw_scores = test_rw_evaluation()
+	men_scores = test_men_evaluation()
+	mturk_scores = test_mturk_evaluation()
 
-	with open(os.path.join(paths.get_out_path(), 'rg65_wort.json'), 'w') as out_file:
+	if (not os.path.exists(os.path.join(paths.get_out_path(), 'wordsim'))):
+		os.makedirs(os.path.join(paths.get_out_path(), 'wordsim'))
+
+	with open(os.path.join(paths.get_out_path(), 'wordsim', 'rg65_wort.json'), 'w') as out_file:
 		json.dump(rg65_scores, out_file, indent=4)
-	with open(os.path.join(paths.get_out_path(), 'mc30_wort.json'), 'w') as out_file:
+	with open(os.path.join(paths.get_out_path(), 'wordsim', 'mc30_wort.json'), 'w') as out_file:
 		json.dump(mc30_scores, out_file, indent=4)
-	with open(os.path.join(paths.get_out_path(), 'ws353_wort.json'), 'w') as out_file:
+	with open(os.path.join(paths.get_out_path(), 'wordsim', 'ws353_wort.json'), 'w') as out_file:
 		json.dump(ws353_scores, out_file, indent=4)
+	with open(os.path.join(paths.get_out_path(), 'wordsim', 'rw.json'), 'w') as out_file:
+		json.dump(rw_scores, out_file, indent=4)
+	with open(os.path.join(paths.get_out_path(), 'wordsim', 'men.json'), 'w') as out_file:
+		json.dump(men_scores, out_file, indent=4)
+	with open(os.path.join(paths.get_out_path(), 'wordsim', 'mturk.json'), 'w') as out_file:
+		json.dump(mturk_scores, out_file, indent=4)
+
 
 	print('RG65 SCORES: {}'.format(json.dumps(rg65_scores, indent=4)))
 	print('MC30 SCORES: {}'.format(json.dumps(mc30_scores, indent=4)))
 	print('WS353 SCORES: {}'.format(json.dumps(ws353_scores, indent=4)))
+	print('RW SCORES: {}'.format(json.dumps(rw_scores, indent=4)))
+	print('MEN SCORES: {}'.format(json.dumps(men_scores, indent=4)))
+	print('MTURK SCORES: {}'.format(json.dumps(mturk_scores, indent=4)))
+
 
 	#test_ws353_words_loader()

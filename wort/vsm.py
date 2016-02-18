@@ -31,7 +31,7 @@ from wort import utils
 	# Compress hdf output
 	# Cythonize spare matrix constructions(?)
 	# Also serialise vocab as part of the model, makes a faster __contains__ lookup
-	# Whitelist param - force keep particular words that would be filtered out otherwise
+	# Avoid duplicate logging...
 class VSMVectorizer(BaseEstimator, VectorizerMixin):
 	def __init__(self, window_size, weighting='ppmi', min_frequency=0, lowercase=True, stop_words=None, encoding='utf-8',
 				 max_features=None, preprocessor=None, tokenizer=None, analyzer='word', binary=False, sppmi_shift=1,
@@ -355,7 +355,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# Shameless copy/paste from Radims word2vec Tutorial, no generators matey, need multi-pass!!!
 		if raw_documents is not None:
 			if isinstance(raw_documents, GeneratorType):
-				raise TypeError("You can't pass a generator as the sentences argument. Try an iterator.")
+				raise TypeError('You can\'t pass a generator as the sentences argument. Try an iterator.')
 
 		self._construct_cooccurrence_matrix(raw_documents)
 
