@@ -63,11 +63,11 @@ def get_mturk_words(data_home='~/.wort_data'):
 			if (w2 != ''):
 				words.add(w2)
 
-		with open(os.path.join(data_home, 'rw', 'mturk_worts.txt'), 'w') as word_file:
+		with open(os.path.join(data_home, 'mturk_worts.txt'), 'w') as word_file:
 			for w in words:
 				word_file.write(w + '\n')
 	else:
-		with open(os.path.join(data_home, 'rw', 'mturk_worts.txt'), 'r') as word_file:
+		with open(os.path.join(data_home, 'mturk_worts.txt'), 'r') as word_file:
 			words = set(word_file.read().split('\n'))
 
 	return words
