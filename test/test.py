@@ -323,6 +323,40 @@ def test_rg65_evaluation():
 	return scores_by_model
 
 
+def test_ws353_evaluation():
+	print('WS353 Evaluation')
+	base_path = paths.get_dataset_path()
+	scores_by_model = {}
+
+	for st in ['similarity', 'relatedness', None]:
+		ds = fetch_ws353_dataset(similarity_type=st)
+
+		for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None', 'wort_model_pmi-ppmi_window-2_dim-svd',
+								'wort_model_pmi-ppmi_window-5_dim-None', 'wort_model_pmi-ppmi_window-5_dim-svd',
+								'wort_model_pmi-sppmi_window-2_dim-None', 'wort_model_pmi-sppmi_window-2_dim-svd',
+								'wort_model_pmi-sppmi_window-5_dim-None', 'wort_model_pmi-sppmi_window-5_dim-svd']:
+			print('Loading Wort Model: {}...'.format(wort_model_name))
+			wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
+			wort_model = VSMVectorizer.load_from_file(path=wort_path)
+			print('Wort model loaded!')
+
+			scores = []
+			human_sims = []
+			for w1, w2, sim in ds:
+				if (w1 not in wort_model or w2 not in wort_model):
+					print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
+				else:
+					human_sims.append(sim)
+					scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
+
+			spearman = spearmanr(np.array(human_sims), np.array(scores))
+			scores_by_model['_'.join([str(st), wort_model_name])] = spearman
+			print('[WS353] Spearman Rho: {}'.format(spearman))
+			print('==================================================================================')
+
+	return scores_by_model
+
+
 def test_ws353_loader():
 	ds = fetch_ws353_dataset(similarity_type='similarity')
 	print('Similarity:\n{}'.format(ds))
@@ -367,10 +401,13 @@ if (__name__ == '__main__'):
 	#test_discoutils_loader()
 	#test_hdf()
 	#test_rg65_loader()
-	#rg65_scores = test_rg65_evaluation()
-	#mc30_scores = test_mc30_evaluation()
-	#
-	#print('RG65 SCORES: {}'.format(json.dumps(rg65_scores, indent=4)))
-	#print('MC30 SCORES: {}'.format(json.dumps(mc30_scores, indent=4)))
+
+	rg65_scores = test_rg65_evaluation()
+	mc30_scores = test_mc30_evaluation()
+	ws353_scores = test_ws353_evaluation()
+
+	print('RG65 SCORES: {}'.format(json.dumps(rg65_scores, indent=4)))
+	print('MC30 SCORES: {}'.format(json.dumps(mc30_scores, indent=4)))
+	print('WS353 SCORES: {}'.format(json.dumps(ws353_scores, indent=4)))
 
 	#test_ws353_words_loader()
