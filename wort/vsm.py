@@ -103,6 +103,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.index_ = {}
 		self.p_w_ = None
 		self.vocab_count_ = 0
+		self.token_count_ = 0
 		self.M_ = None
 		self.T_ = None
 
@@ -220,7 +221,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		logging.info('Finished Filtering extremes! n_vocab={}'.format(n_vocab))
 
-		self.p_w_ = W / W.sum()
+		self.token_count_ = W.sum()
+		self.p_w_ = W / self.token_count_
 		self.vocab_count_ = n_vocab
 		self.inverted_index_ = dict(zip(self.inverted_index_.keys(), range(n_vocab)))
 		self.index_ = dict(zip(self.inverted_index_.values(), self.inverted_index_.keys()))
