@@ -530,7 +530,7 @@ def test_mturk_loader():
 
 if (__name__ == '__main__'):
 	#transform_wikipedia_from_cache()
-	vectorize_wikipedia()
+	#vectorize_wikipedia()
 	#vectorize_kafka()
 	#test_wikipedia()
 	#test_movie_reviews()
