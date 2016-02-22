@@ -163,6 +163,12 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 	def _inverse_sigmoid_window_weighting(self, distance):
 		return 1 - sigmoid(distance)
 
+	def _absolute_sigmoid_window_weighting(self, distance):
+		return abs(sigmoid(distance))
+
+	def _absolut_inverse_sigmoid_window_weighting(self, distance):
+		return 1 - abs(sigmoid(distance))
+
 	def _construct_cooccurrence_matrix(self, raw_documents):
 		analyser = self.build_analyzer()
 
