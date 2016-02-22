@@ -9,6 +9,10 @@ import urllib
 # TODO: Ditto with the `words` loaders
 
 
+def get_simlex_999_words(data_home='~/.wort_data'):
+	raise NotImplementedError
+
+
 def get_ws353_words(data_home='~/.wort_data', subset='all', similarity_type=None):
 	data_home = os.path.expanduser(data_home) if '~' in data_home else data_home
 
@@ -356,4 +360,10 @@ def fetch_mturk_dataset(data_home='~/.wort_data'):
 		ds.append((parts[0].strip(), parts[1].strip(), float(parts[2].strip())))
 
 	return ds
+
+
+def fetch_simlex_999_dataset(data_home='~/.wort_data'):
+	url = 'http://www.cl.cam.ac.uk/~fh295/SimLex-999.zip'
+
+	raise NotImplementedError
 

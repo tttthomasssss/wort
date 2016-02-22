@@ -117,19 +117,20 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		root_logger.setLevel(self.log_level_)
 
 		# stdout logging
-		console_handler = logging.StreamHandler(sys.stdout)
-		console_handler.setFormatter(log_formatter)
-		root_logger.addHandler(console_handler)
+		if (len(root_logger.handlers) <= 0):
+			console_handler = logging.StreamHandler(sys.stdout)
+			console_handler.setFormatter(log_formatter)
+			root_logger.addHandler(console_handler)
 
-		# file logging
-		if (self.log_file_ is not None):
-			log_path = os.path.split(self.log_file_)[0]
-			if (not os.path.exists(log_path)):
-				os.makedirs(log_path)
+			# file logging
+			if (self.log_file_ is not None):
+				log_path = os.path.split(self.log_file_)[0]
+				if (not os.path.exists(log_path)):
+					os.makedirs(log_path)
 
-			file_handler = logging.FileHandler(self.log_file_)
-			file_handler.setFormatter(log_formatter)
-			root_logger.addHandler(file_handler)
+				file_handler = logging.FileHandler(self.log_file_)
+				file_handler.setFormatter(log_formatter)
+				root_logger.addHandler(file_handler)
 
 	def _delete_from_vocab(self, W, idx):
 		W = np.delete(W, idx)
@@ -198,7 +199,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		logging.info('Filtering extremes...')
 		# Filter extremes
-		if (self.min_frequency > 0):
+		if (self.min_frequency > 1):
 			idx = np.where(W < self.min_frequency)[0]
 
 			if (len(self.word_white_list) > 0): # Take word_white_list into account - TODO: is there a better way?
@@ -224,8 +225,11 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.token_count_ = W.sum()
 		self.p_w_ = W / self.token_count_
 		self.vocab_count_ = n_vocab
-		self.inverted_index_ = dict(zip(self.inverted_index_.keys(), range(n_vocab)))
-		self.index_ = dict(zip(self.inverted_index_.values(), self.inverted_index_.keys()))
+
+		# Watch out when rebuilding the index, `self.index_` needs to be build _before_ `self.inverted_index_`
+		# to reflect the updated `W` array
+		self.index_ = dict(zip(range(n_vocab), self.index_.values()))
+		self.inverted_index_ = dict(zip(self.index_.values(), self.index_.keys()))
 
 		logging.info('Constructing co-occurrence matrix...')
 		# Incrementally construct coo matrix (see http://www.stefanoscerra.it)

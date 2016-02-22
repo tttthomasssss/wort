@@ -101,6 +101,15 @@ def test_frost():
 	joblib.dump(vec, os.path.join(os.path.split(base_path)[0], 'VSMVectorizer.joblib'), compress=3)
 
 
+def test_pizza():
+	base_path = os.path.join(paths.get_dataset_path(), 'pizza', 'pizza.txt')
+	f = CSVStreamReader(base_path)
+	vec = VSMVectorizer(window_size=2, min_frequency=2)
+
+	vec.fit(f)
+	joblib.dump(vec, os.path.join(os.path.split(base_path)[0], 'VSMVectorizer.joblib'), compress=3)
+
+
 def transform_wikipedia_from_cache():
 	import logging
 	logging.basicConfig(format='%(asctime)s: %(levelname)s - %(message)s', datefmt='[%d/%m/%Y %H:%M:%S %p]', level=logging.INFO)
@@ -195,7 +204,7 @@ def vectorize_wikipedia():
 	whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words() | get_mturk_words() | get_men_words() | get_rare_words()
 
 	print('Word whitelist contains {} words!'.format(len(whitelist)))
-	for pmi_type in ['sppmi', 'ppmi', 'plmi']:
+	for pmi_type in ['sppmi', 'ppmi']:
 		for dim_reduction in [None, 'svd']:
 			for window_size in [2, 5]:
 				print('CONFIG: pmi_type={}; window_size={}; dim_reduction={}...'.format(pmi_type, window_size, dim_reduction))
@@ -529,8 +538,9 @@ def test_mturk_loader():
 
 
 if (__name__ == '__main__'):
+	test_pizza()
 	#transform_wikipedia_from_cache()
-	#vectorize_wikipedia()
+	vectorize_wikipedia()
 	#vectorize_kafka()
 	#test_wikipedia()
 	#test_movie_reviews()

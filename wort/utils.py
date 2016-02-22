@@ -7,6 +7,7 @@ import numpy as np
 import tables
 
 # TODO: The file appending thing is a bit ugly, should add some custom naming facilities...
+# TODO: Support compression for all HDF operations, see http://stackoverflow.com/questions/20118560/compressing-array-with-pytables#answer-20139553 and http://www.pytables.org/usersguide/libref/helper_classes.html#filtersclassdescr
 
 
 def numpy_to_hdf(obj, path, name):
@@ -16,8 +17,9 @@ def numpy_to_hdf(obj, path, name):
 		arr[:] = obj
 
 
-def hdf_to_numpy(path, name):
-	with tables.open_file(os.path.join(path, name), 'r') as f:
+def hdf_to_numpy(path, name, compression_level=0, compression_lib='zlib'):
+	filters = tables.Filters(complevel=compression_level, complib=compression_lib)
+	with tables.open_file(os.path.join(path, name), 'r', filters=filters) as f:
 		try: # TODO: QUICKHACK - REMOVE LATER!!!!!
 			arr = np.array(getattr(f.root, name).read())
 		except tables.exceptions.NoSuchNodeError:
