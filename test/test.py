@@ -538,7 +538,7 @@ def test_mturk_loader():
 
 
 if (__name__ == '__main__'):
-	test_pizza()
+	#test_pizza()
 	#transform_wikipedia_from_cache()
 	vectorize_wikipedia()
 	#vectorize_kafka()
