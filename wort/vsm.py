@@ -291,9 +291,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		elif (self.weighting == 'pnpmi'):
 			# Tricky one, could normalise by -log(P(w)), -log(P(c)) or -log(P(w, c)); choose the latter because it normalises the upper & the lower bound,
 			# and is nicer implementationwise (see Bouma 2009: https://svn.spraakdata.gu.se/repos/gerlof/pub/www/Docs/npmi-pfd.pdf)
-			logging.info('data before={}'.format(P_w_c.data))
 			P_w_c.data = 1/-np.log(P_w_c.data)
-			logging.info('data after={}'.format(P_w_c.data))
 			return P_w_c.multiply(PMI)
 		elif (self.weighting == 'sppmi'):
 			PMI.data -= np.log(self.sppmi_shift) # Maintain sparsity structure!
