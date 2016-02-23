@@ -31,7 +31,7 @@ from wort import utils
 	# Compress hdf output
 	# Cythonize spare matrix constructions(?)
 	# Also serialise vocab as part of the model, makes a faster __contains__ lookup
-	# Avoid duplicate logging...
+	# When applying SVD, the result is a dense matrix, change the type accordingly to not waste any memory/computing time by storing a dense matrix in sparse type
 class VSMVectorizer(BaseEstimator, VectorizerMixin):
 	def __init__(self, window_size, weighting='ppmi', min_frequency=0, lowercase=True, stop_words=None, encoding='utf-8',
 				 max_features=None, preprocessor=None, tokenizer=None, analyzer='word', binary=False, sppmi_shift=1,
@@ -287,9 +287,14 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		if (self.weighting == 'ppmi'):
 			return PMI
 		elif (self.weighting == 'plmi'):
-			return P_w_c * PMI
+			return P_w_c.multiply(PMI)
 		elif (self.weighting == 'pnpmi'):
-			raise NotImplementedError #(P_w_c[idx, row] * (1 / -(np.log(p_c)))) * pmi # TODO
+			# Tricky one, could normalise by -log(P(w)), -log(P(c)) or -log(P(w, c)); choose the latter because it normalises the upper & the lower bound,
+			# and is nicer implementationwise (see Bouma 2009: https://svn.spraakdata.gu.se/repos/gerlof/pub/www/Docs/npmi-pfd.pdf)
+			logging.info('data before={}'.format(P_w_c.data))
+			P_w_c.data = 1/-np.log(P_w_c.data)
+			logging.info('data after={}'.format(P_w_c.data))
+			return P_w_c.multiply(PMI)
 		elif (self.weighting == 'sppmi'):
 			PMI.data -= np.log(self.sppmi_shift) # Maintain sparsity structure!
 			return PMI
