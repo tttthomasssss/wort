@@ -10,7 +10,26 @@ import urllib
 
 
 def get_simlex_999_words(data_home='~/.wort_data'):
-	raise NotImplementedError
+	data_home = os.path.expanduser(data_home) if '~' in data_home else data_home
+
+	if (not os.path.exists(os.path.join(data_home, 'SimLex-999', 'simlex_worts.txt'))):
+		ds = fetch_rare_words_dataset(data_home=data_home)
+
+		words = set()
+		for w1, w2, _ in ds:
+			if (w1 != ''):
+				words.add(w1)
+			if (w2 != ''):
+				words.add(w2)
+
+		with open(os.path.join(data_home, 'SimLex-999', 'simlex_worts.txt'), 'w') as word_file:
+			for w in words:
+				word_file.write(w + '\n')
+	else:
+		with open(os.path.join(data_home, 'SimLex-999', 'simlex_worts.txt'), 'r') as word_file:
+			words = set(word_file.read().split('\n'))
+
+	return words
 
 
 def get_ws353_words(data_home='~/.wort_data', subset='all', similarity_type=None):
@@ -363,7 +382,28 @@ def fetch_mturk_dataset(data_home='~/.wort_data'):
 
 
 def fetch_simlex_999_dataset(data_home='~/.wort_data'):
-	url = 'http://www.cl.cam.ac.uk/~fh295/SimLex-999.zip'
+	data_home = os.path.expanduser(data_home) if '~' in data_home else data_home
 
-	raise NotImplementedError
+	if (not os.path.exists(data_home)):
+		os.makedirs(data_home)
+
+	if (not os.path.exists(os.path.join(data_home, 'SimLex-999'))):
+		url = 'http://www.cl.cam.ac.uk/~fh295/SimLex-999.zip'
+
+		with urllib.request.urlopen(url) as simlex:
+			meta = simlex.info()
+			print('Downloading data from {} ({} kb)'.format(url, round(int(meta['Content-Length'])/1000)))
+
+			zip = ZipFile(BytesIO(simlex.read()))
+			zip.extractall(path=os.path.join(data_home))
+			zip.close()
+
+	with open(os.path.join(data_home, 'SimLex-999', 'SimLex-999.txt'), 'r') as ds_file:
+		next(ds_file) # Skip header
+		ds = []
+		for line in ds_file:
+			parts = line.lower().strip().split('\t')
+			ds.append((parts[0].strip(), parts[1].strip(), float(parts[3].strip())))
+
+	return ds
 
