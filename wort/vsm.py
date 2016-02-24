@@ -19,15 +19,14 @@ from wort import utils
 # TODO: SVD based on http://www.aclweb.org/anthology/Q/Q15/Q15-1016.pdf, esp. chapter 7, practical recommendations
 	# Subsampling
 	# Normalisation
-	# Hellinger PCA
-	# NMF as an alternative to SVD
+	# Hellinger PCA (do we need that?)
+	# NMF as an alternative to SVD (sklearns NMF is _very_ slow for dimensions > 100!!)
 	# Support min_df and max_df
 	# Optimise the shizzle-whizzle
 	# Memmap option?
 	# Improve numerical precision
 	# Support other thresholds
 	# Better sklearn pipeline support (e.g. get_params())
-	# Check density structure of transformed matrix, if its too dense, sparsesvd is going to suck
 	# Compress hdf output
 	# Cythonize spare matrix constructions(?)
 	# Also serialise vocab as part of the model, makes a faster __contains__ lookup
@@ -232,7 +231,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.p_w_ = W / self.token_count_
 		self.vocab_count_ = n_vocab
 
-		# Watch out when rebuilding the index, `self.index_` needs to be build _before_ `self.inverted_index_`
+		# Watch out when rebuilding the index, `self.index_` needs to be built _before_ `self.inverted_index_`
 		# to reflect the updated `W` array
 		self.index_ = dict(zip(range(n_vocab), self.index_.values()))
 		self.inverted_index_ = dict(zip(self.index_.values(), self.index_.keys()))
@@ -291,7 +290,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		elif (self.weighting == 'pnpmi'):
 			# Tricky one, could normalise by -log(P(w)), -log(P(c)) or -log(P(w, c)); choose the latter because it normalises the upper & the lower bound,
 			# and is nicer implementationwise (see Bouma 2009: https://svn.spraakdata.gu.se/repos/gerlof/pub/www/Docs/npmi-pfd.pdf)
-			P_w_c.data = 1/-np.log(P_w_c.data)
+			P_w_c.data = 1 / -np.log(P_w_c.data)
 			return P_w_c.multiply(PMI)
 		elif (self.weighting == 'sppmi'):
 			PMI.data -= np.log(self.sppmi_shift) # Maintain sparsity structure!

@@ -7,6 +7,7 @@ import urllib
 
 # TODO: Lots of the dataset loaders work the same way --> encapsulate into single function (e.g. WS353 full, MEN, RW)
 # TODO: Ditto with the `words` loaders
+# TODO: MSR and GOOG analogy datasets
 
 
 def get_simlex_999_words(data_home='~/.wort_data'):
