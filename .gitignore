@@ -2,3 +2,4 @@
 .idea/*
 cluster_setup
 cluster_setup/*
+wort.egg-info/*
