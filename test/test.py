@@ -264,7 +264,7 @@ def vectorize_kafka():
 
 		for i in range(M_ppmi.shape[0]):
 			if (i != idx):
-				curr_dist = distance.cosine(M_ppmi[idx].A, M_ppmi[i].A)
+				curr_dist = distance.cosine(M_ppmi[idx], M_ppmi[i])
 
 				if (curr_dist < min_dist):
 					min_idx = i
@@ -323,7 +323,7 @@ def test_mc30_evaluation():
 				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 			else:
 				human_sims.append(sim)
-				scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
+				scores.append(1 - cosine(wort_model[w1], wort_model[w2]))
 
 		spearman = spearmanr(np.array(human_sims), np.array(scores))
 		scores_by_model[wort_model_name] = spearman
@@ -376,7 +376,7 @@ def test_rg65_evaluation():
 				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 			else:
 				human_sims.append(sim)
-				scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
+				scores.append(1 - cosine(wort_model[w1], wort_model[w2]))
 
 		spearman = spearmanr(np.array(human_sims), np.array(scores))
 		scores_by_model[wort_model_name] = spearman
@@ -429,7 +429,7 @@ def test_rw_evaluation():
 				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 			else:
 				human_sims.append(sim)
-				scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
+				scores.append(1 - cosine(wort_model[w1], wort_model[w2]))
 
 		spearman = spearmanr(np.array(human_sims), np.array(scores))
 		scores_by_model[wort_model_name] = spearman
@@ -482,7 +482,7 @@ def test_men_evaluation():
 				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 			else:
 				human_sims.append(sim)
-				scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
+				scores.append(1 - cosine(wort_model[w1], wort_model[w2]))
 
 		spearman = spearmanr(np.array(human_sims), np.array(scores))
 		scores_by_model[wort_model_name] = spearman
@@ -535,7 +535,7 @@ def test_mturk_evaluation():
 				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 			else:
 				human_sims.append(sim)
-				scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
+				scores.append(1 - cosine(wort_model[w1], wort_model[w2]))
 
 		spearman = spearmanr(np.array(human_sims), np.array(scores))
 		scores_by_model[wort_model_name] = spearman
@@ -589,7 +589,7 @@ def test_ws353_evaluation():
 					print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 				else:
 					human_sims.append(sim)
-					scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
+					scores.append(1 - cosine(wort_model[w1], wort_model[w2]))
 
 			spearman = spearmanr(np.array(human_sims), np.array(scores))
 			scores_by_model['_'.join([str(st), wort_model_name])] = spearman
@@ -645,7 +645,7 @@ def test_simlex_evaluation():
 				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 			else:
 				human_sims.append(sim)
-				scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
+				scores.append(1 - cosine(wort_model[w1], wort_model[w2]))
 
 		spearman = spearmanr(np.array(human_sims), np.array(scores))
 		scores_by_model[wort_model_name] = spearman
