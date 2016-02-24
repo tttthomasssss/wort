@@ -21,11 +21,13 @@ from wort.datasets import fetch_miller_charles_30_dataset
 from wort.datasets import fetch_mturk_dataset
 from wort.datasets import fetch_rare_words_dataset
 from wort.datasets import fetch_rubinstein_goodenough_65_dataset
+from wort.datasets import fetch_simlex_999_dataset
 from wort.datasets import fetch_ws353_dataset
 from wort.datasets import get_men_words
 from wort.datasets import get_mturk_words
 from wort.datasets import get_rare_words
 from wort.datasets import get_ws353_words
+from wort.datasets import get_simlex_999_words
 
 
 def test_hdf():
@@ -104,7 +106,7 @@ def test_frost():
 def test_pizza():
 	base_path = os.path.join(paths.get_dataset_path(), 'pizza', 'pizza.txt')
 	f = CSVStreamReader(base_path)
-	vec = VSMVectorizer(window_size=2, min_frequency=2)
+	vec = VSMVectorizer(window_size=2, min_frequency=2, weighting='pnpmi')
 
 	vec.fit(f)
 	joblib.dump(vec, os.path.join(os.path.split(base_path)[0], 'VSMVectorizer.joblib'), compress=3)
@@ -476,6 +478,42 @@ def test_ws353_evaluation():
 	return scores_by_model
 
 
+def test_simlex_evaluation():
+	print('SimLex Evaluation')
+	base_path = paths.get_dataset_path()
+	scores_by_model = {}
+
+	ds = fetch_simlex_999_dataset()
+	base_path = paths.get_dataset_path()
+
+	scores_by_model = {}
+
+	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None', 'wort_model_pmi-ppmi_window-2_dim-svd',
+								'wort_model_pmi-ppmi_window-5_dim-None', 'wort_model_pmi-ppmi_window-5_dim-svd',
+								'wort_model_pmi-sppmi_window-2_dim-None', 'wort_model_pmi-sppmi_window-2_dim-svd',
+								'wort_model_pmi-sppmi_window-5_dim-None', 'wort_model_pmi-sppmi_window-5_dim-svd']:
+		print('Loading Wort Model: {}...'.format(wort_model_name))
+		wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
+		wort_model = VSMVectorizer.load_from_file(path=wort_path)
+		print('Wort model loaded!')
+
+		scores = []
+		human_sims = []
+		for w1, w2, sim in ds:
+			if (w1 not in wort_model or w2 not in wort_model):
+				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
+			else:
+				human_sims.append(sim)
+				scores.append(1 - cosine(wort_model[w1].A, wort_model[w2].A))
+
+		spearman = spearmanr(np.array(human_sims), np.array(scores))
+		scores_by_model[wort_model_name] = spearman
+		print('[SimLex] Spearman Rho: {}'.format(spearman))
+		print('==================================================================================')
+
+	return scores_by_model
+
+
 def test_ws353_loader():
 	ds = fetch_ws353_dataset(similarity_type='similarity')
 	print('Similarity:\n{}'.format(ds))
@@ -537,10 +575,19 @@ def test_mturk_loader():
 	print('====')
 
 
+def test_simlex_loader():
+	ds = fetch_simlex_999_dataset()
+	print(ds)
+
+	w = get_simlex_999_words()
+	print(w)
+	print('====')
+
+
 if (__name__ == '__main__'):
 	#test_pizza()
 	#transform_wikipedia_from_cache()
-	vectorize_wikipedia()
+	#vectorize_wikipedia()
 	#vectorize_kafka()
 	#test_wikipedia()
 	#test_movie_reviews()
@@ -552,7 +599,7 @@ if (__name__ == '__main__'):
 	#test_rw_loader()
 	#test_men_loader()
 	#test_mturk_loader()
-
+	#test_simlex_loader()
 
 	rg65_scores = test_rg65_evaluation()
 	mc30_scores = test_mc30_evaluation()
@@ -560,6 +607,7 @@ if (__name__ == '__main__'):
 	rw_scores = test_rw_evaluation()
 	men_scores = test_men_evaluation()
 	mturk_scores = test_mturk_evaluation()
+	simlex_scores = test_simlex_evaluation()
 
 	if (not os.path.exists(os.path.join(paths.get_out_path(), 'wordsim'))):
 		os.makedirs(os.path.join(paths.get_out_path(), 'wordsim'))
@@ -576,7 +624,8 @@ if (__name__ == '__main__'):
 		json.dump(men_scores, out_file, indent=4)
 	with open(os.path.join(paths.get_out_path(), 'wordsim', 'mturk.json'), 'w') as out_file:
 		json.dump(mturk_scores, out_file, indent=4)
-
+	with open(os.path.join(paths.get_out_path(), 'wordsim', 'simlex.json'), 'w') as out_file:
+		json.dump(simlex_scores, out_file, indent=4)
 
 	print('RG65 SCORES: {}'.format(json.dumps(rg65_scores, indent=4)))
 	print('MC30 SCORES: {}'.format(json.dumps(mc30_scores, indent=4)))
@@ -584,6 +633,6 @@ if (__name__ == '__main__'):
 	print('RW SCORES: {}'.format(json.dumps(rw_scores, indent=4)))
 	print('MEN SCORES: {}'.format(json.dumps(men_scores, indent=4)))
 	print('MTURK SCORES: {}'.format(json.dumps(mturk_scores, indent=4)))
-
+	print('SIMLEX SCORES: {}'.format(json.dumps(simlex_scores, indent=4)))
 
 	#test_ws353_words_loader()
