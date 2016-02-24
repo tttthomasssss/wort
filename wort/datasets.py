@@ -7,7 +7,7 @@ import urllib
 
 # TODO: Lots of the dataset loaders work the same way --> encapsulate into single function (e.g. WS353 full, MEN, RW)
 # TODO: Ditto with the `words` loaders
-# TODO: MSR and GOOG analogy datasets
+# TODO: MSR (http://research.microsoft.com/en-us/um/people/gzweig/Pubs/myz_naacl13_test_set.tgz) and GOOG (https://storage.googleapis.com/google-code-archive-source/v2/code.google.com/word2vec/source-archive.zip; inside the `word2vec` repo) analogy datasets
 
 
 def get_simlex_999_words(data_home='~/.wort_data'):
