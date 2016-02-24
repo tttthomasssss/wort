@@ -1,0 +1,9 @@
+Cython>=0.22
+ipython>=4.0.0
+ipython-genutils>=0.1.0
+joblib>=0.9.2
+nltk>=3.0.2
+numpy>=1.10.1
+scikit-learn>=0.17
+scipy>=0.16.1
+sparsesvd>=0.2.2
