@@ -7,7 +7,32 @@ import urllib
 
 # TODO: Lots of the dataset loaders work the same way --> encapsulate into single function (e.g. WS353 full, MEN, RW)
 # TODO: Ditto with the `words` loaders
-# TODO: MSR (http://research.microsoft.com/en-us/um/people/gzweig/Pubs/myz_naacl13_test_set.tgz) and GOOG (https://storage.googleapis.com/google-code-archive-source/v2/code.google.com/word2vec/source-archive.zip; inside the `word2vec` repo) analogy datasets
+# TODO: GOOG (https://storage.googleapis.com/google-code-archive-source/v2/code.google.com/word2vec/source-archive.zip; inside the `word2vec` repo) analogy dataset
+
+
+def get_msr_syntactic_analogies_words(data_home='~/.wort_data'):
+	data_home = os.path.expanduser(data_home) if '~' in data_home else data_home
+
+	if (not os.path.exists(os.path.join(data_home, 'MSR_Syntactic_Analogies', 'msr_worts.txt'))):
+		ds = fetch_msr_syntactic_analogies_dataset(data_home=data_home)
+
+		words = set()
+		for w1, w2, w3 in ds:
+			if (w1 != ''):
+				words.add(w1)
+			if (w2 != ''):
+				words.add(w2)
+			if (w3 != ''):
+				words.add(w3)
+
+		with open(os.path.join(data_home, 'MSR_Syntactic_Analogies', 'msr_worts.txt'), 'w') as word_file:
+			for w in words:
+				word_file.write(w + '\n')
+	else:
+		with open(os.path.join(data_home, 'MSR_Syntactic_Analogies', 'msr_worts.txt'), 'r') as word_file:
+			words = set(word_file.read().split('\n'))
+
+	return words
 
 
 def get_simlex_999_words(data_home='~/.wort_data'):
@@ -408,3 +433,30 @@ def fetch_simlex_999_dataset(data_home='~/.wort_data'):
 
 	return ds
 
+
+def fetch_msr_syntactic_analogies_dataset(data_home='~/.wort_data'):
+	data_home = os.path.expanduser(data_home) if '~' in data_home else data_home
+
+	if (not os.path.exists(data_home)):
+		os.makedirs(data_home)
+
+	if (not os.path.exists(os.path.join(data_home, 'MSR_Syntactic_Analogies'))):
+		ds_home = os.path.join(data_home, 'MSR_Syntactic_Analogies')
+		os.makedirs(ds_home)
+
+		url = 'http://research.microsoft.com/en-us/um/people/gzweig/Pubs/myz_naacl13_test_set.tgz'
+
+		with urllib.request.urlopen(url) as msr:
+			meta = msr.info()
+			print('Downloading data from {} ({} kb)'.format(url, round(int(meta['Content-Length'])/1000)))
+
+			with tarfile.open(os.path.join(ds_home, 'myz_naacl13_test_set.tgz'), 'r:gz', BytesIO(msr.read())) as tar:
+				tar.extractall(path=os.path.join(ds_home))
+
+	with open(os.path.join(data_home, 'MSR_Syntactic_Analogies', 'test_set', 'word_relationship.questions'), 'r') as ds_file:
+		ds = []
+		for line in ds_file:
+			parts = line.lower().strip().split()
+			ds.append((parts[0].strip(), parts[1].strip(), parts[2].strip()))
+
+	return ds

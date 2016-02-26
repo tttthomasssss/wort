@@ -23,11 +23,13 @@ from wort.datasets import fetch_rare_words_dataset
 from wort.datasets import fetch_rubinstein_goodenough_65_dataset
 from wort.datasets import fetch_simlex_999_dataset
 from wort.datasets import fetch_ws353_dataset
+from wort.datasets import fetch_msr_syntactic_analogies_dataset
 from wort.datasets import get_men_words
 from wort.datasets import get_mturk_words
 from wort.datasets import get_rare_words
 from wort.datasets import get_ws353_words
 from wort.datasets import get_simlex_999_words
+from wort.datasets import get_msr_syntactic_analogies_words
 
 
 def test_hdf():
@@ -725,10 +727,19 @@ def test_simlex_loader():
 	print('====')
 
 
+def test_msr_loader():
+	ds = fetch_msr_syntactic_analogies_dataset()
+	print(len(ds))
+
+	w = get_msr_syntactic_analogies_words()
+	print(len(w))
+	print('====')
+
+
 if (__name__ == '__main__'):
 	#test_pizza()
 	#transform_wikipedia_from_cache()
-	vectorize_wikipedia()
+	#vectorize_wikipedia()
 	#vectorize_kafka()
 	#test_wikipedia()
 	#test_movie_reviews()
@@ -741,6 +752,10 @@ if (__name__ == '__main__'):
 	#test_men_loader()
 	#test_mturk_loader()
 	#test_simlex_loader()
+	test_msr_loader()
+
+	'''
+	vectorize_wikipedia()
 
 	rg65_scores = test_rg65_evaluation()
 	mc30_scores = test_mc30_evaluation()
@@ -775,5 +790,5 @@ if (__name__ == '__main__'):
 	print('MEN SCORES: {}'.format(json.dumps(men_scores, indent=4)))
 	print('MTURK SCORES: {}'.format(json.dumps(mturk_scores, indent=4)))
 	print('SIMLEX SCORES: {}'.format(json.dumps(simlex_scores, indent=4)))
-
+	'''
 	#test_ws353_words_loader()
