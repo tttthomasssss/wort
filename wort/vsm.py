@@ -35,9 +35,10 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 	def __init__(self, window_size, weighting='ppmi', min_frequency=0, lowercase=True, stop_words=None, encoding='utf-8',
 				 max_features=None, preprocessor=None, tokenizer=None, analyzer='word', binary=False, sppmi_shift=1,
 				 token_pattern=r'(?u)\b\w\w+\b', decode_error='strict', strip_accents=None, input='content',
-				 ngram_range=(1, 1), cds=1., dim_reduction=None, svd_dim=None, svd_eig_weighting=1,
+				 ngram_range=(1, 1), cds=1., dim_reduction=None, svd_dim=None, svd_eig_weighting=1, random_state=1105,
 				 context_window_weighting='constant', add_context_vectors=True, word_white_list=set(),
-				 cache_intermediary_results=False, cache_path=None, log_level=logging.INFO, log_file=None):
+				 subsampling_rate=None,cache_intermediary_results=False, cache_path=None, log_level=logging.INFO,
+				 log_file=None):
 		"""
 		TODO: documentation...
 		:param window_size:
@@ -57,6 +58,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		:param strip_accents:
 		:param input:
 		:param ngram_range:
+		:param random_state:
 		:param cds:
 		:param dim_reduction:
 		:param svd_dim:
@@ -64,6 +66,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		:param context_window_weighting: weighting of the context window under consideration (must be either "constant", "harmonic", "distance" or "aggressive")
 		:param add_context_vectors:
 		:param word_white_list:
+		:param subsampling_rate:
 		:param cache_intermediary_results:
 		:param cache_path:
 		:param log_level:
@@ -89,12 +92,14 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.input = input
 		self.ngram_range = ngram_range
 		self.context_window_weighting = context_window_weighting
+		self.random_state = random_state
 		self.cds = cds
 		self.svd_dim = svd_dim
 		self.svd_eig_weighting = svd_eig_weighting
 		self.dim_reduction = dim_reduction
 		self.add_context_vectors = add_context_vectors
 		self.word_white_list = word_white_list
+		self.subsampling_rate = subsampling_rate
 		self.cache_intermediary_results = cache_intermediary_results
 		self.cache_path = cache_path
 
@@ -102,7 +107,6 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.index_ = {}
 		self.p_w_ = None
 		self.vocab_count_ = 0
-		self.token_count_ = 0
 		self.M_ = None
 		self.T_ = None
 
@@ -225,10 +229,31 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 			n_vocab -= len(idx)
 
+		# Subsampling TODO: this can certainly be optimised
+		token_count = W.sum()
+		if (self.subsampling_rate is not None):
+			rnd = np.random.RandomState(self.random_state)
+			t = self.subsampling_rate * token_count
+
+			cand_idx = np.where(W>t)[1] # idx of words exceeding threshold
+
+			P = 1 - np.sqrt(W * (1/t)) # `word2vec` subsampling formula
+			R = rnd.rand(W.shape)
+
+			subsample_idx = np.where(R<=P)[1] # idx of filtered words
+
+			idx = cand_idx - subsample_idx
+
+			if (len(self.word_white_list) > 0): # Take word_white_list into account - TODO: is there a better way?
+				idx -= white_list_idx
+
+			W = self._delete_from_vocab(W, idx)
+
+			n_vocab -= len(idx)
+
 		logging.info('Finished Filtering extremes! n_vocab={}'.format(n_vocab))
 
-		self.token_count_ = W.sum()
-		self.p_w_ = W / self.token_count_
+		self.p_w_ = W / token_count
 		self.vocab_count_ = n_vocab
 
 		# Watch out when rebuilding the index, `self.index_` needs to be built _before_ `self.inverted_index_`
