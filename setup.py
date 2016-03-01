@@ -82,7 +82,9 @@ setup(
 		'numpy>=1.9.0',
 		'scikit-learn>=0.17',
 		'scipy>=0.16.1',
-		'sparsesvd>=0.2.2'
+		'sparsesvd>=0.2.2',
+		'tables>=3.0.0',
+		'h5py>=2.5.0'
 	],
 
 	# List additional groups of dependencies here (e.g. development
