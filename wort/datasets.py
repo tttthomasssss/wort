@@ -40,7 +40,7 @@ def get_google_analogies_words(data_home='~/.wort_data'):
 	data_home = os.path.expanduser(data_home) if '~' in data_home else data_home
 
 	if (not os.path.exists(os.path.join(data_home, 'word2vec', 'goog_worts.txt'))):
-		ds = fetch_msr_syntactic_analogies_dataset(data_home=data_home)
+		ds = fetch_google_analogies_dataset(data_home=data_home)
 
 		words = set()
 		for w1, w2, w3, a in ds:
