@@ -393,34 +393,37 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 	def fit(self, raw_documents, y=None):
 
 		# Shameless copy/paste from Radims word2vec Tutorial, no generators matey, need multi-pass!!!
-		if raw_documents is not None:
-			if isinstance(raw_documents, GeneratorType):
+		if (raw_documents is not None):
+			if (isinstance(raw_documents, GeneratorType)):
 				raise TypeError('You can\'t pass a generator as the sentences argument. Try an iterator.')
 
-		self._construct_cooccurrence_matrix(raw_documents)
+		if (not os.path.exists(self.cache_path)):
+			logging.info('No cache available at {}, construction co-occurrence matrix!'.format(self.cache_path))
+			self._construct_cooccurrence_matrix(raw_documents)
 
-		logging.info(self.M_.A)
+			if (self.cache_intermediary_results):
+				# Store the matrix bits and pieces in several different files due to performance and size
+				logging.info('Caching co-occurrence matrix to path: {}...'.format(self.cache_path))
+				utils.sparse_matrix_to_hdf(self.M_, self.cache_path)
+				logging.info('Finished caching co-occurence matrix!')
 
-		if (self.cache_intermediary_results):
-			# Store the matrix bits and pieces in several different files due to performance and size
-			logging.info('Caching co-occurrence matrix to path: {}...'.format(self.cache_path))
-			utils.sparse_matrix_to_hdf(self.M_, self.cache_path)
-			logging.info('Finished caching co-occurence matrix!')
+				logging.info('Caching word probability distribution to path: {}...'.format(os.path.join(self.cache_path, 'p_w.joblib')))
+				joblib.dump(self.p_w_, os.path.join(self.cache_path, 'p_w.joblib'), compress=3)
+				logging.info('Finished caching word probability distribution!')
 
-			logging.info('Caching word probability distribution to path: {}...'.format(os.path.join(self.cache_path, 'p_w.joblib')))
-			joblib.dump(self.p_w_, os.path.join(self.cache_path, 'p_w.joblib'), compress=3)
-			logging.info('Finished caching word probability distribution!')
+				logging.info('Caching index to path: {}...'.format(os.path.join(self.cache_path, 'index.joblib')))
+				joblib.dump(self.index_, os.path.join(self.cache_path, 'index.joblib'), compress=3)
+				logging.info('Finished caching index!')
 
-			logging.info('Caching index to path: {}...'.format(os.path.join(self.cache_path, 'index.joblib')))
-			joblib.dump(self.index_, os.path.join(self.cache_path, 'index.joblib'), compress=3)
-			logging.info('Finished caching index!')
+				logging.info('Caching inverted index to path: {}...'.format(os.path.join(self.cache_path, 'inverted_index.joblib')))
+				joblib.dump(self.inverted_index_, os.path.join(self.cache_path, 'inverted_index.joblib'), compress=3)
+				logging.info('Finished caching inverted index!')
 
-			logging.info('Caching inverted index to path: {}...'.format(os.path.join(self.cache_path, 'inverted_index.joblib')))
-			joblib.dump(self.inverted_index_, os.path.join(self.cache_path, 'inverted_index.joblib'), compress=3)
-			logging.info('Finished caching inverted index!')
-
-		# Apply weighting transformation
-		self._weight_transformation()
+			# Apply weighting transformation
+			self._weight_transformation()
+		else:
+			logging.info('Found cached co-occurrence matrix at {}! Applying {} from cache!'.format(self.cache_path, self.weighting))
+			self.weight_transformation_from_cache()
 
 		return self
 
