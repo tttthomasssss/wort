@@ -16,6 +16,7 @@ from wort.vsm import VSMVectorizer
 from wort.corpus_readers import FrostReader
 from wort.corpus_readers import MovieReviewReader
 from wort.corpus_readers import CSVStreamReader
+from wort.corpus_readers import GzipStreamReader
 from wort.datasets import fetch_men_dataset
 from wort.datasets import fetch_miller_charles_30_dataset
 from wort.datasets import fetch_mturk_dataset
@@ -32,6 +33,7 @@ from wort.datasets import get_ws353_words
 from wort.datasets import get_simlex_999_words
 from wort.datasets import get_msr_syntactic_analogies_words
 from wort.datasets import get_google_analogies_words
+from wort.evaluation import intrinsic_word_analogy_evaluation
 
 
 def test_hdf():
@@ -207,11 +209,11 @@ def vectorize_wikipedia():
 	if (not os.path.exists(out_path)):
 		os.makedirs(out_path)
 
-	whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words() | get_mturk_words() | get_men_words() | get_rare_words() | get_simlex_999_words()
+	whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words() | get_mturk_words() | get_men_words() | get_rare_words() | get_simlex_999_words() | get_msr_syntactic_analogies_words() | get_google_analogies_words()
 
 	print('Word whitelist contains {} words!'.format(len(whitelist)))
 	for dim in [600, 300, 100]:
-		for pmi_type in ['sppmi', 'ppmi', 'plmi', 'pnpmi']:
+		for pmi_type in ['ppmi']:
 			for dim_reduction in [None, 'svd']:
 				for window_size in [2, 5]:
 					print('CONFIG: pmi_type={}; window_size={}; dim_reduction={}; dim_size={}...'.format(pmi_type, window_size, dim_reduction, dim))
@@ -219,8 +221,8 @@ def vectorize_wikipedia():
 						pmi_type, window_size, dim_reduction, dim
 					))
 					if (not os.path.exists(transformed_out_path)):
-						vec = VSMVectorizer(window_size=window_size, min_frequency=60, cds=0.75, weighting=pmi_type, sppmi_shift=5,
-											word_white_list=whitelist, svd_dim=dim, svd_eig_weighting=0.5, dim_reduction=dim_reduction)
+						vec = VSMVectorizer(window_size=window_size, min_frequency=60, cds=0.75, weighting=pmi_type, word_white_list=whitelist,
+											svd_dim=dim, svd_eig_weighting=0.5, dim_reduction=dim_reduction)
 
 						vec.fit(wiki_reader)
 
@@ -747,6 +749,20 @@ def test_goog_loader():
 	print('====')
 
 
+def test_msr_evaluation():
+	acc = intrinsic_word_analogy_evaluation(wort_model='/Volumes/LocalDataHD/thk22/DevSandbox/InfiniteSandbox/_datasets/wikipedia/wort_model_pmi-ppmi_window-2_dim-None',
+											ds_fetcher=fetch_msr_syntactic_analogies_dataset)
+
+	print('MSR Analogy Accuracy: {}'.format(acc))
+
+
+def test_read_ukwac():
+	ukwac = GzipStreamReader(path='/research/calps/data2/public/corpora/ukwac1.0/raw/ukwac_preproc.gz')
+
+	for idx, line in enumerate(ukwac, 1):
+		print('[{}]: {}'.format(idx, line))
+
+
 if (__name__ == '__main__'):
 	#test_pizza()
 	#transform_wikipedia_from_cache()
@@ -765,8 +781,10 @@ if (__name__ == '__main__'):
 	#test_simlex_loader()
 	#test_msr_loader()
 	#test_goog_loader()
+	#test_msr_evaluation()
+	test_read_ukwac()
 
-	#'''
+	'''
 	vectorize_wikipedia()
 
 	rg65_scores = test_rg65_evaluation()
@@ -802,5 +820,5 @@ if (__name__ == '__main__'):
 	print('MEN SCORES: {}'.format(json.dumps(men_scores, indent=4)))
 	print('MTURK SCORES: {}'.format(json.dumps(mturk_scores, indent=4)))
 	print('SIMLEX SCORES: {}'.format(json.dumps(simlex_scores, indent=4)))
-	#'''
+	'''
 	#test_ws353_words_loader()
