@@ -1,10 +1,24 @@
 __author__ = 'thomas'
 import csv
+import gzip
 import sys
 
 import joblib
 
 csv.field_size_limit(sys.maxsize)
+
+
+class GzipStreamReader(object):
+	def __init__(self, path, lowercase=True):
+		self.path_ = path
+		self.lowercase_ = lowercase
+
+	def __iter__(self):
+		with gzip.open(self.path_, 'rt', encoding='utf-8', errors='replace') as in_file:
+			for line in in_file:
+				processed_line = line if not self.lowercase_ else line.lower()
+
+				yield processed_line
 
 
 class CSVStreamReader(object):
