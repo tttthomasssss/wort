@@ -2,6 +2,7 @@ __author__ = 'thomas'
 from types import GeneratorType
 import array
 import logging
+import math
 import os
 import sys
 
@@ -35,9 +36,10 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 	def __init__(self, window_size, weighting='ppmi', min_frequency=0, lowercase=True, stop_words=None, encoding='utf-8',
 				 max_features=None, preprocessor=None, tokenizer=None, analyzer='word', binary=False, sppmi_shift=1,
 				 token_pattern=r'(?u)\b\w\w+\b', decode_error='strict', strip_accents=None, input='content',
-				 ngram_range=(1, 1), cds=1., dim_reduction=None, svd_dim=None, svd_eig_weighting=1,
+				 ngram_range=(1, 1), cds=1., dim_reduction=None, svd_dim=None, svd_eig_weighting=1, random_state=1105,
 				 context_window_weighting='constant', add_context_vectors=True, word_white_list=set(),
-				 cache_intermediary_results=False, cache_path=None, log_level=logging.INFO, log_file=None):
+				 subsampling_rate=None,cache_intermediary_results=False, cache_path=None, log_level=logging.INFO,
+				 log_file=None):
 		"""
 		TODO: documentation...
 		:param window_size:
@@ -57,6 +59,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		:param strip_accents:
 		:param input:
 		:param ngram_range:
+		:param random_state:
 		:param cds:
 		:param dim_reduction:
 		:param svd_dim:
@@ -64,6 +67,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		:param context_window_weighting: weighting of the context window under consideration (must be either "constant", "harmonic", "distance" or "aggressive")
 		:param add_context_vectors:
 		:param word_white_list:
+		:param subsampling_rate:
 		:param cache_intermediary_results:
 		:param cache_path:
 		:param log_level:
@@ -89,12 +93,14 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.input = input
 		self.ngram_range = ngram_range
 		self.context_window_weighting = context_window_weighting
+		self.random_state = random_state
 		self.cds = cds
 		self.svd_dim = svd_dim
 		self.svd_eig_weighting = svd_eig_weighting
 		self.dim_reduction = dim_reduction
 		self.add_context_vectors = add_context_vectors
 		self.word_white_list = word_white_list
+		self.subsampling_rate = subsampling_rate
 		self.cache_intermediary_results = cache_intermediary_results
 		self.cache_path = cache_path
 
@@ -102,7 +108,6 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.index_ = {}
 		self.p_w_ = None
 		self.vocab_count_ = 0
-		self.token_count_ = 0
 		self.M_ = None
 		self.T_ = None
 
@@ -225,10 +230,31 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 			n_vocab -= len(idx)
 
+		# Subsampling TODO: this can certainly be optimised
+		token_count = W.sum()
+		if (self.subsampling_rate is not None):
+			rnd = np.random.RandomState(self.random_state)
+			t = self.subsampling_rate * token_count
+
+			cand_idx = np.where(W>t)[1] # idx of words exceeding threshold
+
+			P = 1 - np.sqrt(W * (1/t)) # `word2vec` subsampling formula
+			R = rnd.rand(W.shape)
+
+			subsample_idx = np.where(R<=P)[1] # idx of filtered words
+
+			idx = cand_idx - subsample_idx
+
+			if (len(self.word_white_list) > 0): # Take word_white_list into account - TODO: is there a better way?
+				idx -= white_list_idx
+
+			W = self._delete_from_vocab(W, idx)
+
+			n_vocab -= len(idx)
+
 		logging.info('Finished Filtering extremes! n_vocab={}'.format(n_vocab))
 
-		self.token_count_ = W.sum()
-		self.p_w_ = W / self.token_count_
+		self.p_w_ = W / token_count
 		self.vocab_count_ = n_vocab
 
 		# Watch out when rebuilding the index, `self.index_` needs to be built _before_ `self.inverted_index_`
@@ -283,6 +309,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			self.M_ = self.M_.minimum(1)
 
 	def _apply_weight_option(self, PMI, P_w_c, p_c):
+		# TODO: re-check results for `plmi` and `pnpmi`
 		if (self.weighting == 'ppmi'):
 			return PMI
 		elif (self.weighting == 'plmi'):
@@ -292,9 +319,6 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			# and is nicer implementationwise (see Bouma 2009: https://svn.spraakdata.gu.se/repos/gerlof/pub/www/Docs/npmi-pfd.pdf)
 			P_w_c.data = 1 / -np.log(P_w_c.data)
 			return P_w_c.multiply(PMI)
-		elif (self.weighting == 'sppmi'):
-			PMI.data -= np.log(self.sppmi_shift) # Maintain sparsity structure!
-			return PMI
 
 	def _weight_transformation(self):
 		logging.info('Applying {} weight transformation...'.format(self.weighting))
@@ -336,6 +360,10 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# ...apply the PMI variant (e.g. PPMI, SPPMI, PLMI or PNPMI)
 		PMI = self._apply_weight_option(sparse.coo_matrix((data, (rows, cols)), dtype=np.float64).tocsr(), P_w_c, p_c)
 
+		# Apply shift
+		if (self.sppmi_shift is not None and self.sppmi_shift > 0):
+			PMI.data -= math.log(self.sppmi_shift) # Maintain sparsity structure!
+
 		logging.info('Applying the threshold [type(PMI)={}]...'.format(type(PMI)))
 		# Apply threshold
 		self.T_ = PMI.maximum(0)
@@ -365,40 +393,43 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 	def fit(self, raw_documents, y=None):
 
 		# Shameless copy/paste from Radims word2vec Tutorial, no generators matey, need multi-pass!!!
-		if raw_documents is not None:
-			if isinstance(raw_documents, GeneratorType):
+		if (raw_documents is not None):
+			if (isinstance(raw_documents, GeneratorType)):
 				raise TypeError('You can\'t pass a generator as the sentences argument. Try an iterator.')
 
-		self._construct_cooccurrence_matrix(raw_documents)
+		if (not os.path.exists(os.path.join(self.cache_path, 'M.hdf'))):
+			logging.info('No cache available at {}! Constructing the co-occurrence matrix!'.format(self.cache_path))
+			self._construct_cooccurrence_matrix(raw_documents)
 
-		logging.info(self.M_.A)
+			if (self.cache_intermediary_results):
+				# Store the matrix bits and pieces in several different files due to performance and size
+				logging.info('Caching co-occurrence matrix to path: {}...'.format(self.cache_path))
+				utils.sparse_matrix_to_hdf(self.M_, self.cache_path, 'M.hdf')
+				logging.info('Finished caching co-occurence matrix!')
 
-		if (self.cache_intermediary_results):
-			# Store the matrix bits and pieces in several different files due to performance and size
-			logging.info('Caching co-occurrence matrix to path: {}...'.format(self.cache_path))
-			utils.sparse_matrix_to_hdf(self.M_, self.cache_path)
-			logging.info('Finished caching co-occurence matrix!')
+				logging.info('Caching word probability distribution to path: {}...'.format(os.path.join(self.cache_path, 'p_w.joblib')))
+				joblib.dump(self.p_w_, os.path.join(self.cache_path, 'p_w.joblib'), compress=3)
+				logging.info('Finished caching word probability distribution!')
 
-			logging.info('Caching word probability distribution to path: {}...'.format(os.path.join(self.cache_path, 'p_w.joblib')))
-			joblib.dump(self.p_w_, os.path.join(self.cache_path, 'p_w.joblib'), compress=3)
-			logging.info('Finished caching word probability distribution!')
+				logging.info('Caching index to path: {}...'.format(os.path.join(self.cache_path, 'index.joblib')))
+				joblib.dump(self.index_, os.path.join(self.cache_path, 'index.joblib'), compress=3)
+				logging.info('Finished caching index!')
 
-			logging.info('Caching index to path: {}...'.format(os.path.join(self.cache_path, 'index.joblib')))
-			joblib.dump(self.index_, os.path.join(self.cache_path, 'index.joblib'), compress=3)
-			logging.info('Finished caching index!')
+				logging.info('Caching inverted index to path: {}...'.format(os.path.join(self.cache_path, 'inverted_index.joblib')))
+				joblib.dump(self.inverted_index_, os.path.join(self.cache_path, 'inverted_index.joblib'), compress=3)
+				logging.info('Finished caching inverted index!')
 
-			logging.info('Caching inverted index to path: {}...'.format(os.path.join(self.cache_path, 'inverted_index.joblib')))
-			joblib.dump(self.inverted_index_, os.path.join(self.cache_path, 'inverted_index.joblib'), compress=3)
-			logging.info('Finished caching inverted index!')
-
-		# Apply weighting transformation
-		self._weight_transformation()
+			# Apply weighting transformation
+			self._weight_transformation()
+		else:
+			logging.info('Found cached co-occurrence matrix at {}! Applying {} from cache!'.format(self.cache_path, self.weighting))
+			self.weight_transformation_from_cache()
 
 		return self
 
 	def weight_transformation_from_cache(self):
 		#self.M_ = joblib.load(os.path.join(self.cache_path, 'M_cooccurrence.joblib'))
-		self.M_ = utils.hdf_to_sparse_csx_matrix(self.cache_path, sparse_format='csr')
+		self.M_ = utils.hdf_to_sparse_csx_matrix(self.cache_path, 'M.hdf', sparse_format='csr')
 		self.p_w_ = joblib.load(os.path.join(self.cache_path, 'p_w.joblib'))
 		self.index_ = joblib.load(os.path.join(self.cache_path, 'index.joblib'))
 		self.inverted_index_ = joblib.load(os.path.join(self.cache_path, 'inverted_index.joblib'))

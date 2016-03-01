@@ -16,6 +16,7 @@ from wort.vsm import VSMVectorizer
 from wort.corpus_readers import FrostReader
 from wort.corpus_readers import MovieReviewReader
 from wort.corpus_readers import CSVStreamReader
+from wort.corpus_readers import GzipStreamReader
 from wort.datasets import fetch_men_dataset
 from wort.datasets import fetch_miller_charles_30_dataset
 from wort.datasets import fetch_mturk_dataset
@@ -23,11 +24,18 @@ from wort.datasets import fetch_rare_words_dataset
 from wort.datasets import fetch_rubinstein_goodenough_65_dataset
 from wort.datasets import fetch_simlex_999_dataset
 from wort.datasets import fetch_ws353_dataset
+from wort.datasets import fetch_msr_syntactic_analogies_dataset
+from wort.datasets import fetch_google_analogies_dataset
 from wort.datasets import get_men_words
 from wort.datasets import get_mturk_words
 from wort.datasets import get_rare_words
 from wort.datasets import get_ws353_words
 from wort.datasets import get_simlex_999_words
+from wort.datasets import get_msr_syntactic_analogies_words
+from wort.datasets import get_google_analogies_words
+from wort.datasets import get_rubinstein_goodenough_65_words
+from wort.datasets import get_miller_charles_30_words
+from wort.evaluation import intrinsic_word_analogy_evaluation
 
 
 def test_hdf():
@@ -191,6 +199,47 @@ def test_wikipedia():
 	joblib.dump(M, os.path.join(out_path, 'wikipedia_test'))
 
 
+def vectorize_ukwac():
+	ukwac_reader = GzipStreamReader(path='/research/calps/data2/public/corpora/ukwac1.0/raw/ukwac_preproc.gz')
+
+	out_path = os.path.join(paths.get_dataset_path(), 'ukwac', 'wort')
+	if (not os.path.exists(out_path)):
+		os.makedirs(out_path)
+
+	if (not os.path.exists(os.path.join(out_path, 'ukwac_cooccurrence_cache'))):
+		os.makedirs(os.path.join(out_path, 'ukwac_cooccurrence_cache'))
+
+	whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words() | get_mturk_words() | get_men_words() | get_rare_words() | get_simlex_999_words() | get_msr_syntactic_analogies_words() | get_google_analogies_words()
+
+	print('Word whitelist contains {} words!'.format(len(whitelist)))
+	for dim in [600, 300]:
+		for pmi_type in ['ppmi']:
+			for dim_reduction in [None, 'svd']:
+				for window_size in [2, 5]:
+					print('CONFIG: pmi_type={}; window_size={}; dim_reduction={}; dim_size={}...'.format(pmi_type, window_size, dim_reduction, dim))
+					transformed_out_path = os.path.join(paths.get_dataset_path(), 'ukwac', 'wort_model_pmi-{}_window-{}_dim-{}-dim_size-{}'.format(
+						pmi_type, window_size, dim_reduction, dim
+					))
+					if (not os.path.exists(transformed_out_path)):
+						vec = VSMVectorizer(window_size=window_size, min_frequency=100, cds=0.75, weighting=pmi_type, word_white_list=whitelist,
+											svd_dim=dim, svd_eig_weighting=0.5, dim_reduction=dim_reduction, cache_intermediary_results=True,
+											cache_path=os.path.join(out_path, 'ukwac_cooccurrence_cache'))
+
+						vec.fit(ukwac_reader)
+
+						if (not os.path.exists(transformed_out_path)):
+							os.makedirs(transformed_out_path)
+
+						try:
+							print('Saving to file')
+							vec.save_to_file(transformed_out_path)
+							print('Doing the DisCo business...')
+						except OSError as ex:
+							print('FAILFAILFAIL: {}'.format(ex))
+					else:
+						print('{} already exists!'.format(transformed_out_path))
+
+
 def vectorize_wikipedia():
 	from discoutils.thesaurus_loader import Vectors
 	from wort.datasets import get_miller_charles_30_words
@@ -203,11 +252,11 @@ def vectorize_wikipedia():
 	if (not os.path.exists(out_path)):
 		os.makedirs(out_path)
 
-	whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words() | get_mturk_words() | get_men_words() | get_rare_words() | get_simlex_999_words()
+	whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words() | get_mturk_words() | get_men_words() | get_rare_words() | get_simlex_999_words() | get_msr_syntactic_analogies_words() | get_google_analogies_words()
 
 	print('Word whitelist contains {} words!'.format(len(whitelist)))
 	for dim in [600, 300, 100]:
-		for pmi_type in ['sppmi', 'ppmi', 'plmi', 'pnpmi']:
+		for pmi_type in ['ppmi']:
 			for dim_reduction in [None, 'svd']:
 				for window_size in [2, 5]:
 					print('CONFIG: pmi_type={}; window_size={}; dim_reduction={}; dim_size={}...'.format(pmi_type, window_size, dim_reduction, dim))
@@ -215,8 +264,8 @@ def vectorize_wikipedia():
 						pmi_type, window_size, dim_reduction, dim
 					))
 					if (not os.path.exists(transformed_out_path)):
-						vec = VSMVectorizer(window_size=window_size, min_frequency=60, cds=0.75, weighting=pmi_type, sppmi_shift=5,
-											word_white_list=whitelist, svd_dim=dim, svd_eig_weighting=0.5, dim_reduction=dim_reduction)
+						vec = VSMVectorizer(window_size=window_size, min_frequency=60, cds=0.75, weighting=pmi_type, word_white_list=whitelist,
+											svd_dim=dim, svd_eig_weighting=0.5, dim_reduction=dim_reduction)
 
 						vec.fit(wiki_reader)
 
@@ -287,30 +336,11 @@ def test_mc30_evaluation():
 
 	scores_by_model = {}
 
-	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-600',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-300',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-300',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-100',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-100',
-							'wort_model_pmi-pnpmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-600',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-300',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-300',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-100',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-100']:
+	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-600',
+								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-600',
+							'wort_model_pmi-ppmi_window-2_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-300',
+								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
+							]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
@@ -340,30 +370,11 @@ def test_rg65_evaluation():
 
 	scores_by_model = {}
 
-	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-600',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-300',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-300',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-100',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-100',
-							'wort_model_pmi-pnpmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-600',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-300',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-300',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-100',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-100']:
+	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-600',
+								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-600',
+							'wort_model_pmi-ppmi_window-2_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-300',
+								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
+							]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
@@ -393,30 +404,11 @@ def test_rw_evaluation():
 
 	scores_by_model = {}
 
-	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-600',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-300',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-300',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-100',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-100',
-							'wort_model_pmi-pnpmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-600',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-300',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-300',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-100',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-100']:
+	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-600',
+								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-600',
+							'wort_model_pmi-ppmi_window-2_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-300',
+								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
+							]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
@@ -446,30 +438,11 @@ def test_men_evaluation():
 
 	scores_by_model = {}
 
-	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-600',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-300',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-300',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-100',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-100',
-							'wort_model_pmi-pnpmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-600',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-300',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-300',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-100',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-100']:
+	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-600',
+								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-600',
+							'wort_model_pmi-ppmi_window-2_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-300',
+								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
+							]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
@@ -499,30 +472,11 @@ def test_mturk_evaluation():
 
 	scores_by_model = {}
 
-	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-600',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-300',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-300',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-100',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-100',
-							'wort_model_pmi-pnpmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-600',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-300',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-300',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-100',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-100']:
+	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-600',
+								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-600',
+							'wort_model_pmi-ppmi_window-2_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-300',
+								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
+							]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
@@ -553,30 +507,11 @@ def test_ws353_evaluation():
 	for st in ['similarity', 'relatedness', None]:
 		ds = fetch_ws353_dataset(similarity_type=st)
 
-		for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-600',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-300',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-300',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-100',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-100',
-							'wort_model_pmi-pnpmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-600',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-300',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-300',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-100',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-100']:
+		for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-600',
+								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-600',
+							'wort_model_pmi-ppmi_window-2_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-300',
+								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
+							]:
 			print('Loading Wort Model: {}...'.format(wort_model_name))
 			wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
 			wort_model = VSMVectorizer.load_from_file(path=wort_path)
@@ -609,30 +544,11 @@ def test_simlex_evaluation():
 
 	scores_by_model = {}
 
-	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-600',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-300',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-300',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-100',
-								'wort_model_pmi-sppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-sppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-sppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-sppmi_window-5_dim-svd_dim_size-100',
-							'wort_model_pmi-pnpmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-600',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-600', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-600',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-600', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-300',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-300', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-300',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-300', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-300',
-							'wort_model_pmi-ppmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-ppmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-ppmi_window-5_dim-svd_dim_size-100',
-								'wort_model_pmi-plmi_window-2_dim-None_dim_size-100', 'wort_model_pmi-plmi_window-2_dim-svd_dim_size-100',
-								'wort_model_pmi-plmi_window-5_dim-None_dim_size-100', 'wort_model_pmi-plmi_window-5_dim-svd_dim_size-100']:
+	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-600',
+								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-600',
+							'wort_model_pmi-ppmi_window-2_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-300',
+								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
+							]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
@@ -725,10 +641,42 @@ def test_simlex_loader():
 	print('====')
 
 
+def test_msr_loader():
+	ds = fetch_msr_syntactic_analogies_dataset()
+	print(len(ds))
+
+	w = get_msr_syntactic_analogies_words()
+	print(len(w))
+	print('====')
+
+
+def test_goog_loader():
+	ds = fetch_google_analogies_dataset()
+	print(len(ds))
+
+	w = get_google_analogies_words()
+	print(len(w))
+	print('====')
+
+
+def test_msr_evaluation():
+	acc = intrinsic_word_analogy_evaluation(wort_model='/Volumes/LocalDataHD/thk22/DevSandbox/InfiniteSandbox/_datasets/wikipedia/wort_model_pmi-ppmi_window-2_dim-None',
+											ds_fetcher=fetch_msr_syntactic_analogies_dataset)
+
+	print('MSR Analogy Accuracy: {}'.format(acc))
+
+
+def test_read_ukwac():
+	ukwac = GzipStreamReader(path='/research/calps/data2/public/corpora/ukwac1.0/raw/ukwac_preproc.gz')
+
+	for idx, line in enumerate(ukwac, 1):
+		print('[{}]: {}'.format(idx, line))
+
+
 if (__name__ == '__main__'):
 	#test_pizza()
 	#transform_wikipedia_from_cache()
-	vectorize_wikipedia()
+	#vectorize_wikipedia()
 	#vectorize_kafka()
 	#test_wikipedia()
 	#test_movie_reviews()
@@ -741,6 +689,14 @@ if (__name__ == '__main__'):
 	#test_men_loader()
 	#test_mturk_loader()
 	#test_simlex_loader()
+	#test_msr_loader()
+	#test_goog_loader()
+	#test_msr_evaluation()
+	#test_read_ukwac()
+
+	#'''
+	#vectorize_wikipedia()
+	vectorize_ukwac()
 
 	rg65_scores = test_rg65_evaluation()
 	mc30_scores = test_mc30_evaluation()
@@ -750,22 +706,22 @@ if (__name__ == '__main__'):
 	mturk_scores = test_mturk_evaluation()
 	simlex_scores = test_simlex_evaluation()
 
-	if (not os.path.exists(os.path.join(paths.get_out_path(), 'wordsim'))):
-		os.makedirs(os.path.join(paths.get_out_path(), 'wordsim'))
+	if (not os.path.exists(os.path.join(paths.get_out_path(), 'wordsim_ukwac'))):
+		os.makedirs(os.path.join(paths.get_out_path(), 'wordsim_ukwac'))
 
-	with open(os.path.join(paths.get_out_path(), 'wordsim', 'rg65_wort.json'), 'w') as out_file:
+	with open(os.path.join(paths.get_out_path(), 'wordsim_ukwac', 'rg65_wort.json'), 'w') as out_file:
 		json.dump(rg65_scores, out_file, indent=4)
-	with open(os.path.join(paths.get_out_path(), 'wordsim', 'mc30_wort.json'), 'w') as out_file:
+	with open(os.path.join(paths.get_out_path(), 'wordsim_ukwac', 'mc30_wort.json'), 'w') as out_file:
 		json.dump(mc30_scores, out_file, indent=4)
-	with open(os.path.join(paths.get_out_path(), 'wordsim', 'ws353_wort.json'), 'w') as out_file:
+	with open(os.path.join(paths.get_out_path(), 'wordsim_ukwac', 'ws353_wort.json'), 'w') as out_file:
 		json.dump(ws353_scores, out_file, indent=4)
-	with open(os.path.join(paths.get_out_path(), 'wordsim', 'rw.json'), 'w') as out_file:
+	with open(os.path.join(paths.get_out_path(), 'wordsim_ukwac', 'rw.json'), 'w') as out_file:
 		json.dump(rw_scores, out_file, indent=4)
-	with open(os.path.join(paths.get_out_path(), 'wordsim', 'men.json'), 'w') as out_file:
+	with open(os.path.join(paths.get_out_path(), 'wordsim_ukwac', 'men.json'), 'w') as out_file:
 		json.dump(men_scores, out_file, indent=4)
-	with open(os.path.join(paths.get_out_path(), 'wordsim', 'mturk.json'), 'w') as out_file:
+	with open(os.path.join(paths.get_out_path(), 'wordsim_ukwac', 'mturk.json'), 'w') as out_file:
 		json.dump(mturk_scores, out_file, indent=4)
-	with open(os.path.join(paths.get_out_path(), 'wordsim', 'simlex.json'), 'w') as out_file:
+	with open(os.path.join(paths.get_out_path(), 'wordsim_ukwac', 'simlex.json'), 'w') as out_file:
 		json.dump(simlex_scores, out_file, indent=4)
 
 	print('RG65 SCORES: {}'.format(json.dumps(rg65_scores, indent=4)))
@@ -775,5 +731,5 @@ if (__name__ == '__main__'):
 	print('MEN SCORES: {}'.format(json.dumps(men_scores, indent=4)))
 	print('MTURK SCORES: {}'.format(json.dumps(mturk_scores, indent=4)))
 	print('SIMLEX SCORES: {}'.format(json.dumps(simlex_scores, indent=4)))
-
+	#'''
 	#test_ws353_words_loader()
