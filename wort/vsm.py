@@ -397,14 +397,14 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			if (isinstance(raw_documents, GeneratorType)):
 				raise TypeError('You can\'t pass a generator as the sentences argument. Try an iterator.')
 
-		if (not os.path.exists(self.cache_path)):
+		if (not os.path.exists(os.path.join(self.cache_path, 'M.hdf'))):
 			logging.info('No cache available at {}, construction co-occurrence matrix!'.format(self.cache_path))
 			self._construct_cooccurrence_matrix(raw_documents)
 
 			if (self.cache_intermediary_results):
 				# Store the matrix bits and pieces in several different files due to performance and size
 				logging.info('Caching co-occurrence matrix to path: {}...'.format(self.cache_path))
-				utils.sparse_matrix_to_hdf(self.M_, self.cache_path)
+				utils.sparse_matrix_to_hdf(self.M_, self.cache_path, 'M.hdf')
 				logging.info('Finished caching co-occurence matrix!')
 
 				logging.info('Caching word probability distribution to path: {}...'.format(os.path.join(self.cache_path, 'p_w.joblib')))
@@ -429,7 +429,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 	def weight_transformation_from_cache(self):
 		#self.M_ = joblib.load(os.path.join(self.cache_path, 'M_cooccurrence.joblib'))
-		self.M_ = utils.hdf_to_sparse_csx_matrix(self.cache_path, sparse_format='csr')
+		self.M_ = utils.hdf_to_sparse_csx_matrix(self.cache_path, 'M.hdf', sparse_format='csr')
 		self.p_w_ = joblib.load(os.path.join(self.cache_path, 'p_w.joblib'))
 		self.index_ = joblib.load(os.path.join(self.cache_path, 'index.joblib'))
 		self.inverted_index_ = joblib.load(os.path.join(self.cache_path, 'inverted_index.joblib'))
