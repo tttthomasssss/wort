@@ -16,13 +16,15 @@ def get_msr_syntactic_analogies_words(data_home='~/.wort_data'):
 		ds = fetch_msr_syntactic_analogies_dataset(data_home=data_home)
 
 		words = set()
-		for w1, w2, w3 in ds:
+		for w1, w2, w3, a in ds:
 			if (w1 != ''):
 				words.add(w1)
 			if (w2 != ''):
 				words.add(w2)
 			if (w3 != ''):
 				words.add(w3)
+			if (a != ''):
+				words.add(a)
 
 		with open(os.path.join(data_home, 'MSR_Syntactic_Analogies', 'msr_worts.txt'), 'w') as word_file:
 			for w in words:
@@ -41,13 +43,15 @@ def get_google_analogies_words(data_home='~/.wort_data'):
 		ds = fetch_msr_syntactic_analogies_dataset(data_home=data_home)
 
 		words = set()
-		for w1, w2, w3 in ds:
+		for w1, w2, w3, a in ds:
 			if (w1 != ''):
 				words.add(w1)
 			if (w2 != ''):
 				words.add(w2)
 			if (w3 != ''):
 				words.add(w3)
+			if (a != ''):
+				words.add(a)
 
 		with open(os.path.join(data_home, 'word2vec', 'goog_worts.txt'), 'w') as word_file:
 			for w in words:
