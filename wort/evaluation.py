@@ -4,6 +4,7 @@ import random
 
 from scipy.spatial.distance import cosine
 from scipy.stats import spearmanr
+from sklearn.neighbors import NearestNeighbors
 import numpy as np
 
 from wort.vsm import VSMVectorizer
@@ -46,4 +47,8 @@ def intrinsic_word_analogy_evaluation(wort_model, ds_fetcher, distance_fn=cosine
 	ds = ds_fetcher(ds_fetcher_kwargs)
 
 	random.seed(random_seed)
+
+	neighbours = NearestNeighbors(metric='cosine', n_neighbors=5).fit(wort_model.get_matrix())
+
+	neighbours.k
 
