@@ -38,6 +38,12 @@ def intrinsic_word_similarity_evaluation(wort_model, ds_fetcher, distance_fn=cos
 
 	return model_performance
 
-# TODO: 3cosmul, 3cosadd, standard, etc
-def intrinsic_word_analogy_evaluation():
-	pass
+# TODO: 3cosmul, 3cosadd (https://www.cs.bgu.ac.il/~yoavg/publications/conll2014analogies.pdf), standard, etc
+def intrinsic_word_analogy_evaluation(wort_model, ds_fetcher, distance_fn=cosine, random_seed=1105, **ds_fetcher_kwargs):
+	if (not isinstance(wort_model, VSMVectorizer)):
+		wort_model = VSMVectorizer.load_from_file(wort_model)
+
+	ds = ds_fetcher(ds_fetcher_kwargs)
+
+	random.seed(random_seed)
+

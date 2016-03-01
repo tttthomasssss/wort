@@ -480,7 +480,7 @@ def fetch_google_analogies_dataset(data_home='~/.wort_data'):
 		for line in ds_file:
 			if (not line.startswith(': ')): # This marks a header
 				parts = line.lower().strip().split()
-				ds.append((parts[0].strip(), parts[1].strip(), parts[2].strip()))
+				ds.append((parts[0].strip(), parts[1].strip(), parts[2].strip(), parts[3].strip()))
 
 	return ds
 
@@ -504,10 +504,13 @@ def fetch_msr_syntactic_analogies_dataset(data_home='~/.wort_data'):
 			with tarfile.open(os.path.join(ds_home, 'myz_naacl13_test_set.tgz'), 'r:gz', BytesIO(msr.read())) as tar:
 				tar.extractall(path=os.path.join(ds_home))
 
-	with open(os.path.join(data_home, 'MSR_Syntactic_Analogies', 'test_set', 'word_relationship.questions'), 'r') as ds_file:
+	# Evaluation Data and Solutions
+	with open(os.path.join(data_home, 'MSR_Syntactic_Analogies', 'test_set', 'word_relationship.questions'), 'r') as ds_file, \
+		open(os.path.join(data_home, 'MSR_Syntactic_Analogies', 'test_set', 'word_relationship.answers'), 'r') as ds_file_answers:
+
 		ds = []
-		for line in ds_file:
-			parts = line.lower().strip().split()
-			ds.append((parts[0].strip(), parts[1].strip(), parts[2].strip()))
+		for line in zip(ds_file, ds_file_answers):
+			parts = line[0].lower().strip().split() + line[1].lower().strip().split()
+			ds.append((parts[0].strip(), parts[1].strip(), parts[2].strip(), parts[4].strip()))
 
 	return ds
