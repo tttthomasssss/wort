@@ -79,7 +79,6 @@ setup(
 	# https://packaging.python.org/en/latest/requirements.html
 	install_requires=[
 		'joblib>=0.9.2',
-		'nltk>=3.0.0',
 		'numpy>=1.9.0',
 		'scikit-learn>=0.17',
 		'scipy>=0.16.1',
