@@ -2,6 +2,7 @@ __author__ = 'thomas'
 from types import GeneratorType
 import array
 import logging
+import math
 import os
 import sys
 
@@ -308,6 +309,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			self.M_ = self.M_.minimum(1)
 
 	def _apply_weight_option(self, PMI, P_w_c, p_c):
+		# TODO: re-check results for `plmi` and `pnpmi`
 		if (self.weighting == 'ppmi'):
 			return PMI
 		elif (self.weighting == 'plmi'):
@@ -317,9 +319,6 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			# and is nicer implementationwise (see Bouma 2009: https://svn.spraakdata.gu.se/repos/gerlof/pub/www/Docs/npmi-pfd.pdf)
 			P_w_c.data = 1 / -np.log(P_w_c.data)
 			return P_w_c.multiply(PMI)
-		elif (self.weighting == 'sppmi'):
-			PMI.data -= np.log(self.sppmi_shift) # Maintain sparsity structure!
-			return PMI
 
 	def _weight_transformation(self):
 		logging.info('Applying {} weight transformation...'.format(self.weighting))
@@ -360,6 +359,10 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		logging.info('Applying the PMI option')
 		# ...apply the PMI variant (e.g. PPMI, SPPMI, PLMI or PNPMI)
 		PMI = self._apply_weight_option(sparse.coo_matrix((data, (rows, cols)), dtype=np.float64).tocsr(), P_w_c, p_c)
+
+		# Apply shift
+		if (self.sppmi_shift is not None and self.sppmi_shift > 0):
+			PMI.data -= math.log(self.sppmi_shift) # Maintain sparsity structure!
 
 		logging.info('Applying the threshold [type(PMI)={}]...'.format(type(PMI)))
 		# Apply threshold
