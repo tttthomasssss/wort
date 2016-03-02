@@ -296,6 +296,9 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 					data.append(window_weighting_fn(distance))
 					#logging.info('FWD DISTANCE: {}; WORD={}'.format(distance, self.index_[buffer[j]]))
 
+		# TODO: This is still a bit of a bottleneck
+		#		Either cythonize the shit
+		#		Or chunk it up and create several sparse arrays that get added (?)
 		logging.info('Numpyifying co-occurrence data...')
 		data = np.array(data, dtype=np.uint64 if self.context_window_weighting == 'constant' else np.float64, copy=False)
 		rows = np.array(rows, dtype=np.uint64, copy=False)
