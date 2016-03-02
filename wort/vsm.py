@@ -301,11 +301,11 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		rows = np.array(rows, dtype=np.uint64, copy=False)
 		cols = np.array(cols, dtype=np.uint64, copy=False)
 
-		if (self.cache_intermediary_results):
-			logging.info('Storing raw array co-occurrence data...')
-			utils.numpy_to_hdf(data, self.cache_path, 'data.cooc')
-			utils.numpy_to_hdf(rows, self.cache_path, 'rows.cooc')
-			utils.numpy_to_hdf(cols, self.cache_path, 'cols.cooc')
+		#if (self.cache_intermediary_results):
+		#	logging.info('Storing raw array co-occurrence data...')
+		#	utils.numpy_to_hdf(data, self.cache_path, 'data.cooc')
+		#	utils.numpy_to_hdf(rows, self.cache_path, 'rows.cooc')
+		#	utils.numpy_to_hdf(cols, self.cache_path, 'cols.cooc')
 
 		logging.info('Creating sparse matrix...')
 		self.M_ = sparse.coo_matrix((data, (rows, cols)), dtype=np.uint64 if self.context_window_weighting == 'constant' else np.float64).tocsr() # Scipy seems to not handle numeric overflow in a very graceful manner
