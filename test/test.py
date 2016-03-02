@@ -221,7 +221,7 @@ def vectorize_ukwac():
 						pmi_type, window_size, dim_reduction, dim
 					))
 					if (not os.path.exists(transformed_out_path)):
-						vec = VSMVectorizer(window_size=window_size, min_frequency=150, cds=0.75, weighting=pmi_type, word_white_list=whitelist,
+						vec = VSMVectorizer(window_size=window_size, min_frequency=200, cds=0.75, weighting=pmi_type, word_white_list=whitelist,
 											svd_dim=dim, svd_eig_weighting=0.5, dim_reduction=dim_reduction, cache_intermediary_results=True,
 											cache_path=os.path.join(out_path, 'ukwac_cooccurrence_cache'))
 
