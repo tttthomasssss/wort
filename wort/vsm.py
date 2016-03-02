@@ -296,11 +296,18 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 					data.append(window_weighting_fn(distance))
 					#logging.info('FWD DISTANCE: {}; WORD={}'.format(distance, self.index_[buffer[j]]))
 
-		logging.info('Creating sparse matrix...')
+		logging.info('Numpyifying co-occurrence data...')
 		data = np.array(data, dtype=np.uint64 if self.context_window_weighting == 'constant' else np.float64, copy=False)
 		rows = np.array(rows, dtype=np.uint64, copy=False)
 		cols = np.array(cols, dtype=np.uint64, copy=False)
 
+		if (self.cache_intermediary_results):
+			logging.info('Storing raw array co-occurrence data...')
+			utils.numpy_to_hdf(data, self.cache_path, 'data.cooc')
+			utils.numpy_to_hdf(rows, self.cache_path, 'rows.cooc')
+			utils.numpy_to_hdf(cols, self.cache_path, 'cols.cooc')
+
+		logging.info('Creating sparse matrix...')
 		self.M_ = sparse.coo_matrix((data, (rows, cols)), dtype=np.uint64 if self.context_window_weighting == 'constant' else np.float64).tocsr() # Scipy seems to not handle numeric overflow in a very graceful manner
 		logging.info('M.shape={}'.format(self.M_.shape))
 
