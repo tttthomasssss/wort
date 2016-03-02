@@ -698,6 +698,7 @@ if (__name__ == '__main__'):
 	#vectorize_wikipedia()
 	vectorize_ukwac()
 
+	print('Running evaluations...')
 	rg65_scores = test_rg65_evaluation()
 	mc30_scores = test_mc30_evaluation()
 	ws353_scores = test_ws353_evaluation()
