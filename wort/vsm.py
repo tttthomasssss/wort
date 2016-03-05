@@ -314,7 +314,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# Create a csr_matrix straight away!!!
 		#self.M_ = sparse.coo_matrix((data, (rows, cols)), dtype=np.uint64 if self.context_window_weighting == 'constant' else np.float64).tocsr() # Scipy seems to not handle numeric overflow in a very graceful manner
 		dtype = np.uint64 if self.context_window_weighting == 'constant' else np.float64
-		self.M_ = sparse.csr_matrix((data), (rows, cols), dtype=dtype, shape=(n_vocab, n_vocab))
+		self.M_ = sparse.csr_matrix((data), (rows, cols), dtype=dtype)
 		logging.info('M.shape={}'.format(self.M_.shape))
 
 		# Apply Binarisation
