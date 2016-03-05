@@ -365,7 +365,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		logging.info('Taking logs...')
 
 		logging.info('Construction the COO PMI matrix')
-		# Construct another COO matrix and convert it to a CSR as we go and ...
+		# Construct another CSR matrix as we go and ...
 		data = np.log(P_w_c.data / P_wc_marginals[P_w_c.nonzero()]) # Doing the division first maintains the sparsity of the matrix
 		rows, cols = P_w_c.nonzero()
 
