@@ -265,9 +265,9 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		logging.info('Constructing co-occurrence matrix...')
 		# Incrementally construct coo matrix (see http://www.stefanoscerra.it)
 		# This can be parallelised (inverted_index is shared and immutable and the rest is just a matrix)
-		rows = array.array('i')
-		cols = array.array('i')
-		data = array.array('i' if self.context_window_weighting == 'constant' else 'f')
+		rows = array.array('I') #rows = array.array('i')
+		cols = array.array('I') #cols = array.array('i')
+		data = array.array('I' if self.context_window_weighting == 'constant' else 'f')
 
 		window_weighting_fn = getattr(self, '_{}_window_weighting'.format(self.context_window_weighting))
 
@@ -301,8 +301,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		#		Or chunk it up and create several sparse arrays that get added (?)
 		logging.info('Numpyifying co-occurrence data...')
 		data = np.array(data, dtype=np.uint64 if self.context_window_weighting == 'constant' else np.float64, copy=False)
-		rows = np.array(rows, dtype=np.uint64, copy=False)
-		cols = np.array(cols, dtype=np.uint64, copy=False)
+		rows = np.array(rows, dtype=np.uint32, copy=False)
+		cols = np.array(cols, dtype=np.uint32, copy=False)
 
 		#if (self.cache_intermediary_results):
 		#	logging.info('Storing raw array co-occurrence data...')
@@ -311,7 +311,10 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		#	utils.numpy_to_hdf(cols, self.cache_path, 'cols.cooc')
 
 		logging.info('Creating sparse matrix...')
-		self.M_ = sparse.coo_matrix((data, (rows, cols)), dtype=np.uint64 if self.context_window_weighting == 'constant' else np.float64).tocsr() # Scipy seems to not handle numeric overflow in a very graceful manner
+		# Create a csr_matrix straight away!!!
+		#self.M_ = sparse.coo_matrix((data, (rows, cols)), dtype=np.uint64 if self.context_window_weighting == 'constant' else np.float64).tocsr() # Scipy seems to not handle numeric overflow in a very graceful manner
+		dtype = np.uint64 if self.context_window_weighting == 'constant' else np.float64
+		self.M_ = sparse.csr_matrix((data), (rows, cols), dtype=dtype, shape=(n_vocab, n_vocab))
 		logging.info('M.shape={}'.format(self.M_.shape))
 
 		# Apply Binarisation
@@ -368,7 +371,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		logging.info('Applying the PMI option')
 		# ...apply the PMI variant (e.g. PPMI, SPPMI, PLMI or PNPMI)
-		PMI = self._apply_weight_option(sparse.coo_matrix((data, (rows, cols)), dtype=np.float64).tocsr(), P_w_c, p_c)
+		PMI = self._apply_weight_option(sparse.csr_matrix((data, (rows, cols)), shape=self.M_.shape, dtype=np.float64), P_w_c, p_c)
 
 		# Apply shift
 		if (self.sppmi_shift is not None and self.sppmi_shift > 0):
