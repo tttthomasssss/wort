@@ -300,7 +300,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		#		Either cythonize the shit
 		#		Or chunk it up and create several sparse arrays that get added (?)
 		logging.info('Numpyifying co-occurrence data...')
-		data = np.array(data, dtype=np.uint64 if self.context_window_weighting == 'constant' else np.float64, copy=False)
+		data = np.array(data, dtype=np.uint8 if self.context_window_weighting == 'constant' else np.float64, copy=False)
 		rows = np.array(rows, dtype=np.uint32, copy=False)
 		cols = np.array(cols, dtype=np.uint32, copy=False)
 
@@ -314,7 +314,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# Create a csr_matrix straight away!!!
 		#self.M_ = sparse.coo_matrix((data, (rows, cols)), dtype=np.uint64 if self.context_window_weighting == 'constant' else np.float64).tocsr() # Scipy seems to not handle numeric overflow in a very graceful manner
 		dtype = np.uint64 if self.context_window_weighting == 'constant' else np.float64
-		self.M_ = sparse.csr_matrix((data), (rows, cols), dtype=dtype)
+		self.M_ = sparse.csr_matrix((data.astype(dtype), (rows, cols)), shape=(n_vocab, n_vocab))
 		logging.info('M.shape={}'.format(self.M_.shape))
 
 		# Apply Binarisation
