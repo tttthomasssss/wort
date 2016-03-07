@@ -328,7 +328,7 @@ def test_rg65_loader():
 	print(ds)
 
 
-def test_mc30_evaluation():
+def test_mc30_evaluation(dataset='wikipedia'):
 	print('MC30 Evaluation')
 	ds = fetch_miller_charles_30_dataset()
 
@@ -342,7 +342,7 @@ def test_mc30_evaluation():
 								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
 							]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
-		wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
+		wort_path = os.path.join(base_path, dataset, wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
 		print('Wort model loaded!')
 
@@ -363,7 +363,7 @@ def test_mc30_evaluation():
 	return scores_by_model
 
 
-def test_rg65_evaluation():
+def test_rg65_evaluation(dataset='wikipedia'):
 	print('RG65 Evaluation')
 	ds = fetch_rubinstein_goodenough_65_dataset()
 	base_path = paths.get_dataset_path()
@@ -376,7 +376,7 @@ def test_rg65_evaluation():
 								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
 							]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
-		wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
+		wort_path = os.path.join(base_path, dataset, wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
 		print('Wort model loaded!')
 
@@ -397,7 +397,7 @@ def test_rg65_evaluation():
 	return scores_by_model
 
 
-def test_rw_evaluation():
+def test_rw_evaluation(dataset='wikipedia'):
 	print('RW Evaluation')
 	ds = fetch_rare_words_dataset()
 	base_path = paths.get_dataset_path()
@@ -410,7 +410,7 @@ def test_rw_evaluation():
 								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
 							]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
-		wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
+		wort_path = os.path.join(base_path, dataset, wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
 		print('Wort model loaded!')
 
@@ -431,7 +431,7 @@ def test_rw_evaluation():
 	return scores_by_model
 
 
-def test_men_evaluation():
+def test_men_evaluation(dataset='wikipedia'):
 	print('MEN Evaluation')
 	ds = fetch_men_dataset()
 	base_path = paths.get_dataset_path()
@@ -444,7 +444,7 @@ def test_men_evaluation():
 								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
 							]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
-		wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
+		wort_path = os.path.join(base_path, dataset, wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
 		print('Wort model loaded!')
 
@@ -465,7 +465,7 @@ def test_men_evaluation():
 	return scores_by_model
 
 
-def test_mturk_evaluation():
+def test_mturk_evaluation(dataset='wikipedia'):
 	print('MTurk Evaluation')
 	ds = fetch_mturk_dataset()
 	base_path = paths.get_dataset_path()
@@ -478,7 +478,7 @@ def test_mturk_evaluation():
 								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
 							]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
-		wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
+		wort_path = os.path.join(base_path, dataset, wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
 		print('Wort model loaded!')
 
@@ -499,7 +499,7 @@ def test_mturk_evaluation():
 	return scores_by_model
 
 
-def test_ws353_evaluation():
+def test_ws353_evaluation(dataset='wikipedia'):
 	print('WS353 Evaluation')
 	base_path = paths.get_dataset_path()
 	scores_by_model = {}
@@ -513,7 +513,7 @@ def test_ws353_evaluation():
 								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
 							]:
 			print('Loading Wort Model: {}...'.format(wort_model_name))
-			wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
+			wort_path = os.path.join(base_path, dataset, wort_model_name)
 			wort_model = VSMVectorizer.load_from_file(path=wort_path)
 			print('Wort model loaded!')
 
@@ -534,7 +534,7 @@ def test_ws353_evaluation():
 	return scores_by_model
 
 
-def test_simlex_evaluation():
+def test_simlex_evaluation(dataset='wikipedia'):
 	print('SimLex Evaluation')
 	base_path = paths.get_dataset_path()
 	scores_by_model = {}
@@ -550,7 +550,7 @@ def test_simlex_evaluation():
 								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
 							]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
-		wort_path = os.path.join(base_path, 'wikipedia', wort_model_name)
+		wort_path = os.path.join(base_path, dataset, wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
 		print('Wort model loaded!')
 
@@ -696,16 +696,16 @@ if (__name__ == '__main__'):
 
 	#'''
 	#vectorize_wikipedia()
-	vectorize_ukwac()
+	#vectorize_ukwac()
 
 	print('Running evaluations...')
-	rg65_scores = test_rg65_evaluation()
-	mc30_scores = test_mc30_evaluation()
-	ws353_scores = test_ws353_evaluation()
-	rw_scores = test_rw_evaluation()
-	men_scores = test_men_evaluation()
-	mturk_scores = test_mturk_evaluation()
-	simlex_scores = test_simlex_evaluation()
+	rg65_scores = test_rg65_evaluation('ukwac')
+	mc30_scores = test_mc30_evaluation('ukwac')
+	ws353_scores = test_ws353_evaluation('ukwac')
+	rw_scores = test_rw_evaluation('ukwac')
+	men_scores = test_men_evaluation('ukwac')
+	mturk_scores = test_mturk_evaluation('ukwac')
+	simlex_scores = test_simlex_evaluation('ukwac')
 
 	if (not os.path.exists(os.path.join(paths.get_out_path(), 'wordsim_ukwac'))):
 		os.makedirs(os.path.join(paths.get_out_path(), 'wordsim_ukwac'))
