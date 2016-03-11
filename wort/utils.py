@@ -1,10 +1,18 @@
 __author__ = 'thk22'
 # Code more or less shamelessly stolen from: http://stackoverflow.com/questions/11129429/storing-numpy-sparse-matrix-in-hdf5-pytables/11130235#11130235
 import os
-
+from nltk import word_tokenize
+from nltk.stem import WordNetLemmatizer
 from scipy import sparse
 import numpy as np
 import tables
+
+
+class LemmaTokenizer(object):
+	def __init__(self):
+		self.wnl = WordNetLemmatizer()
+	def __call__(self, doc):
+		return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
 
 # TODO: The file appending thing is a bit ugly, should add some custom naming facilities...
 # TODO: Support compression for all HDF operations, see http://stackoverflow.com/questions/20118560/compressing-array-with-pytables#answer-20139553 and http://www.pytables.org/usersguide/libref/helper_classes.html#filtersclassdescr
