@@ -260,7 +260,7 @@ def vectorize_wikipedia():
 	for dim in [600]:
 		for pmi_type in ['ppmi']:
 			for dim_reduction in [None, 'svd']:
-				for window_size in [2]:
+				for window_size in [5]:
 					print('CONFIG: pmi_type={}; window_size={}; dim_reduction={}; dim_size={}...'.format(pmi_type, window_size, dim_reduction, dim))
 					transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_model_ppmi_window-{}_dim-{}-dim_size-{}'.format(
 						window_size, dim_reduction, dim
