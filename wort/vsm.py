@@ -410,7 +410,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			if (isinstance(raw_documents, GeneratorType)):
 				raise TypeError('You can\'t pass a generator as the sentences argument. Try an iterator.')
 
-		if (not os.path.exists(os.path.join(self.cache_path, 'M.hdf'))): # TODO: not just check for existence but check whether the config is also the same!!!
+		if (self.cache_path is None or not os.path.exists(os.path.join(self.cache_path, 'M.hdf'))): # TODO: not just check for existence but check whether the config is also the same!!!
 			logging.info('No cache available at {}! Constructing the co-occurrence matrix!'.format(self.cache_path))
 			self._construct_cooccurrence_matrix(raw_documents)
 
