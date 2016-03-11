@@ -241,6 +241,18 @@ def vectorize_ukwac():
 						print('{} already exists!'.format(transformed_out_path))
 
 
+def lemmatise_wikipedia():
+	p = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wikipedia_utf8_filtered_20pageviews_lc_noid.tsv')
+	wiki_reader = CSVStreamReader(p, delimiter='\t')
+	ltk = LemmaTokenizer()
+
+	with open(os.path.join(paths.get_dataset_path(), 'wikipedia', 'wikipedia_utf8_filtered_20pageviews_lc_noid_lemma.tsv'), 'w') as out_file:
+		for idx, line in enumerate(wiki_reader, 1):
+			new_line = ' '.join(ltk(line.strip()))
+			out_file.write(new_line + '\n')
+			if (idx % 10000 == 0): print('{} lines processed!'.format(idx))
+
+
 def vectorize_wikipedia():
 	from discoutils.thesaurus_loader import Vectors
 	from wort.datasets import get_miller_charles_30_words
@@ -695,8 +707,9 @@ if (__name__ == '__main__'):
 	#test_goog_loader()
 	#test_msr_evaluation()
 	#test_read_ukwac()
+	lemmatise_wikipedia()
 
-	#'''
+	'''
 	vectorize_wikipedia()
 	#vectorize_ukwac()
 
