@@ -258,7 +258,7 @@ def vectorize_wikipedia():
 	from wort.datasets import get_miller_charles_30_words
 	from wort.datasets import get_rubinstein_goodenough_65_words
 
-	p = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wikipedia_utf8_filtered_20pageviews_lc_noid.tsv')
+	p = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wikipedia_utf8_filtered_20pageviews_lc_noid_lemma.tsv')
 	wiki_reader = CSVStreamReader(p, delimiter='\t')
 
 	out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors_min_freq_100')
@@ -272,14 +272,14 @@ def vectorize_wikipedia():
 	for dim in [600]:
 		for pmi_type in ['ppmi']:
 			for dim_reduction in [None, 'svd']:
-				for window_size in [5]:
+				for window_size in [5, 2]:
 					print('CONFIG: pmi_type={}; window_size={}; dim_reduction={}; dim_size={}...'.format(pmi_type, window_size, dim_reduction, dim))
-					transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_model_ppmi_window-{}_dim-{}-dim_size-{}'.format(
+					transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_model_ppmi_lemma-True_window-{}_dim-{}-dim_size-{}'.format(
 						window_size, dim_reduction, dim
 					))
 					if (not os.path.exists(transformed_out_path)):
 						vec = VSMVectorizer(window_size=window_size, min_frequency=50, cds=0.75, weighting=pmi_type, word_white_list=whitelist,
-											svd_dim=dim, svd_eig_weighting=0.5, dim_reduction=dim_reduction, tokenizer=LemmaTokenizer())
+											svd_dim=dim, svd_eig_weighting=0.5, dim_reduction=dim_reduction)
 
 						vec.fit(wiki_reader)
 
@@ -709,7 +709,7 @@ if (__name__ == '__main__'):
 	#test_read_ukwac()
 	lemmatise_wikipedia()
 
-	'''
+	#'''
 	vectorize_wikipedia()
 	#vectorize_ukwac()
 
