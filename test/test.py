@@ -350,11 +350,8 @@ def test_mc30_evaluation(dataset='wikipedia'):
 
 	scores_by_model = {}
 
-	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
-							]:
+	for wort_model_name in ['wort_model_ppmi_lemma-True_window-2_dim-None-dim_size-600',
+							'wort_model_ppmi_lemma-True_window-5_dim-None-dim_size-600']:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
@@ -384,11 +381,8 @@ def test_rg65_evaluation(dataset='wikipedia'):
 
 	scores_by_model = {}
 
-	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
-							]:
+	for wort_model_name in ['wort_model_ppmi_lemma-True_window-2_dim-None-dim_size-600',
+							'wort_model_ppmi_lemma-True_window-5_dim-None-dim_size-600']:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
@@ -452,11 +446,8 @@ def test_men_evaluation(dataset='wikipedia'):
 
 	scores_by_model = {}
 
-	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
-							]:
+	for wort_model_name in ['wort_model_ppmi_lemma-True_window-2_dim-None-dim_size-600',
+							'wort_model_ppmi_lemma-True_window-5_dim-None-dim_size-600']:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
@@ -521,11 +512,8 @@ def test_ws353_evaluation(dataset='wikipedia'):
 	for st in ['similarity', 'relatedness', None]:
 		ds = fetch_ws353_dataset(similarity_type=st)
 
-		for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
-							]:
+		for wort_model_name in ['wort_model_ppmi_lemma-True_window-2_dim-None-dim_size-600',
+							'wort_model_ppmi_lemma-True_window-5_dim-None-dim_size-600']:
 			print('Loading Wort Model: {}...'.format(wort_model_name))
 			wort_path = os.path.join(base_path, dataset, wort_model_name)
 			wort_model = VSMVectorizer.load_from_file(path=wort_path)
@@ -558,11 +546,8 @@ def test_simlex_evaluation(dataset='wikipedia'):
 
 	scores_by_model = {}
 
-	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
-							]:
+	for wort_model_name in ['wort_model_ppmi_lemma-True_window-2_dim-None-dim_size-600',
+							'wort_model_ppmi_lemma-True_window-5_dim-None-dim_size-600']:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
@@ -710,16 +695,16 @@ if (__name__ == '__main__'):
 	lemmatise_wikipedia()
 
 	#'''
-	vectorize_wikipedia()
+	#vectorize_wikipedia()
 	#vectorize_ukwac()
 
 	print('Running evaluations...')
 	rg65_scores = test_rg65_evaluation('wikipedia')
 	mc30_scores = test_mc30_evaluation('wikipedia')
 	ws353_scores = test_ws353_evaluation('wikipedia')
-	rw_scores = test_rw_evaluation('wikipedia')
+	#rw_scores = test_rw_evaluation('wikipedia')
 	men_scores = test_men_evaluation('wikipedia')
-	mturk_scores = test_mturk_evaluation('wikipedia')
+	#mturk_scores = test_mturk_evaluation('wikipedia')
 	simlex_scores = test_simlex_evaluation('wikipedia')
 
 	if (not os.path.exists(os.path.join(paths.get_out_path(), 'wordsim_wikipedia'))):
@@ -731,21 +716,21 @@ if (__name__ == '__main__'):
 		json.dump(mc30_scores, out_file, indent=4)
 	with open(os.path.join(paths.get_out_path(), 'wordsim_wikipedia', 'ws353_wort.json'), 'w') as out_file:
 		json.dump(ws353_scores, out_file, indent=4)
-	with open(os.path.join(paths.get_out_path(), 'wordsim_wikipedia', 'rw.json'), 'w') as out_file:
-		json.dump(rw_scores, out_file, indent=4)
+	#with open(os.path.join(paths.get_out_path(), 'wordsim_wikipedia', 'rw.json'), 'w') as out_file:
+	#	json.dump(rw_scores, out_file, indent=4)
 	with open(os.path.join(paths.get_out_path(), 'wordsim_wikipedia', 'men.json'), 'w') as out_file:
 		json.dump(men_scores, out_file, indent=4)
-	with open(os.path.join(paths.get_out_path(), 'wordsim_wikipedia', 'mturk.json'), 'w') as out_file:
-		json.dump(mturk_scores, out_file, indent=4)
+	#with open(os.path.join(paths.get_out_path(), 'wordsim_wikipedia', 'mturk.json'), 'w') as out_file:
+	#	json.dump(mturk_scores, out_file, indent=4)
 	with open(os.path.join(paths.get_out_path(), 'wordsim_wikipedia', 'simlex.json'), 'w') as out_file:
 		json.dump(simlex_scores, out_file, indent=4)
 
 	print('RG65 SCORES: {}'.format(json.dumps(rg65_scores, indent=4)))
 	print('MC30 SCORES: {}'.format(json.dumps(mc30_scores, indent=4)))
 	print('WS353 SCORES: {}'.format(json.dumps(ws353_scores, indent=4)))
-	print('RW SCORES: {}'.format(json.dumps(rw_scores, indent=4)))
+	#print('RW SCORES: {}'.format(json.dumps(rw_scores, indent=4)))
 	print('MEN SCORES: {}'.format(json.dumps(men_scores, indent=4)))
-	print('MTURK SCORES: {}'.format(json.dumps(mturk_scores, indent=4)))
+	#print('MTURK SCORES: {}'.format(json.dumps(mturk_scores, indent=4)))
 	print('SIMLEX SCORES: {}'.format(json.dumps(simlex_scores, indent=4)))
 	#'''
 	#test_ws353_words_loader()
