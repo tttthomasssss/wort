@@ -378,6 +378,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		#rows, cols = vectors.T_.nonzero()
 		#data = np.full(rows.shape, log_shift)
 		#vectors.T_ -= sparse.csr_matrix((data, (rows, cols)), shape=vectors.T_.shape)
+		#vectors.T_ = vectors.T_.maximum(0)
 
 		if (self.sppmi_shift is not None and self.sppmi_shift > 0):
 			PMI.data -= math.log(self.sppmi_shift) # Maintain sparsity structure!
