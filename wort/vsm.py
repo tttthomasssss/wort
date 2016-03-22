@@ -376,9 +376,9 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# Apply shift
 		if (self.sppmi_shift is not None and self.sppmi_shift > 0):
 			rows, cols = PMI.nonzero()
-			data = np.full(rows.shape, self.sppmi_shift, dtype=np.float64)
+			data = np.full(rows.shape, math.log(self.sppmi_shift), dtype=np.float64)
 			PMI -= sparse.csr_matrix((data, (rows, cols)), shape=PMI.shape)
-		
+
 		logging.info('Applying the threshold [type(PMI)={}]...'.format(type(PMI)))
 		# Apply threshold
 		self.T_ = PMI.maximum(0)
