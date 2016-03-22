@@ -374,15 +374,11 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		PMI = self._apply_weight_option(sparse.csr_matrix((data, (rows, cols)), shape=self.M_.shape, dtype=np.float64), P_w_c, p_c)
 
 		# Apply shift
-		#### TODO: SHIFT NEEDS TO BE DONE LIKE THIS, OTHERWISE WE MESS UP THE INTERNAL STRUCTURE OF THE SPARSE MATRIX!!!!!!
-		#rows, cols = vectors.T_.nonzero()
-		#data = np.full(rows.shape, log_shift)
-		#vectors.T_ -= sparse.csr_matrix((data, (rows, cols)), shape=vectors.T_.shape)
-		#vectors.T_ = vectors.T_.maximum(0)
-
 		if (self.sppmi_shift is not None and self.sppmi_shift > 0):
-			PMI.data -= math.log(self.sppmi_shift) # Maintain sparsity structure!
-
+			rows, cols = PMI.nonzero()
+			data = np.full(rows.shape, self.sppmi_shift, dtype=np.float64)
+			PMI -= sparse.csr_matrix((data, (rows, cols)), shape=PMI.shape)
+		
 		logging.info('Applying the threshold [type(PMI)={}]...'.format(type(PMI)))
 		# Apply threshold
 		self.T_ = PMI.maximum(0)
