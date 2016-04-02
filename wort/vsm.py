@@ -347,6 +347,58 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		logging.info('New p_w_ shape={}; M.sum(axis=1) shape={}'.format(self.p_w_.reshape(-1, 1).shape, self.M_.sum(axis=1).shape)) # TODO: THE ERROR IS IN ONE OF THE TWO CALLS!!!!!!!!
 		P_w.setdiag((self.p_w_.reshape(-1, 1) / self.M_.sum(axis=1)))
 
+		'''
+		Potentially need to transform the shit a bit (probably only matters when its _NOT_ a word-word co-occurrence matrix)
+		In which case M is symmetric and square, hence P(c) === P(w)
+
+		Want to calculate P(c | w) * P(w)
+		For P(c | w), need the rowwise probabilities of the co-occurrence count matrix M
+
+		# Some data matrix
+		In [20]: X
+		Out[20]:
+		array([[1, 0, 0],
+			   [3, 4, 2],
+			   [1, 1, 1],
+			   [0, 0, 9]])
+
+		In [21]: Xs = sparse.csr_matrix(X)
+
+		# Rowwise divisors
+		In [27]: 1 / Xs.sum(axis=1)
+		Out[27]:
+		matrix([[ 1.        ],
+				[ 0.11111111],
+				[ 0.33333333],
+				[ 0.11111111]])
+
+		# Needs to be square in the number of rows
+		In [36]: L = sparse.lil_matrix((4,4))
+
+		In [37]: L.setdiag(1/Xs.sum(axis=1))
+
+		In [41]: Xs.shape
+		Out[41]: (4, 3)
+
+		In [42]: L.shape
+		Out[42]: (4, 4)
+
+		In [44]: Y = Xs.T * L
+
+		In [45]: Y.A
+		Out[45]:
+		array([[ 1.        ,  0.33333333,  0.33333333,  0.        ],
+       		[ 0.        ,  0.44444444,  0.33333333,  0.        ],
+       		[ 0.        ,  0.22222222,  0.33333333,  1.        ]])
+
+		In [51]: Y.shape
+		Out[51]: (3, 4)
+
+		The result is now Y.T, as it needs to be a w x c matrix again
+
+		Given that we set the diagonal to be P(w) / P(c)_rowwise, this essentially reduces to 1 / M.sum() across the diagonal
+		'''
+
 		logging.info('Calculating Joints...') #TODO: check if this is correct!
 
 		P_w_c = P_w * self.M_
