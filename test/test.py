@@ -269,9 +269,9 @@ def vectorize_wikipedia():
 	whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words() | get_men_words() | get_simlex_999_words()
 
 	print('Word whitelist contains {} words!'.format(len(whitelist)))
-	for dim in [600]:
+	for dim in [600, 300]:
 		for pmi_type in ['ppmi']:
-			for dim_reduction in [None, 'svd']:
+			for dim_reduction in [None]:
 				for window_size in [5, 2]:
 					print('CONFIG: pmi_type={}; window_size={}; dim_reduction={}; dim_size={}...'.format(pmi_type, window_size, dim_reduction, dim))
 					transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_model_ppmi_lemma-True_window-{}_dim-{}-dim_size-{}'.format(
@@ -692,10 +692,10 @@ if (__name__ == '__main__'):
 	#test_goog_loader()
 	#test_msr_evaluation()
 	#test_read_ukwac()
-	lemmatise_wikipedia()
+	#lemmatise_wikipedia()
 
 	#'''
-	#vectorize_wikipedia()
+	vectorize_wikipedia()
 	#vectorize_ukwac()
 
 	print('Running evaluations...')

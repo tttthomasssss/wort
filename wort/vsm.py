@@ -338,14 +338,41 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		self.T_ = sparse.lil_matrix(self.M_.shape, dtype=np.float64)
 
+		logging.info('Applying CDS...')
+
+		# Marginals for context (with optional context distribution smoothing)
+		p_c = self.p_w_ ** self.cds if self.cds != 1 else self.p_w_
+
+		'''
+		pmi is the log of the joint probability of w and c divided by the product of their marginals
+		PMI = log(P(w, c) / (P(c) * P(w)))
+
+		the joint probability can be expressed as a conditional probability via the chain rule
+		P(w, c) = P(c | w) * P(w)
+		P(w, c) = P(w | c) * P(c)
+
+		plugging this into pmi results in
+		PMI = log(P(c | w) * P(w) / (P(w) * P(c)))
+
+		this allows P(w) (or P(c), depending on how the chain rule is applied) to be eliminated
+		PMI = log(P(c | w) / P(c))
+		'''
+
+		logging.info('Calculating PMI the new and fancy way...')
+
 		# Joint Probability for all co-occurrences, P(w, c) = P(c | w) * P(w) = P(w | c) * P(c)
 		# Doing it this way, keeps P_w_c a sparse matrix: http://stackoverflow.com/questions/3247775/how-to-elementwise-multiply-a-scipy-sparse-matrix-by-a-broadcasted-dense-1d-arra
 		P_w = sparse.lil_matrix(self.M_.shape, dtype=np.float64)
-		logging.info('M sum max={}'.format(np.amax(self.M_.sum(axis=1))))
-		logging.info('M sum={}'.format(self.M_.sum(axis=1).shape)) # TODO: Shit goes wrong here!!!!!!!!
-		logging.info('M_dtype={}; M_sum_dtype={}'.format(self.M_.dtype, self.M_.sum(axis=1).dtype))
-		logging.info('New p_w_ shape={}; M.sum(axis=1) shape={}'.format(self.p_w_.reshape(-1, 1).shape, self.M_.sum(axis=1).shape)) # TODO: THE ERROR IS IN ONE OF THE TWO CALLS!!!!!!!!
-		P_w.setdiag((self.p_w_.reshape(-1, 1) / self.M_.sum(axis=1)))
+		P_w.setdiag(1 / (p_c.reshape(-1, 1) * np.asarray(self.M_.sum(axis=1)))) # auxiliary matrix to get row-wise probabilities for P(c | w) (it already includes the division by P(c))
+
+		logging.info('type(P_w)={}; P_w.shape={}'.format(type(P_w), P_w.shape))
+
+		PMI = P_w * self.M_
+
+		logging.info('type(PMI)={}; PMI.shape={}'.format(type(PMI), PMI.shape))
+
+		data = np.log(PMI.data)
+		rows, cols = PMI.nonzero()
 
 		'''
 		Potentially need to transform the shit a bit (probably only matters when its _NOT_ a word-word co-occurrence matrix)
@@ -399,31 +426,30 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		Given that we set the diagonal to be P(w) / P(c)_rowwise, this essentially reduces to 1 / M.sum() across the diagonal
 		'''
 
-		logging.info('Calculating Joints...') #TODO: check if this is correct!
+		### OLD PMI
+		#logging.info('Calculating Joints...') #TODO: check if this is correct!
 
-		P_w_c = P_w * self.M_
+		#P_w_c = P_w * self.M_
 
-		logging.info('Applying CDS...')
-
-		# Marginals for context (with optional context distribution smoothing)
-		p_c = self.p_w_ ** self.cds if self.cds != 1 else self.p_w_
-
-		logging.info('Calculating Marginals...')
-
+		#logging.info('Calculating Marginals...')
 
 		# The product of all P(w) and P(c) marginals is the outer product of p_w and p_c
-		P_wc_marginals = np.outer(self.p_w_, p_c) # TODO: Cythonize?
+		#P_wc_marginals = np.outer(self.p_w_, p_c) # TODO: Cythonize?
 
-		logging.info('Taking logs...')
+		#logging.info('Taking logs...')
 
-		logging.info('Construction the COO PMI matrix')
+		#logging.info('Construction the COO PMI matrix')
 		# Construct another CSR matrix as we go and ...
-		data = np.log(P_w_c.data / P_wc_marginals[P_w_c.nonzero()]) # Doing the division first maintains the sparsity of the matrix
-		rows, cols = P_w_c.nonzero()
+		#data = np.log(P_w_c.data / P_wc_marginals[P_w_c.nonzero()]) # Doing the division first maintains the sparsity of the matrix
+		#rows, cols = P_w_c.nonzero()
 
 		logging.info('Applying the PMI option')
+		# TODO: with the new & optimised PMI variant, some of the assets required by the other PMI options need to calculated
+		# TODO: explicitely, hence that needs to be supported properly
 		# ...apply the PMI variant (e.g. PPMI, SPPMI, PLMI or PNPMI)
-		PMI = self._apply_weight_option(sparse.csr_matrix((data, (rows, cols)), shape=self.M_.shape, dtype=np.float64), P_w_c, p_c)
+		PMI = self._apply_weight_option(sparse.csr_matrix((data, (rows, cols)), shape=self.M_.shape, dtype=np.float64), None, p_c)
+
+		logging.info('after weight option, type(PMI)={}, PMI.shape={}'.format(type(PMI), PMI.shape))
 
 		# Apply shift
 		if (self.sppmi_shift is not None and self.sppmi_shift > 0):
