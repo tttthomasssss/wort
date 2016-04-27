@@ -113,12 +113,16 @@ def test_frost():
 
 
 def test_pizza():
-	base_path = os.path.join(paths.get_dataset_path(), 'pizza', 'pizza.txt')
+	import math
+	base_path = os.path.join(paths.get_dataset_path(), 'pizza_small', 'pizza_small.txt')
 	f = CSVStreamReader(base_path)
-	vec = VSMVectorizer(window_size=2, min_frequency=2, weighting='pnpmi')
+	vec = VSMVectorizer(window_size=2, min_frequency=0, weighting='ppmi', token_pattern=r'(?u)\b\w+\b', sppmi_shift=math.log(5))
+
+	vec._construct_cooccurrence_matrix(f)
+	vec._weight_transformation()
 
 	vec.fit(f)
-	joblib.dump(vec, os.path.join(os.path.split(base_path)[0], 'VSMVectorizer.joblib'), compress=3)
+	#joblib.dump(vec, os.path.join(os.path.split(base_path)[0], 'VSMVectorizer.joblib'), compress=3)
 
 
 def transform_wikipedia_from_cache():
