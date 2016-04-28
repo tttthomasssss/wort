@@ -76,7 +76,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		"""
 
 		# Support for asymmetric context windows
-		if (isinstance(window_size), tuple):
+		if (isinstance(window_size, tuple)):
 			if (len(window_size) > 1):
 				self.l_window_size = window_size[0]
 				self.r_window_size = window_size[1]
@@ -331,6 +331,14 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# Apply Binarisation
 		if (self.binary):
 			self.M_ = self.M_.minimum(1)
+
+		import json
+		with open('/Users/thomas/DevSandbox/EpicDataShelf/tag-lab/wort/index_min_freq.json', 'w') as idx_file:
+			json.dump(self.index_, idx_file, indent=4)
+		with open('/Users/thomas/DevSandbox/EpicDataShelf/tag-lab/wort/inverted_index_min_freq.json', 'w') as idx_file:
+			json.dump(self.inverted_index_, idx_file, indent=4)
+		with open('/Users/thomas/DevSandbox/EpicDataShelf/tag-lab/wort/cooc_min_freq.txt', 'wb') as cooc:
+			np.savetxt(cooc, self.M_.A, fmt='%d')
 
 	def _apply_weight_option(self, PMI, P_w_c, p_c):
 		# TODO: re-check results for `plmi` and `pnpmi`
