@@ -116,7 +116,7 @@ def test_pizza():
 	import math
 	base_path = os.path.join(paths.get_dataset_path(), 'pizza_small', 'pizza_small.txt')
 	f = CSVStreamReader(base_path)
-	vec = VSMVectorizer(window_size=2, min_frequency=0, weighting='ppmi', token_pattern=r'(?u)\b\w+\b', sppmi_shift=math.log(5))
+	vec = VSMVectorizer(window_size=2, min_frequency=2, weighting='ppmi', token_pattern=r'(?u)\b\w+\b', sppmi_shift=math.log(2))
 
 	vec._construct_cooccurrence_matrix(f)
 	vec._weight_transformation()
