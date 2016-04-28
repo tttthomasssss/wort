@@ -34,7 +34,7 @@ from wort import utils
 	# When applying SVD, the result is a dense matrix, change the type accordingly to not waste any memory/computing time by storing a dense matrix in sparse type
 class VSMVectorizer(BaseEstimator, VectorizerMixin):
 	def __init__(self, window_size, weighting='ppmi', min_frequency=0, lowercase=True, stop_words=None, encoding='utf-8',
-				 max_features=None, preprocessor=None, tokenizer=None, analyzer='word', binary=False, sppmi_shift=1,
+				 max_features=None, preprocessor=None, tokenizer=None, analyzer='word', binary=False, sppmi_shift=0,
 				 token_pattern=r'(?u)\b\w\w+\b', decode_error='strict', strip_accents=None, input='content',
 				 ngram_range=(1, 1), cds=1., dim_reduction=None, svd_dim=None, svd_eig_weighting=1, random_state=1105,
 				 context_window_weighting='constant', add_context_vectors=True, word_white_list=set(),
@@ -332,14 +332,6 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		if (self.binary):
 			self.M_ = self.M_.minimum(1)
 
-		import json
-		with open('/Users/thomas/DevSandbox/EpicDataShelf/tag-lab/wort/index_min_freq.json', 'w') as idx_file:
-			json.dump(self.index_, idx_file, indent=4)
-		with open('/Users/thomas/DevSandbox/EpicDataShelf/tag-lab/wort/inverted_index_min_freq.json', 'w') as idx_file:
-			json.dump(self.inverted_index_, idx_file, indent=4)
-		with open('/Users/thomas/DevSandbox/EpicDataShelf/tag-lab/wort/cooc_min_freq.txt', 'wb') as cooc:
-			np.savetxt(cooc, self.M_.A, fmt='%d')
-
 	def _apply_weight_option(self, PMI, P_w_c, p_c):
 		# TODO: re-check results for `plmi` and `pnpmi`
 		if (self.weighting == 'ppmi'):
@@ -361,6 +353,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		# Marginals for context (with optional context distribution smoothing)
 		p_c = self.p_w_ ** self.cds if self.cds != 1 else self.p_w_
+
 		'''
 		PMI is the log of the joint probability of w and c divided by the product of their marginals
 		PMI = log(P(w, c) / (P(c) * P(w)))
@@ -473,9 +466,10 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		# Apply shift
 		if (self.sppmi_shift is not None and self.sppmi_shift > 0):
+			logging.info('Applying shift={}...'.format(self.sppmi_shift))
 			rows, cols = PMI.nonzero()
 			data = np.full(rows.shape, self.sppmi_shift, dtype=np.float64)
-			PMI -= sparse.csr_matrix((data, (rows, cols)), shape=PMI.shape)
+			PMI -= sparse.csr_matrix((data, (rows, cols)), shape=PMI.shape, dtype=np.float64)
 
 		logging.info('Applying the threshold [type(PMI)={}]...'.format(type(PMI)))
 		# Apply threshold
