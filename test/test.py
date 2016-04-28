@@ -275,15 +275,14 @@ def vectorize_wikipedia():
 	print('Word whitelist contains {} words!'.format(len(whitelist)))
 	for dim in [600, 300]:
 		for pmi_type in ['ppmi']:
-			for dim_reduction in [None]:
+			for cds in [1., 0.75]:
 				for window_size in [5, 2]:
-					print('CONFIG: pmi_type={}; window_size={}; dim_reduction={}; dim_size={}...'.format(pmi_type, window_size, dim_reduction, dim))
-					transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_model_ppmi_lemma-True_window-{}_dim-{}-dim_size-{}'.format(
-						window_size, dim_reduction, dim
+					print('CONFIG: pmi_type={}; window_size={}; cds={}; dim_size={}...'.format(pmi_type, window_size, cds, dim))
+					transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_model_ppmi_lemma-True_window-{}_cds-{}-dim_size-{}'.format(
+						window_size, cds, dim
 					))
 					if (not os.path.exists(transformed_out_path)):
-						vec = VSMVectorizer(window_size=window_size, min_frequency=50, cds=0.75, weighting=pmi_type, word_white_list=whitelist,
-											svd_dim=dim, svd_eig_weighting=0.5, dim_reduction=dim_reduction)
+						vec = VSMVectorizer(window_size=window_size, min_frequency=50, cds=cds, weighting=pmi_type, word_white_list=whitelist)
 
 						vec.fit(wiki_reader)
 
