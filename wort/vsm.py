@@ -75,7 +75,18 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		:return:
 		"""
 
-		self.window_size = window_size
+		# Support for asymmetric context windows
+		if (isinstance(window_size), tuple):
+			if (len(window_size) > 1):
+				self.l_window_size = window_size[0]
+				self.r_window_size = window_size[1]
+			else:
+				self.l_window_size = window_size[0]
+				self.r_window_size = window_size[0]
+		else:
+			self.l_window_size = window_size
+			self.r_window_size = window_size
+
 		self.weighting = weighting
 		self.min_frequency = min_frequency
 		self.lowercase = lowercase
@@ -146,31 +157,31 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		return W
 
-	def _constant_window_weighting(self, _):
+	def _constant_window_weighting(self, *_):
 		return 1
 
-	def _aggressive_window_weighting(self, distance):
+	def _aggressive_window_weighting(self, distance, _):
 		return 2 ** (1 - abs(distance))
 
-	def _very_aggressive_window_weighting(self, distance):
+	def _very_aggressive_window_weighting(self, distance, _):
 		return 2 ** (1 - (distance ** 2))
 
-	def _harmonic_window_weighting(self, distance):
+	def _harmonic_window_weighting(self, distance, _):
 		return 1. / abs(distance) # Thats what GloVe is doing
 
-	def _distance_window_weighting(self, distance):
-		return (self.window_size - abs(distance)) / self.window_size # Thats what word2vec is doing
+	def _distance_window_weighting(self, distance, window_size):
+		return (window_size - abs(distance)) / window_size # Thats what word2vec is doing
 
-	def _sigmoid_window_weighting(self, distance):
+	def _sigmoid_window_weighting(self, distance, _):
 		return sigmoid(distance)
 
-	def _inverse_sigmoid_window_weighting(self, distance):
+	def _inverse_sigmoid_window_weighting(self, distance, _):
 		return 1 - sigmoid(distance)
 
-	def _absolute_sigmoid_window_weighting(self, distance):
+	def _absolute_sigmoid_window_weighting(self, distance, _):
 		return abs(sigmoid(distance))
 
-	def _absolut_inverse_sigmoid_window_weighting(self, distance):
+	def _absolut_inverse_sigmoid_window_weighting(self, distance, _):
 		return 1 - abs(sigmoid(distance))
 
 	def _construct_cooccurrence_matrix(self, raw_documents):
@@ -282,18 +293,18 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			for i in range(l):
 				# Backward co-occurrences
 				#logging.info('BACKWARD RANGE: {}'.format(list(range(max(i-self.window_size, 0), i))))
-				for distance, j in enumerate(range(max(i-self.window_size, 0), i), 1):
+				for distance, j in enumerate(range(max(i-self.l_window_size, 0), i), 1):
 					rows.append(buffer[i])
 					cols.append(buffer[j])
-					data.append(window_weighting_fn(-distance)) # The -distance is a bit of an ugly hack to support non-symmetric weighting
+					data.append(window_weighting_fn(-distance, self.l_window_size)) # The -distance is a bit of an ugly hack to support non-symmetric weighting
 					#logging.info('BWD DISTANCE: {}; WORD={}'.format(distance, self.index_[buffer[j]]))
 
 				# Forward co-occurrences
 				#logging.info('FORWARD RANGE: {}'.format(list(range(i+1, min(i+self.window_size+1, l)))))
-				for distance, j in enumerate(range(i+1, min(i+self.window_size+1, l)), 1):
+				for distance, j in enumerate(range(i+1, min(i+self.r_window_size+1, l)), 1):
 					rows.append(buffer[i])
 					cols.append(buffer[j])
-					data.append(window_weighting_fn(distance))
+					data.append(window_weighting_fn(distance, self.r_window_size))
 					#logging.info('FWD DISTANCE: {}; WORD={}'.format(distance, self.index_[buffer[j]]))
 
 		# TODO: This is still a bit of a bottleneck
