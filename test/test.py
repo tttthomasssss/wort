@@ -861,7 +861,7 @@ if (__name__ == '__main__'):
 	#lemmatise_wikipedia()
 
 	#'''
-	vectorize_wikipedia()
+	#vectorize_wikipedia()
 	#vectorize_ukwac()
 
 	print('Running evaluations...')
