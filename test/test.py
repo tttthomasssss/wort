@@ -1,5 +1,6 @@
 __author__ = 'thomas'
 import json
+import math
 import os
 
 from nltk.corpus import stopwords
@@ -394,7 +395,10 @@ def test_mc30_evaluation(dataset='wikipedia'):
 				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 			else:
 				human_sims.append(sim)
-				scores.append(1 - cosine(wort_model[w1], wort_model[w2]))
+				sim = 1 - cosine(wort_model[w1], wort_model[w2])
+				if (math.isnan(sim)):
+					sim = 0
+				scores.append(sim)
 
 		spearman = spearmanr(np.array(human_sims), np.array(scores))
 		scores_by_model[wort_model_name] = spearman
@@ -445,7 +449,10 @@ def test_rg65_evaluation(dataset='wikipedia'):
 				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 			else:
 				human_sims.append(sim)
-				scores.append(1 - cosine(wort_model[w1], wort_model[w2]))
+				sim = 1 - cosine(wort_model[w1], wort_model[w2])
+				if (math.isnan(sim)):
+					sim = 0
+				scores.append(sim)
 
 		spearman = spearmanr(np.array(human_sims), np.array(scores))
 		scores_by_model[wort_model_name] = spearman
@@ -496,7 +503,10 @@ def test_rw_evaluation(dataset='wikipedia'):
 				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 			else:
 				human_sims.append(sim)
-				scores.append(1 - cosine(wort_model[w1], wort_model[w2]))
+				sim = 1 - cosine(wort_model[w1], wort_model[w2])
+				if (math.isnan(sim)):
+					sim = 0
+				scores.append(sim)
 
 		spearman = spearmanr(np.array(human_sims), np.array(scores))
 		scores_by_model[wort_model_name] = spearman
@@ -547,7 +557,10 @@ def test_men_evaluation(dataset='wikipedia'):
 				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 			else:
 				human_sims.append(sim)
-				scores.append(1 - cosine(wort_model[w1], wort_model[w2]))
+				sim = 1 - cosine(wort_model[w1], wort_model[w2])
+				if (math.isnan(sim)):
+					sim = 0
+				scores.append(sim)
 
 		spearman = spearmanr(np.array(human_sims), np.array(scores))
 		scores_by_model[wort_model_name] = spearman
@@ -598,7 +611,10 @@ def test_mturk_evaluation(dataset='wikipedia'):
 				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 			else:
 				human_sims.append(sim)
-				scores.append(1 - cosine(wort_model[w1], wort_model[w2]))
+				sim = 1 - cosine(wort_model[w1], wort_model[w2])
+				if (math.isnan(sim)):
+					sim = 0
+				scores.append(sim)
 
 		spearman = spearmanr(np.array(human_sims), np.array(scores))
 		scores_by_model[wort_model_name] = spearman
@@ -650,11 +666,14 @@ def test_ws353_evaluation(dataset='wikipedia'):
 					print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 				else:
 					human_sims.append(sim)
-					scores.append(1 - cosine(wort_model[w1], wort_model[w2]))
+					sim = 1 - cosine(wort_model[w1], wort_model[w2])
+					if (math.isnan(sim)):
+						sim = 0
+					scores.append(sim)
 
 			spearman = spearmanr(np.array(human_sims), np.array(scores))
 			scores_by_model['_'.join([str(st), wort_model_name])] = spearman
-			print('[WS353] Spearman Rho: {}'.format(spearman))
+			print('[WS353 - {}] Spearman Rho: {}'.format(st, spearman))
 			print('==================================================================================')
 
 	return scores_by_model
@@ -704,7 +723,10 @@ def test_simlex_evaluation(dataset='wikipedia'):
 				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 			else:
 				human_sims.append(sim)
-				scores.append(1 - cosine(wort_model[w1], wort_model[w2]))
+				sim = 1 - cosine(wort_model[w1], wort_model[w2])
+				if (math.isnan(sim)):
+					sim = 0
+				scores.append(sim)
 
 		spearman = spearmanr(np.array(human_sims), np.array(scores))
 		scores_by_model[wort_model_name] = spearman
