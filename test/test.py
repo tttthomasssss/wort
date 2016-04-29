@@ -353,8 +353,16 @@ def test_mc30_evaluation(dataset='wikipedia'):
 
 	scores_by_model = {}
 
-	for wort_model_name in ['wort_model_ppmi_lemma-True_window-2_dim-None-dim_size-600',
-							'wort_model_ppmi_lemma-True_window-5_dim-None-dim_size-600']:
+	for wort_model_name in [
+		'wort_model_ppmi_lemma-True_window-2_cds-0.75-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-2_cds-0.75-dim_size-600',
+		'wort_model_ppmi_lemma-True_window-2_cds-1.0-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-2_cds-1.0-dim_size-600',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-dim_size-600',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-dim_size-600'
+	]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
@@ -384,8 +392,16 @@ def test_rg65_evaluation(dataset='wikipedia'):
 
 	scores_by_model = {}
 
-	for wort_model_name in ['wort_model_ppmi_lemma-True_window-2_dim-None-dim_size-600',
-							'wort_model_ppmi_lemma-True_window-5_dim-None-dim_size-600']:
+	for wort_model_name in [
+		'wort_model_ppmi_lemma-True_window-2_cds-0.75-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-2_cds-0.75-dim_size-600',
+		'wort_model_ppmi_lemma-True_window-2_cds-1.0-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-2_cds-1.0-dim_size-600',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-dim_size-600',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-dim_size-600'
+	]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
@@ -415,11 +431,16 @@ def test_rw_evaluation(dataset='wikipedia'):
 
 	scores_by_model = {}
 
-	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
-							]:
+	for wort_model_name in [
+		'wort_model_ppmi_lemma-True_window-2_cds-0.75-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-2_cds-0.75-dim_size-600',
+		'wort_model_ppmi_lemma-True_window-2_cds-1.0-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-2_cds-1.0-dim_size-600',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-dim_size-600',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-dim_size-600'
+	]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
@@ -449,8 +470,16 @@ def test_men_evaluation(dataset='wikipedia'):
 
 	scores_by_model = {}
 
-	for wort_model_name in ['wort_model_ppmi_lemma-True_window-2_dim-None-dim_size-600',
-							'wort_model_ppmi_lemma-True_window-5_dim-None-dim_size-600']:
+	for wort_model_name in [
+		'wort_model_ppmi_lemma-True_window-2_cds-0.75-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-2_cds-0.75-dim_size-600',
+		'wort_model_ppmi_lemma-True_window-2_cds-1.0-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-2_cds-1.0-dim_size-600',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-dim_size-600',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-dim_size-600'
+	]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
@@ -480,11 +509,16 @@ def test_mturk_evaluation(dataset='wikipedia'):
 
 	scores_by_model = {}
 
-	for wort_model_name in ['wort_model_pmi-ppmi_window-2_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-600',
-								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-600', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-600',
-							'wort_model_pmi-ppmi_window-2_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-2_dim-svd-dim_size-300',
-								'wort_model_pmi-ppmi_window-5_dim-None-dim_size-300', 'wort_model_pmi-ppmi_window-5_dim-svd-dim_size-300',
-							]:
+	for wort_model_name in [
+		'wort_model_ppmi_lemma-True_window-2_cds-0.75-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-2_cds-0.75-dim_size-600',
+		'wort_model_ppmi_lemma-True_window-2_cds-1.0-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-2_cds-1.0-dim_size-600',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-dim_size-600',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-dim_size-600'
+	]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
@@ -515,8 +549,16 @@ def test_ws353_evaluation(dataset='wikipedia'):
 	for st in ['similarity', 'relatedness', None]:
 		ds = fetch_ws353_dataset(similarity_type=st)
 
-		for wort_model_name in ['wort_model_ppmi_lemma-True_window-2_dim-None-dim_size-600',
-							'wort_model_ppmi_lemma-True_window-5_dim-None-dim_size-600']:
+		for wort_model_name in [
+			'wort_model_ppmi_lemma-True_window-2_cds-0.75-dim_size-300',
+			'wort_model_ppmi_lemma-True_window-2_cds-0.75-dim_size-600',
+			'wort_model_ppmi_lemma-True_window-2_cds-1.0-dim_size-300',
+			'wort_model_ppmi_lemma-True_window-2_cds-1.0-dim_size-600',
+			'wort_model_ppmi_lemma-True_window-5_cds-0.75-dim_size-300',
+			'wort_model_ppmi_lemma-True_window-5_cds-0.75-dim_size-600',
+			'wort_model_ppmi_lemma-True_window-5_cds-1.0-dim_size-300',
+			'wort_model_ppmi_lemma-True_window-5_cds-1.0-dim_size-600'
+		]:
 			print('Loading Wort Model: {}...'.format(wort_model_name))
 			wort_path = os.path.join(base_path, dataset, wort_model_name)
 			wort_model = VSMVectorizer.load_from_file(path=wort_path)
@@ -549,8 +591,16 @@ def test_simlex_evaluation(dataset='wikipedia'):
 
 	scores_by_model = {}
 
-	for wort_model_name in ['wort_model_ppmi_lemma-True_window-2_dim-None-dim_size-600',
-							'wort_model_ppmi_lemma-True_window-5_dim-None-dim_size-600']:
+	for wort_model_name in [
+		'wort_model_ppmi_lemma-True_window-2_cds-0.75-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-2_cds-0.75-dim_size-600',
+		'wort_model_ppmi_lemma-True_window-2_cds-1.0-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-2_cds-1.0-dim_size-600',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-dim_size-600',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-dim_size-300',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-dim_size-600'
+	]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
 		wort_model = VSMVectorizer.load_from_file(path=wort_path)
@@ -698,7 +748,7 @@ if (__name__ == '__main__'):
 	#lemmatise_wikipedia()
 
 	#'''
-	vectorize_wikipedia()
+	#vectorize_wikipedia()
 	#vectorize_ukwac()
 
 	print('Running evaluations...')
