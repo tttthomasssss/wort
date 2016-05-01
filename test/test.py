@@ -218,18 +218,23 @@ def vectorize_ukwac():
 	whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words() | get_mturk_words() | get_men_words() | get_rare_words() | get_simlex_999_words() | get_msr_syntactic_analogies_words() | get_google_analogies_words()
 
 	print('Word whitelist contains {} words!'.format(len(whitelist)))
-	for dim in [600, 300]:
+	import math
+	for log_sppmi, sppmi in zip([0, math.log(5), math.log(10), math.log(40), math.log(100)], [0, 5, 10, 40, 100]):
 		for pmi_type in ['ppmi']:
-			for dim_reduction in [None, 'svd']:
-				for window_size in [2, 5]:
-					print('CONFIG: pmi_type={}; window_size={}; dim_reduction={}; dim_size={}...'.format(pmi_type, window_size, dim_reduction, dim))
-					transformed_out_path = os.path.join(paths.get_dataset_path(), 'ukwac', 'wort_model_pmi-{}_window-{}_dim-{}-dim_size-{}'.format(
-						pmi_type, window_size, dim_reduction, dim
+			for cds in [1., 0.75]:
+				for window_size in [5, 2]:
+					print('CONFIG: pmi_type={}; window_size={}; cds={}; shift={}...'.format(pmi_type, window_size, cds, sppmi))
+					transformed_out_path = os.path.join(paths.get_dataset_path(), 'ukwac', 'wort_model_ppmi_lemma-True_window-{}_cds-{}-sppmi_shift-{}'.format(
+						window_size, cds, sppmi
 					))
 					if (not os.path.exists(transformed_out_path)):
-						vec = VSMVectorizer(window_size=window_size, min_frequency=200, cds=0.75, weighting=pmi_type, word_white_list=whitelist,
-											svd_dim=dim, svd_eig_weighting=0.5, dim_reduction=dim_reduction, cache_intermediary_results=True,
-											cache_path=os.path.join(out_path, 'ukwac_cooccurrence_cache'))
+						cache_path = os.path.join(paths.get_dataset_path(), 'ukwac', 'wort_cache', 'window_size-{}'.format(window_size))
+						if (not os.path.exists(cache_path)):
+							os.makedirs(cache_path)
+
+						vec = VSMVectorizer(window_size=window_size, min_frequency=100, cds=cds, weighting=pmi_type,
+											word_white_list=whitelist, sppmi_shift=log_sppmi, cache_path=cache_path,
+											cache_intermediary_results=True)
 
 						vec.fit(ukwac_reader)
 
@@ -862,33 +867,33 @@ if (__name__ == '__main__'):
 
 	#'''
 	#vectorize_wikipedia()
-	#vectorize_ukwac()
+	vectorize_ukwac()
 
 	print('Running evaluations...')
-	rg65_scores = test_rg65_evaluation('wikipedia')
-	mc30_scores = test_mc30_evaluation('wikipedia')
-	ws353_scores = test_ws353_evaluation('wikipedia')
+	rg65_scores = test_rg65_evaluation('ukwac')
+	mc30_scores = test_mc30_evaluation('ukwac')
+	ws353_scores = test_ws353_evaluation('ukwac')
 	#rw_scores = test_rw_evaluation('wikipedia')
-	men_scores = test_men_evaluation('wikipedia')
+	men_scores = test_men_evaluation('ukwac')
 	#mturk_scores = test_mturk_evaluation('wikipedia')
-	simlex_scores = test_simlex_evaluation('wikipedia')
+	simlex_scores = test_simlex_evaluation('ukwac')
 
-	if (not os.path.exists(os.path.join(paths.get_out_path(), 'wordsim_wikipedia'))):
-		os.makedirs(os.path.join(paths.get_out_path(), 'wordsim_wikipedia'))
+	if (not os.path.exists(os.path.join(paths.get_out_path(), 'wordsim_ukwac'))):
+		os.makedirs(os.path.join(paths.get_out_path(), 'wordsim_ukwac'))
 
-	with open(os.path.join(paths.get_out_path(), 'wordsim_wikipedia', 'rg65_wort.json'), 'w') as out_file:
+	with open(os.path.join(paths.get_out_path(), 'wordsim_ukwac', 'rg65_wort.json'), 'w') as out_file:
 		json.dump(rg65_scores, out_file, indent=4)
-	with open(os.path.join(paths.get_out_path(), 'wordsim_wikipedia', 'mc30_wort.json'), 'w') as out_file:
+	with open(os.path.join(paths.get_out_path(), 'wordsim_ukwac', 'mc30_wort.json'), 'w') as out_file:
 		json.dump(mc30_scores, out_file, indent=4)
-	with open(os.path.join(paths.get_out_path(), 'wordsim_wikipedia', 'ws353_wort.json'), 'w') as out_file:
+	with open(os.path.join(paths.get_out_path(), 'wordsim_ukwac', 'ws353_wort.json'), 'w') as out_file:
 		json.dump(ws353_scores, out_file, indent=4)
-	#with open(os.path.join(paths.get_out_path(), 'wordsim_wikipedia', 'rw.json'), 'w') as out_file:
+	#with open(os.path.join(paths.get_out_path(), 'wordsim_ukwac', 'rw.json'), 'w') as out_file:
 	#	json.dump(rw_scores, out_file, indent=4)
-	with open(os.path.join(paths.get_out_path(), 'wordsim_wikipedia', 'men.json'), 'w') as out_file:
+	with open(os.path.join(paths.get_out_path(), 'wordsim_ukwac', 'men.json'), 'w') as out_file:
 		json.dump(men_scores, out_file, indent=4)
-	#with open(os.path.join(paths.get_out_path(), 'wordsim_wikipedia', 'mturk.json'), 'w') as out_file:
+	#with open(os.path.join(paths.get_out_path(), 'wordsim_ukwac', 'mturk.json'), 'w') as out_file:
 	#	json.dump(mturk_scores, out_file, indent=4)
-	with open(os.path.join(paths.get_out_path(), 'wordsim_wikipedia', 'simlex.json'), 'w') as out_file:
+	with open(os.path.join(paths.get_out_path(), 'wordsim_ukwac', 'simlex.json'), 'w') as out_file:
 		json.dump(simlex_scores, out_file, indent=4)
 
 	print('RG65 SCORES: {}'.format(json.dumps(rg65_scores, indent=4)))
