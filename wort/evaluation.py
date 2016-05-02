@@ -12,6 +12,7 @@ from wort.vsm import VSMVectorizer
 
 # TODO: Selector for datasets
 # TODO: OOV mode ('ignore', 'random', 0.5)
+# TODO: replace NaNs
 
 
 def intrinsic_word_similarity_evaluation(wort_model, ds_fetcher, distance_fn=cosine, correlation_fn=spearmanr, random_seed=1105, **ds_fetcher_kwargs):

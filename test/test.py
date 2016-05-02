@@ -232,7 +232,7 @@ def vectorize_ukwac():
 						if (not os.path.exists(cache_path)):
 							os.makedirs(cache_path)
 
-						vec = VSMVectorizer(window_size=window_size, min_frequency=200, cds=cds, weighting=pmi_type,
+						vec = VSMVectorizer(window_size=window_size, min_frequency=250, cds=cds, weighting=pmi_type,
 											word_white_list=whitelist, sppmi_shift=log_sppmi, cache_path=cache_path,
 											cache_intermediary_results=True)
 
@@ -876,6 +876,10 @@ if (__name__ == '__main__'):
 	#test_msr_evaluation()
 	#test_read_ukwac()
 	#lemmatise_wikipedia()
+	print('Lemmatising UKWAC...')
+	lemmatise_ukwac()
+	print('Lemmatisation Done!')
+
 
 	#'''
 	#vectorize_wikipedia()
@@ -917,7 +921,3 @@ if (__name__ == '__main__'):
 	print('SIMLEX SCORES: {}'.format(json.dumps(simlex_scores, indent=4)))
 	#'''
 	#test_ws353_words_loader()
-
-	print('Lemmatising UKWAC...')
-	lemmatise_ukwac()
-	print('Lemmatisation Done!')
