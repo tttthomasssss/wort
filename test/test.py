@@ -232,7 +232,7 @@ def vectorize_ukwac():
 						if (not os.path.exists(cache_path)):
 							os.makedirs(cache_path)
 
-						vec = VSMVectorizer(window_size=window_size, min_frequency=100, cds=cds, weighting=pmi_type,
+						vec = VSMVectorizer(window_size=window_size, min_frequency=200, cds=cds, weighting=pmi_type,
 											word_white_list=whitelist, sppmi_shift=log_sppmi, cache_path=cache_path,
 											cache_intermediary_results=True)
 
@@ -258,6 +258,18 @@ def lemmatise_wikipedia():
 
 	with open(os.path.join(paths.get_dataset_path(), 'wikipedia', 'wikipedia_utf8_filtered_20pageviews_lc_noid_lemma.tsv'), 'w') as out_file:
 		for idx, line in enumerate(wiki_reader, 1):
+			new_line = ' '.join(ltk(line.strip()))
+			out_file.write(new_line + '\n')
+			if (idx % 10000 == 0): print('{} lines processed!'.format(idx))
+
+
+def lemmatise_ukwac():
+	p = GzipStreamReader(path='/research/calps/data2/public/corpora/ukwac1.0/raw/ukwac_preproc.gz')
+	ukwac_reader = GzipStreamReader(p)
+	ltk = LemmaTokenizer()
+
+	with open(os.path.join(paths.get_dataset_path(), 'ukwac', 'ukwac_lemmatised.txt'), 'w') as out_file:
+		for idx, line in enumerate(ukwac_reader, 1):
 			new_line = ' '.join(ltk(line.strip()))
 			out_file.write(new_line + '\n')
 			if (idx % 10000 == 0): print('{} lines processed!'.format(idx))
@@ -905,3 +917,7 @@ if (__name__ == '__main__'):
 	print('SIMLEX SCORES: {}'.format(json.dumps(simlex_scores, indent=4)))
 	#'''
 	#test_ws353_words_loader()
+
+	print('Lemmatising UKWAC...')
+	lemmatise_ukwac()
+	print('Lemmatisation Done!')
