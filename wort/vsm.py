@@ -273,6 +273,12 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.index_ = dict(zip(range(n_vocab), self.index_.values()))
 		self.inverted_index_ = dict(zip(self.index_.values(), self.index_.keys()))
 
+		# TODO: This needs optimisation
+		# https://en.wikipedia.org/wiki/Feature_hashing#Feature_vectorization_using_the_hashing_trick
+		# http://datascience.stackexchange.com/questions/9918/optimizing-co-occurrence-matrix-computation
+		# The construction of the co-occurrence matrix can also be chunked, the size of the vocabulary
+		# is known in advance (as is the number of tokens), so the construction below, which is memory heavy
+		# could be chunked into several bits to ease the memory hunger of the loops a bit
 		logging.info('Constructing co-occurrence matrix...')
 		# Incrementally construct coo matrix (see http://www.stefanoscerra.it)
 		# This can be parallelised (inverted_index is shared and immutable and the rest is just a matrix)
