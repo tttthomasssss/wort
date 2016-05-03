@@ -264,8 +264,7 @@ def lemmatise_wikipedia():
 
 
 def lemmatise_ukwac():
-	p = GzipStreamReader(path='/research/calps/data2/public/corpora/ukwac1.0/raw/ukwac_preproc.gz')
-	ukwac_reader = GzipStreamReader(p)
+	ukwac_reader = GzipStreamReader(path='/research/calps/data2/public/corpora/ukwac1.0/raw/ukwac_preproc.gz')
 	ltk = LemmaTokenizer()
 
 	with open(os.path.join(paths.get_dataset_path(), 'ukwac', 'ukwac_lemmatised.txt'), 'w') as out_file:
