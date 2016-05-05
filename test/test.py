@@ -302,7 +302,7 @@ def vectorize_wikipedia():
 						window_size, cds, sppmi
 					))
 					if (not os.path.exists(transformed_out_path)):
-						cache_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_cache', 'window_size-{}'.format(window_size))
+						cache_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_cache_ml2010', 'window_size-{}'.format(window_size))
 						if (not os.path.exists(cache_path)):
 							os.makedirs(cache_path)
 
