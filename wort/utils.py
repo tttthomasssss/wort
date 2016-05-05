@@ -21,7 +21,7 @@ class LemmaTokenizer(object):
 
 
 def numpy_to_hdf(obj, path, name):
-	with tables.open_file(os.path.join(path, name), 'w') as f:
+	with tables.open_file(os.path.join(path, '{}.hdf'.format(name)), 'w') as f:
 		atom = tables.Atom.from_dtype(obj.dtype)
 		arr = f.create_carray(f.root, name, atom, obj.shape)
 		arr[:] = obj
@@ -29,7 +29,7 @@ def numpy_to_hdf(obj, path, name):
 
 def hdf_to_numpy(path, name, compression_level=0, compression_lib='zlib'):
 	filters = tables.Filters(complevel=compression_level, complib=compression_lib)
-	with tables.open_file(os.path.join(path, name), 'r', filters=filters) as f:
+	with tables.open_file(os.path.join(path, '{}.hdf'.format(name)), 'r', filters=filters) as f:
 		try: # TODO: QUICKHACK - REMOVE LATER!!!!!
 			arr = np.array(getattr(f.root, name).read())
 		except tables.exceptions.NoSuchNodeError:

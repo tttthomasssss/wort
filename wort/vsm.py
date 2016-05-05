@@ -601,7 +601,10 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		logging.info('Loading rest...')
 		model.index_ = joblib.load(os.path.join(path, 'index.joblib'))
 		model.inverted_index_ = joblib.load(os.path.join(path, 'inverted_index.joblib'))
-		model.p_w_ = joblib.load(os.path.join(path, 'p_w.joblib'))
+		if (os.path.exists(os.path.join(path, 'p_w.hdf'))):
+			model.p_w_ = utils.hdf_to_numpy(path, 'p_w')
+		else:
+			model.p_w_ = joblib.load(os.path.join(path, 'p_w.joblib'))
 		logging.info('Everything loaded!')
 
 		return model
@@ -613,4 +616,6 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		utils.sparse_csx_matrix_to_hdf(self.T_, path, 'T.hdf')
 		joblib.dump(self.index_, os.path.join(path, 'index.joblib'), compress=3)
 		joblib.dump(self.inverted_index_, os.path.join(path, 'inverted_index.joblib'), compress=3)
-		joblib.dump(self.p_w_, os.path.join(path, 'p_w.joblib'), compress=3)
+
+		utils.numpy_to_hdf(self.p_w_, path, 'p_w')
+		#joblib.dump(self.p_w_, os.path.join(path, 'p_w.joblib'), compress=3)
