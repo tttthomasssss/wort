@@ -527,8 +527,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			for doc in raw_documents:
 				d = []
 				for feature in analyser(doc):
-					if (feature in self.inverted_index_):
-						d.append(self.T_[self.inverted_index_[feature]])
+					if (feature in self):
+						d.append(self[feature])
 					else:
 						if (oov != 'ignore'):
 							d.append(oov_handler((1, self.get_vector_size())))
@@ -545,8 +545,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				return ll
 		else:
 			for feature in analyser(raw_documents):
-				if (feature in self.inverted_index_):
-					l.append(self.T_[self.inverted_index_[feature]])
+				if (feature in self):
+					l.append(self[feature])
 				else:
 					if (oov != 'ignore'):
 						l.append(oov_handler((1, self.get_vector_size())))
