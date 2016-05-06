@@ -18,6 +18,7 @@ from wort.corpus_readers import FrostReader
 from wort.corpus_readers import MovieReviewReader
 from wort.corpus_readers import CSVStreamReader
 from wort.corpus_readers import GzipStreamReader
+from wort.corpus_readers import TextStreamReader
 from wort.datasets import fetch_men_dataset
 from wort.datasets import fetch_miller_charles_30_dataset
 from wort.datasets import fetch_mturk_dataset
@@ -206,7 +207,8 @@ def test_wikipedia():
 
 
 def vectorize_ukwac():
-	ukwac_reader = GzipStreamReader(path='/research/calps/data2/public/corpora/ukwac1.0/raw/ukwac_preproc.gz')
+	#ukwac_reader = GzipStreamReader(path='/research/calps/data2/public/corpora/ukwac1.0/raw/ukwac_preproc.gz')
+	ukwac_reader = TextStreamReader(path='/lustre/scratch/inf/thk22/_datasets/ukwac/ukwac_lemmatised.txt')
 
 	out_path = os.path.join(paths.get_dataset_path(), 'ukwac', 'wort')
 	if (not os.path.exists(out_path)):
@@ -215,14 +217,15 @@ def vectorize_ukwac():
 	if (not os.path.exists(os.path.join(out_path, 'ukwac_cooccurrence_cache'))):
 		os.makedirs(os.path.join(out_path, 'ukwac_cooccurrence_cache'))
 
-	whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words() | get_mturk_words() | get_men_words() | get_rare_words() | get_simlex_999_words() | get_msr_syntactic_analogies_words() | get_google_analogies_words()
+	#whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words() | get_mturk_words() | get_men_words() | get_rare_words() | get_simlex_999_words() | get_msr_syntactic_analogies_words() | get_google_analogies_words()
+	whitelist = get_ws353_words() | get_men_words() | get_simlex_999_words()
 
 	print('Word whitelist contains {} words!'.format(len(whitelist)))
 	import math
 	for log_sppmi, sppmi in zip([0, math.log(5), math.log(10), math.log(40), math.log(100)], [0, 5, 10, 40, 100]):
 		for pmi_type in ['ppmi']:
 			for cds in [1., 0.75]:
-				for window_size in [5, 2]:
+				for window_size in [5, 2, 1, 10]:
 					print('CONFIG: pmi_type={}; window_size={}; cds={}; shift={}...'.format(pmi_type, window_size, cds, sppmi))
 					transformed_out_path = os.path.join(paths.get_dataset_path(), 'ukwac', 'wort_model_ppmi_lemma-True_window-{}_cds-{}-sppmi_shift-{}'.format(
 						window_size, cds, sppmi
@@ -232,7 +235,7 @@ def vectorize_ukwac():
 						if (not os.path.exists(cache_path)):
 							os.makedirs(cache_path)
 
-						vec = VSMVectorizer(window_size=window_size, min_frequency=250, cds=cds, weighting=pmi_type,
+						vec = VSMVectorizer(window_size=window_size, min_frequency=200, cds=cds, weighting=pmi_type,
 											word_white_list=whitelist, sppmi_shift=log_sppmi, cache_path=cache_path,
 											cache_intermediary_results=True)
 
@@ -399,7 +402,27 @@ def test_mc30_evaluation(dataset='wikipedia'):
 		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-100',
 		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-100',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100'
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-100'
 	]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
@@ -413,7 +436,7 @@ def test_mc30_evaluation(dataset='wikipedia'):
 				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 			else:
 				human_sims.append(sim)
-				sim = 1 - cosine(wort_model[w1], wort_model[w2])
+				sim = 1 - cosine(wort_model[w1].A, wort_model[w2].A)
 				if (math.isnan(sim)):
 					sim = 0
 				scores.append(sim)
@@ -453,7 +476,27 @@ def test_rg65_evaluation(dataset='wikipedia'):
 		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-100',
 		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-100',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100'
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-100'
 	]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
@@ -467,7 +510,7 @@ def test_rg65_evaluation(dataset='wikipedia'):
 				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 			else:
 				human_sims.append(sim)
-				sim = 1 - cosine(wort_model[w1], wort_model[w2])
+				sim = 1 - cosine(wort_model[w1].A, wort_model[w2].A)
 				if (math.isnan(sim)):
 					sim = 0
 				scores.append(sim)
@@ -507,7 +550,27 @@ def test_rw_evaluation(dataset='wikipedia'):
 		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-100',
 		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-100',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100'
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-100'
 	]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
@@ -521,7 +584,7 @@ def test_rw_evaluation(dataset='wikipedia'):
 				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 			else:
 				human_sims.append(sim)
-				sim = 1 - cosine(wort_model[w1], wort_model[w2])
+				sim = 1 - cosine(wort_model[w1].A, wort_model[w2].A)
 				if (math.isnan(sim)):
 					sim = 0
 				scores.append(sim)
@@ -561,7 +624,27 @@ def test_men_evaluation(dataset='wikipedia'):
 		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-100',
 		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-100',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100'
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-100'
 	]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
@@ -575,7 +658,7 @@ def test_men_evaluation(dataset='wikipedia'):
 				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 			else:
 				human_sims.append(sim)
-				sim = 1 - cosine(wort_model[w1], wort_model[w2])
+				sim = 1 - cosine(wort_model[w1].A, wort_model[w2].A)
 				if (math.isnan(sim)):
 					sim = 0
 				scores.append(sim)
@@ -615,7 +698,27 @@ def test_mturk_evaluation(dataset='wikipedia'):
 		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-100',
 		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-100',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100'
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-100'
 	]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
@@ -629,7 +732,7 @@ def test_mturk_evaluation(dataset='wikipedia'):
 				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 			else:
 				human_sims.append(sim)
-				sim = 1 - cosine(wort_model[w1], wort_model[w2])
+				sim = 1 - cosine(wort_model[w1].A, wort_model[w2].A)
 				if (math.isnan(sim)):
 					sim = 0
 				scores.append(sim)
@@ -670,7 +773,27 @@ def test_ws353_evaluation(dataset='wikipedia'):
 			'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-100',
 			'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-100',
 			'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-100',
-			'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100'
+			'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100',
+			'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-0',
+			'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-0',
+			'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-0',
+			'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-0',
+			'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-5',
+			'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-5',
+			'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-5',
+			'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-5',
+			'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-10',
+			'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-10',
+			'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-10',
+			'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-10',
+			'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-40',
+			'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-40',
+			'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-40',
+			'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-40',
+			'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-100',
+			'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-100',
+			'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-100',
+			'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-100'
 		]:
 			print('Loading Wort Model: {}...'.format(wort_model_name))
 			wort_path = os.path.join(base_path, dataset, wort_model_name)
@@ -684,7 +807,7 @@ def test_ws353_evaluation(dataset='wikipedia'):
 					print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 				else:
 					human_sims.append(sim)
-					sim = 1 - cosine(wort_model[w1], wort_model[w2])
+					sim = 1 - cosine(wort_model[w1].A, wort_model[w2].A)
 					if (math.isnan(sim)):
 						sim = 0
 					scores.append(sim)
@@ -727,7 +850,27 @@ def test_simlex_evaluation(dataset='wikipedia'):
 		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-100',
 		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-100',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100'
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-100'
 	]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
@@ -741,7 +884,7 @@ def test_simlex_evaluation(dataset='wikipedia'):
 				print('\t[FAIL] - {} or {} not in model vocab!'.format(w1, w2))
 			else:
 				human_sims.append(sim)
-				sim = 1 - cosine(wort_model[w1], wort_model[w2])
+				sim = 1 - cosine(wort_model[w1].A, wort_model[w2].A)
 				if (math.isnan(sim)):
 					sim = 0
 				scores.append(sim)
@@ -883,10 +1026,9 @@ if (__name__ == '__main__'):
 
 
 	#'''
-	vectorize_wikipedia()
-	#vectorize_ukwac()
+	#vectorize_wikipedia()
+	vectorize_ukwac()
 
-	'''
 	print('Running evaluations...')
 	rg65_scores = test_rg65_evaluation('ukwac')
 	mc30_scores = test_mc30_evaluation('ukwac')
@@ -921,6 +1063,5 @@ if (__name__ == '__main__'):
 	print('MEN SCORES: {}'.format(json.dumps(men_scores, indent=4)))
 	#print('MTURK SCORES: {}'.format(json.dumps(mturk_scores, indent=4)))
 	print('SIMLEX SCORES: {}'.format(json.dumps(simlex_scores, indent=4)))
-	'''
 	#'''
 	#test_ws353_words_loader()
