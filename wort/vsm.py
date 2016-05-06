@@ -1,4 +1,5 @@
 __author__ = 'thomas'
+from collections import Callable
 from types import GeneratorType
 import array
 import logging
@@ -38,8 +39,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				 token_pattern=r'(?u)\b\w\w+\b', decode_error='strict', strip_accents=None, input='content',
 				 ngram_range=(1, 1), cds=1., dim_reduction=None, svd_dim=None, svd_eig_weighting=1, random_state=1105,
 				 context_window_weighting='constant', add_context_vectors=True, word_white_list=set(),
-				 subsampling_rate=None,cache_intermediary_results=False, cache_path=None, log_level=logging.INFO,
-				 log_file=None):
+				 subsampling_rate=None,cache_intermediary_results=False, cache_path='~/.wort_data/model_cache',
+				 log_level=logging.INFO, log_file=None):
 		"""
 		TODO: documentation...
 		:param window_size:
@@ -113,6 +114,10 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.word_white_list = word_white_list
 		self.subsampling_rate = subsampling_rate
 		self.cache_intermediary_results = cache_intermediary_results
+		if (cache_path is not None and cache_path.startswith('~')):
+			cache_path = os.path.expanduser(cache_path)
+		if (not os.path.exists(cache_path)):
+			os.makedirs(cache_path)
 		self.cache_path = cache_path
 
 		self.inverted_index_ = {}
@@ -121,6 +126,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.vocab_count_ = 0
 		self.M_ = None
 		self.T_ = None
+		self.density_ = 0.
 
 		self.log_level_ = log_level
 		self.log_file_ = log_file
@@ -378,7 +384,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		logging.info('Calculating PMI the new and fancy way...')
 
 		# Need the conditional probability P(c | w) and the marginal P(c), but need to maintain the sparsity structure of the matrix
-		# Doing it this way, keeps P_w_c a sparse matrix: http://stackoverflow.com/questions/3247775/how-to-elementwise-multiply-a-scipy-sparse-matrix-by-a-broadcasted-dense-1d-arra
+		# Doing it this way, keeps the sparsity: http://stackoverflow.com/questions/3247775/how-to-elementwise-multiply-a-scipy-sparse-matrix-by-a-broadcasted-dense-1d-arra
 		P_w = sparse.lil_matrix(self.M_.shape, dtype=np.float64)
 		P_c = sparse.lil_matrix(self.M_.shape, dtype=np.float64)
 		P_w.setdiag(1 / self.M_.sum(axis=1))
@@ -386,81 +392,17 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		logging.info('type(P_w)={}; P_w.shape={}; type(P_c)={}; P_c.shape={}'.format(type(P_w), P_w.shape, type(P_c), P_c.shape))
 
+		'''
+		(P_w * self.M_) calculates the conditional probability P(c | w) vectorised and rowwise while keeping the matrices sparse
+		Multiplication by P_c (which contains the reciprocal 1 / p_c values), achieves the division by the P(c)
+		'''
 		PMI = (P_w * self.M_) * P_c
 
 		logging.info('type(PMI)={}; PMI.shape={}'.format(type(PMI), PMI.shape))
 
+		# Perform log on the nonzero elements of PMI
 		data = np.log(PMI.data)
 		rows, cols = PMI.nonzero()
-
-		'''
-		Potentially need to transform the shit a bit (probably only matters when its _NOT_ a word-word co-occurrence matrix)
-		In which case M is symmetric and square, hence P(c) === P(w)
-
-		Want to calculate P(c | w) * P(w)
-		For P(c | w), need the rowwise probabilities of the co-occurrence count matrix M
-
-		# Some data matrix
-		In [20]: X
-		Out[20]:
-		array([[1, 0, 0],
-			   [3, 4, 2],
-			   [1, 1, 1],
-			   [0, 0, 9]])
-
-		In [21]: Xs = sparse.csr_matrix(X)
-
-		# Rowwise divisors
-		In [27]: 1 / Xs.sum(axis=1)
-		Out[27]:
-		matrix([[ 1.        ],
-				[ 0.11111111],
-				[ 0.33333333],
-				[ 0.11111111]])
-
-		# Needs to be square in the number of rows
-		In [36]: L = sparse.lil_matrix((4,4))
-
-		In [37]: L.setdiag(1/Xs.sum(axis=1))
-
-		In [41]: Xs.shape
-		Out[41]: (4, 3)
-
-		In [42]: L.shape
-		Out[42]: (4, 4)
-
-		In [44]: Y = Xs.T * L
-
-		In [45]: Y.A
-		Out[45]:
-		array([[ 1.        ,  0.33333333,  0.33333333,  0.        ],
-       		[ 0.        ,  0.44444444,  0.33333333,  0.        ],
-       		[ 0.        ,  0.22222222,  0.33333333,  1.        ]])
-
-		In [51]: Y.shape
-		Out[51]: (3, 4)
-
-		The result is now Y.T, as it needs to be a w x c matrix again
-
-		Given that we set the diagonal to be P(w) / P(c)_rowwise, this essentially reduces to 1 / M.sum() across the diagonal
-		'''
-
-		### OLD PMI
-		#logging.info('Calculating Joints...') #TODO: check if this is correct!
-
-		#P_w_c = P_w * self.M_
-
-		#logging.info('Calculating Marginals...')
-
-		# The product of all P(w) and P(c) marginals is the outer product of p_w and p_c
-		#P_wc_marginals = np.outer(self.p_w_, p_c) # TODO: Cythonize?
-
-		#logging.info('Taking logs...')
-
-		#logging.info('Construction the COO PMI matrix')
-		# Construct another CSR matrix as we go and ...
-		#data = np.log(P_w_c.data / P_wc_marginals[P_w_c.nonzero()]) # Doing the division first maintains the sparsity of the matrix
-		#rows, cols = P_w_c.nonzero()
 
 		logging.info('Applying the PMI option')
 		# TODO: with the new & optimised PMI variant, some of the assets required by the other PMI options need to calculated
@@ -500,6 +442,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				self.T_ = W
 
 		logging.info('Returning [density={}]...'.format(len(self.T_.nonzero()[0]) / (self.T_.shape[0] * self.T_.shape[1])))
+		self.density_ = len(self.T_.nonzero()[0]) / (self.T_.shape[0] * self.T_.shape[1])
 
 		return self.T_
 
@@ -551,16 +494,75 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		return self
 
-	def transform(self, raw_documents):
-		# todo move to a different class or rename?
-		if (self.T_ is not None):
-			return self.T_
-		else: # TODO: perform lookup
-			raise NotImplementedError
+	def _random_oov_handler(self, shape):
+		return sparse.random(shape[0], shape[1], density=self.density_, format='csr', random_state=self.random_state)
 
-	def fit_transform(self, raw_documents, y=None):
+	def _ignore_oov_handler(self, _):
+		pass
+
+	def _zeros_oov_handler(self, shape):
+		return sparse.csr_matrix(np.zeros(shape))
+
+	def _ones_oov_handler(self, shape):
+		return sparse.csr_matrix(np.ones(shape))
+
+	def transform(self, raw_documents, as_matrix=False, oov='zeros'):
+		'''
+
+		:param raw_documents:
+		:param as_matrix:
+		:param oov: Handling of OOV entries, "ignore" doesn't return anything for an OOV item, "random", returns a random vector, "zeros" (default) returns a vector with zeros and "ones" returns a vector with ones.
+		:return:
+		'''
+		analyser = self.build_analyzer()
+
+		if (isinstance(oov, Callable)):
+			oov_handler = oov
+		else:
+			oov_handler = getattr(self, '_{}_oov_handler'.format(oov))
+
+		l = []
+		# Peek if a list of strings or a list of lists of strings is passed
+		if (isinstance(raw_documents, list)):
+			for doc in raw_documents:
+				d = []
+				for feature in analyser(doc):
+					if (feature in self.inverted_index_):
+						d.append(self.T_[self.inverted_index_[feature]])
+					else:
+						if (oov != 'ignore'):
+							d.append(oov_handler((1, self.get_vector_size())))
+				l.append(d)
+
+			# Convert list of lists of sparse vectors to list of sparse matrices (scipy doesn't support sparse tensors afaik)
+			if (as_matrix):
+				ll = []
+				for l_doc in l:
+					X = l_doc.pop(0)
+					for x in l_doc:
+						X = sparse.vstack((X, x))
+					ll.append(X)
+				return ll
+		else:
+			for feature in analyser(raw_documents):
+				if (feature in self.inverted_index_):
+					l.append(self.T_[self.inverted_index_[feature]])
+				else:
+					if (oov != 'ignore'):
+						l.append(oov_handler((1, self.get_vector_size())))
+
+			# Convert list of sparse vectors to sparse matrix
+			if (as_matrix):
+				X = l.pop(0)
+				for x in l:
+					X = sparse.vstack((X, x))
+				return X
+
+		return l
+
+	def fit_transform(self, raw_documents, y=None, as_matrix=False, oov='zeros'):
 		self.fit(raw_documents)
-		return self.transform(raw_documents)
+		return self.transform(raw_documents, as_matrix=as_matrix, oov=oov)
 
 	def to_dict(self):
 		d = {}
