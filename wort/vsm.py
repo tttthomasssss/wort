@@ -279,6 +279,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.index_ = dict(zip(range(n_vocab), self.index_.values()))
 		self.inverted_index_ = dict(zip(self.index_.values(), self.index_.keys()))
 
+		# TODO: Store vocab here (`fit_vocab()`)
+
 		# TODO: This needs optimisation
 		# https://en.wikipedia.org/wiki/Feature_hashing#Feature_vectorization_using_the_hashing_trick
 		# http://datascience.stackexchange.com/questions/9918/optimizing-co-occurrence-matrix-computation
@@ -344,6 +346,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		if (self.binary):
 			self.M_ = self.M_.minimum(1)
 
+		# TODO: Store co-occurrence matrix here (`fit_cooccurrence_matrix()`)
+
 	def _apply_weight_option(self, PMI, P_w_c, p_c):
 		# TODO: re-check results for `plmi` and `pnpmi`
 		if (self.weighting == 'ppmi'):
@@ -374,7 +378,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		P(w, c) = P(c | w) * P(w)
 		P(w, c) = P(w | c) * P(c)
 
-		plugging this into pmi results in
+		Plugging this into the PMI calculation results in
 		PMI = log(P(c | w) * P(w) / (P(w) * P(c)))
 
 		This allows P(w) (or P(c), depending on how the chain rule is applied) to be eliminated
@@ -384,7 +388,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		logging.info('Calculating PMI the new and fancy way...')
 
 		# Need the conditional probability P(c | w) and the marginal P(c), but need to maintain the sparsity structure of the matrix
-		# Doing it this way, keeps the sparsity: http://stackoverflow.com/questions/3247775/how-to-elementwise-multiply-a-scipy-sparse-matrix-by-a-broadcasted-dense-1d-arra
+		# Doing it this way, keeps the matrices sparse: http://stackoverflow.com/questions/3247775/how-to-elementwise-multiply-a-scipy-sparse-matrix-by-a-broadcasted-dense-1d-arra
 		P_w = sparse.lil_matrix(self.M_.shape, dtype=np.float64)
 		P_c = sparse.lil_matrix(self.M_.shape, dtype=np.float64)
 		P_w.setdiag(1 / self.M_.sum(axis=1))
@@ -394,7 +398,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		'''
 		(P_w * self.M_) calculates the conditional probability P(c | w) vectorised and rowwise while keeping the matrices sparse
-		Multiplication by P_c (which contains the reciprocal 1 / p_c values), achieves the division by the P(c)
+		Multiplication by P_c (which contains the reciprocal 1 / p_c values), achieves the division by P(c)
 		'''
 		PMI = (P_w * self.M_) * P_c
 
@@ -424,6 +428,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.T_ = PMI.maximum(0)
 		logging.info('PMI ALL DONE [type(self.T_)={}]'.format(type(self.T_)))
 
+		# TODO: Store PMI matrix here (`fit_ppmi_transformation()`)
+
 		# Apply SVD
 		if (self.dim_reduction == 'svd'):
 			logging.info('Applying SVD...')
@@ -443,6 +449,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		logging.info('Returning [density={}]...'.format(len(self.T_.nonzero()[0]) / (self.T_.shape[0] * self.T_.shape[1])))
 		self.density_ = len(self.T_.nonzero()[0]) / (self.T_.shape[0] * self.T_.shape[1])
+
+		# TODO: Offer `fit_dimensionality_reduction()`
 
 		return self.T_
 
@@ -522,7 +530,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			oov_handler = getattr(self, '_{}_oov_handler'.format(oov))
 
 		l = []
-		# Peek if a list of strings or a list of lists of strings is passed
+		# Peek if a list or a string are passed
 		if (isinstance(raw_documents, list)):
 			for doc in raw_documents:
 				d = []
