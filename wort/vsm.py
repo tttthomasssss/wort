@@ -495,7 +495,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		return self
 
 	def _random_oov_handler(self, shape):
-		return sparse.random(shape[0], shape[1], density=self.density_, format='csr', random_state=self.random_state)
+		return sparse.random(shape[0], shape[1], density=self.density_, format='csr', random_state=self.random_state, dtype=self.T_.dtype)
 
 	def _ignore_oov_handler(self, _):
 		pass
