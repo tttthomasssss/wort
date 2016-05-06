@@ -589,7 +589,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		return self.T_.shape[1]
 
 	def __getitem__(self, item):
-		return self.T_[self.inverted_index_[item]].A
+		return self.T_[self.inverted_index_[item]]
 
 	def __contains__(self, item):
 		return item in self.inverted_index_
