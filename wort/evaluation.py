@@ -33,7 +33,7 @@ def intrinsic_word_similarity_evaluation(wort_model, ds_fetcher, distance_fn=cos
 			scores.append(score)
 		else:
 			human_sims.append(sim)
-			scores.append(1 - distance_fn(wort_model[w1], wort_model[w2]))
+			scores.append(1 - distance_fn(wort_model[w1].A, wort_model[w2].A))
 
 	model_performance = correlation_fn(np.array(human_sims), np.array(scores))
 
@@ -43,6 +43,8 @@ def intrinsic_word_similarity_evaluation(wort_model, ds_fetcher, distance_fn=cos
 
 # TODO: 3cosmul, 3cosadd (https://www.cs.bgu.ac.il/~yoavg/publications/conll2014analogies.pdf), standard, etc
 def intrinsic_word_analogy_evaluation(wort_model, ds_fetcher, distance_fn=cosine, strategy='standard', random_seed=1105, num_neighbours=5, **ds_fetcher_kwargs):
+	raise NotImplementedError # This shouldnt be used yet
+
 	# strategy can be 'standard', '3cosmul' or '3cosadd'
 	if (not isinstance(wort_model, VSMVectorizer)):
 		wort_model = VSMVectorizer.load_from_file(wort_model)

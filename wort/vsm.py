@@ -16,7 +16,8 @@ from tqdm import *
 import joblib
 import numpy as np
 
-from wort import utils
+from wort.core.config_registry import ConfigRegistry
+from wort.core import utils
 
 # TODO: SVD based on http://www.aclweb.org/anthology/Q/Q15/Q15-1016.pdf, esp. chapter 7, practical recommendations
 	# Subsampling
@@ -39,7 +40,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				 token_pattern=r'(?u)\b\w\w+\b', decode_error='strict', strip_accents=None, input='content',
 				 ngram_range=(1, 1), cds=1., dim_reduction=None, svd_dim=None, svd_eig_weighting=1, random_state=1105,
 				 context_window_weighting='constant', add_context_vectors=True, word_white_list=set(),
-				 subsampling_rate=None,cache_intermediary_results=False, cache_path='~/.wort_data/model_cache',
+				 subsampling_rate=None, cache_intermediary_results=False, cache_path='~/.wort_data/model_cache',
 				 log_level=logging.INFO, log_file=None):
 		"""
 		TODO: documentation...
@@ -132,6 +133,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.log_file_ = log_file
 		self._setup_logging()
 
+		self.config_registry_ = ConfigRegistry(path=self.cache_path)
+
 	def _setup_logging(self):
 		log_formatter = logging.Formatter(fmt='%(asctime)s: %(levelname)s - %(message)s', datefmt='[%d/%m/%Y %H:%M:%S %p]')
 		root_logger = logging.getLogger()
@@ -163,6 +166,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		return W
 
+	# TODO: move to own file
 	def _constant_window_weighting(self, *_):
 		return 1
 
@@ -190,8 +194,9 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 	def _absolut_inverse_sigmoid_window_weighting(self, distance, _):
 		return 1 - abs(sigmoid(distance))
 
-	def _construct_cooccurrence_matrix(self, raw_documents):
-		analyser = self.build_analyzer()
+	def fit_vocabulary(self, raw_documents, analyser=None):
+		if (analyser is None):
+			analyser = self.build_analyzer()
 
 		n_vocab = -1
 		w = array.array('i')
@@ -279,8 +284,9 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.index_ = dict(zip(range(n_vocab), self.index_.values()))
 		self.inverted_index_ = dict(zip(self.index_.values(), self.index_.keys()))
 
-		# TODO: Store vocab here (`fit_vocab()`)
-
+	def fit_cooccurrence_matrix(self, raw_documents, analyser=None):
+		if (analyser is None):
+			analyser = self.build_analyzer()
 		# TODO: This needs optimisation
 		# https://en.wikipedia.org/wiki/Feature_hashing#Feature_vectorization_using_the_hashing_trick
 		# http://datascience.stackexchange.com/questions/9918/optimizing-co-occurrence-matrix-computation
@@ -306,20 +312,16 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			l = len(buffer)
 			for i in range(l):
 				# Backward co-occurrences
-				#logging.info('BACKWARD RANGE: {}'.format(list(range(max(i-self.window_size, 0), i))))
 				for distance, j in enumerate(range(max(i-self.l_window_size, 0), i), 1):
 					rows.append(buffer[i])
 					cols.append(buffer[j])
 					data.append(window_weighting_fn(-distance, self.l_window_size)) # The -distance is a bit of an ugly hack to support non-symmetric weighting
-					#logging.info('BWD DISTANCE: {}; WORD={}'.format(distance, self.index_[buffer[j]]))
 
 				# Forward co-occurrences
-				#logging.info('FORWARD RANGE: {}'.format(list(range(i+1, min(i+self.window_size+1, l)))))
 				for distance, j in enumerate(range(i+1, min(i+self.r_window_size+1, l)), 1):
 					rows.append(buffer[i])
 					cols.append(buffer[j])
 					data.append(window_weighting_fn(distance, self.r_window_size))
-					#logging.info('FWD DISTANCE: {}; WORD={}'.format(distance, self.index_[buffer[j]]))
 
 		# TODO: This is still a bit of a bottleneck
 		#		Either cythonize the shit
@@ -329,25 +331,17 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		rows = np.array(rows, dtype=np.uint32, copy=False)
 		cols = np.array(cols, dtype=np.uint32, copy=False)
 
-		#if (self.cache_intermediary_results):
-		#	logging.info('Storing raw array co-occurrence data...')
-		#	utils.numpy_to_hdf(data, self.cache_path, 'data.cooc')
-		#	utils.numpy_to_hdf(rows, self.cache_path, 'rows.cooc')
-		#	utils.numpy_to_hdf(cols, self.cache_path, 'cols.cooc')
-
 		logging.info('Creating sparse matrix...')
 		# Create a csr_matrix straight away!!!
-		#self.M_ = sparse.coo_matrix((data, (rows, cols)), dtype=np.uint64 if self.context_window_weighting == 'constant' else np.float64).tocsr() # Scipy seems to not handle numeric overflow in a very graceful manner
 		dtype = np.uint64 if self.context_window_weighting == 'constant' else np.float64
-		self.M_ = sparse.csr_matrix((data.astype(dtype), (rows, cols)), shape=(n_vocab, n_vocab))
+		self.M_ = sparse.csr_matrix((data.astype(dtype), (rows, cols)), shape=(self.vocab_count_, self.vocab_count_))
 		logging.info('M.shape={}'.format(self.M_.shape))
 
 		# Apply Binarisation
 		if (self.binary):
 			self.M_ = self.M_.minimum(1)
 
-		# TODO: Store co-occurrence matrix here (`fit_cooccurrence_matrix()`)
-
+	# TODO: move to own file
 	def _apply_weight_option(self, PMI, P_w_c, p_c):
 		# TODO: re-check results for `plmi` and `pnpmi`
 		if (self.weighting == 'ppmi'):
@@ -461,9 +455,55 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			if (isinstance(raw_documents, GeneratorType)):
 				raise TypeError('You can\'t pass a generator as the sentences argument. Try an iterator.')
 
-		if (self.cache_path is None or not os.path.exists(os.path.join(self.cache_path, 'M.hdf'))): # TODO: not just check for existence but check whether the config is also the same!!!
-			logging.info('No cache available at {}! Constructing the co-occurrence matrix!'.format(self.cache_path))
-			self._construct_cooccurrence_matrix(raw_documents)
+		analyser = self.build_analyzer()
+
+		# TODO: put that whole fucking I/O stuff into its own files
+		### FIT VOCABULARY
+		vocab_folder = self.config_registry_.vocab_cache_folder(self.min_frequency, self.lowercase, self.stop_words,
+							self.encoding, self.max_features, self.preprocessor, self.tokenizer, self.analyzer,
+							self.token_pattern, self.decode_error, self.strip_accents, self.input, self.ngram_range,
+							self.random_state, self.subsampling_rate, self.wort_white_list)
+		if (vocab_folder is not None and vocab_folder != ''):
+			# Load cached resources
+			if (os.path.exists(os.path.join(os.path.join(self.cache_path, vocab_folder, 'p_w.hdf')))):
+				self.p_w_ = utils.hdf_to_numpy(os.path.join(self.cache_path, vocab_folder), 'p_w')
+			else:
+				self.p_w_ = joblib.load(os.path.join(self.cache_path, vocab_folder, 'p_w.joblib'))
+			self.vocab_count_ = joblib.load(os.path.join(self.cache_path, vocab_folder, 'vocab_count.joblib'))['vocab_count']
+
+			self.index_ = joblib.load(os.path.join(self.cache_path, vocab_folder, 'index.joblib'))
+			self.inverted_index_ = joblib.load(os.path.join(self.cache_path, vocab_folder, 'inverted_index.joblib'))
+		else:
+			# Create vocabulary
+			logging.info('Fitting vocabulary...')
+			self.fit_vocabulary(raw_documents=raw_documents, analyser=analyser)
+			logging.info('Vocabulary fitted!')
+
+			if (self.cache_intermediary_results):
+				sub_folder = self.config_registry_.register_vocab(self.min_frequency, self.lowercase, self.stop_words,
+								self.encoding, self.max_features, self.preprocessor, self.tokenizer, self.analyzer,
+								self.token_pattern, self.decode_error, self.strip_accents, self.input, self.ngram_range,
+								self.random_state, self.subsampling_rate, self.wort_white_list)
+				if (not os.path.exists(os.path.join(self.cache_path, sub_folder))):
+					os.makedirs(os.path.join(self.cache_path, sub_folder))
+
+				joblib.dump(self.index_, os.path.join(self.cache_path, sub_folder, 'index.joblib'), compress=3)
+				joblib.dump(self.inverted_index_, os.path.join(self.cache_path, sub_folder, 'inverted_index.joblib'), compress=3)
+				joblib.dump({'vocab_count': self.vocab_count_}, os.path.join(self.cache_path, sub_folder, 'vocab_count.joblib'), compress=3)
+				utils.numpy_to_hdf(self.p_w_, os.path.join(self.cache_path, sub_folder), 'p_w')
+
+
+
+			# TODO: Store vocab here (`fit_vocab()`)
+
+		if (self.config_registry_.cooc_cache_exists()):
+			pass
+		else:
+			logging.info('Fitting co-occurrence matrix...')
+			self.fit_cooccurrence_matrix(raw_documents=raw_documents, analyser=analyser)
+			logging.info('Co-occurrence matrix fitted!')
+
+			# TODO: Store co-occurrence matrix here (`fit_cooccurrence_matrix()`)
 
 			if (self.cache_intermediary_results):
 				# Store the matrix bits and pieces in several different files due to performance and size
@@ -492,9 +532,11 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		return self
 
 	def weight_transformation_from_cache(self):
-		#self.M_ = joblib.load(os.path.join(self.cache_path, 'M_cooccurrence.joblib'))
 		self.M_ = utils.hdf_to_sparse_csx_matrix(self.cache_path, 'M.hdf', sparse_format='csr')
-		self.p_w_ = joblib.load(os.path.join(self.cache_path, 'p_w.joblib'))
+		if (os.path.exists(os.path.join(self.cache_path, 'p_w.hdf'))):
+			self.p_w_ = utils.hdf_to_numpy(self.cache_path, 'p_w')
+		else:
+			self.p_w_ = joblib.load(os.path.join(self.cache_path, 'p_w.joblib'))
 		self.index_ = joblib.load(os.path.join(self.cache_path, 'index.joblib'))
 		self.inverted_index_ = joblib.load(os.path.join(self.cache_path, 'inverted_index.joblib'))
 
@@ -502,6 +544,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		return self
 
+	# TODO: move to own file
 	def _random_oov_handler(self, shape):
 		return sparse.random(shape[0], shape[1], density=self.density_, format='csr', random_state=self.random_state, dtype=self.T_.dtype)
 
