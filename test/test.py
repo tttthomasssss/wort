@@ -12,7 +12,8 @@ import numpy as np
 from common import paths
 from scipy.spatial.distance import cosine
 from scipy.stats import spearmanr
-from wort import utils
+from wort.core import utils
+from wort.core.utils import LemmaTokenizer
 from wort.vsm import VSMVectorizer
 from wort.corpus_readers import FrostReader
 from wort.corpus_readers import MovieReviewReader
@@ -38,7 +39,6 @@ from wort.datasets import get_google_analogies_words
 from wort.datasets import get_rubinstein_goodenough_65_words
 from wort.datasets import get_miller_charles_30_words
 from wort.evaluation import intrinsic_word_analogy_evaluation
-from wort.utils import LemmaTokenizer
 
 
 def test_hdf():
