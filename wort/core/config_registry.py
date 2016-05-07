@@ -165,7 +165,7 @@ class ConfigRegistry(object):
 		cursor = conn.cursor()
 
 		stmt = """
-			INSERT INTO Vocab (min_frequency, lowercase, encoding, max_features, preprocessor, tokenizer, analyzer,
+			INSERT INTO Vocab (min_frequency, lowercase, stop_words, encoding, max_features, preprocessor, tokenizer, analyzer,
 							token_pattern, decode_error, strip_accents, input, ngram_range, random_state,
 							subsampling_rate, wort_white_list, sub_folder)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
@@ -225,7 +225,7 @@ class ConfigRegistry(object):
 		cursor = conn.cursor()
 
 		stmt = """
-			INSERT INTO Cooccurrence_Matrix (min_frequency, lowercase, encoding, max_features, preprocessor, tokenizer,
+			INSERT INTO Cooccurrence_Matrix (min_frequency, lowercase, stop_words, encoding, max_features, preprocessor, tokenizer,
 							analyzer, token_pattern, decode_error, strip_accents, input, ngram_range, random_state,
 							subsampling_rate, wort_white_list, window_size, context_window_weighting, binary, sub_folder)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
@@ -289,7 +289,7 @@ class ConfigRegistry(object):
 		cursor = conn.cursor()
 
 		stmt = """
-			INSERT INTO PMI_Matrix (min_frequency, lowercase, encoding, max_features, preprocessor, tokenizer,
+			INSERT INTO PMI_Matrix (min_frequency, lowercase, stop_words, encoding, max_features, preprocessor, tokenizer,
 							analyzer, token_pattern, decode_error, strip_accents, input, ngram_range, random_state,
 							subsampling_rate, wort_white_list, window_size, context_window_weighting, binary, weighting,
 							cds, sppmi_shift, sub_folder)
