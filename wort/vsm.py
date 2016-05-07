@@ -17,7 +17,7 @@ import numpy as np
 
 from wort.core.config_registry import ConfigRegistry
 from wort.core.io_handler import IOHandler
-from wort.core import context_window_weighting
+from wort.core import context_weighting
 from wort.core import feature_transformation
 from wort.core import oov_handler
 from wort.core import utils
@@ -132,33 +132,16 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.T_ = None
 		self.density_ = 0.
 
-		self.log_level_ = log_level
-		self.log_file_ = log_file
-		self._setup_logging()
-
-		self.config_registry_ = ConfigRegistry(path=self.cache_path)
-		self.io_handler_ = IOHandler()
-
-	def _setup_logging(self): # TODO: Move to utils?
-		log_formatter = logging.Formatter(fmt='%(asctime)s: %(levelname)s - %(message)s', datefmt='[%d/%m/%Y %H:%M:%S %p]')
-		root_logger = logging.getLogger()
-		root_logger.setLevel(self.log_level_)
-
-		# stdout logging
-		if (len(root_logger.handlers) <= 0):
-			console_handler = logging.StreamHandler(sys.stdout)
-			console_handler.setFormatter(log_formatter)
-			root_logger.addHandler(console_handler)
-
-			# file logging
-			if (self.log_file_ is not None):
-				log_path = os.path.split(self.log_file_)[0]
-				if (not os.path.exists(log_path)):
-					os.makedirs(log_path)
-
-				file_handler = logging.FileHandler(self.log_file_)
-				file_handler.setFormatter(log_formatter)
-				root_logger.addHandler(file_handler)
+		self.config_registry_ = ConfigRegistry(path=cache_path, min_frequency=self.min_frequency, lowercase=self.lowercase,
+											   stop_words=self.stop_words, encoding= self.encoding, max_features=self.max_features,
+											   preprocessor=self.preprocessor, tokenizer=self.tokenizer, analyzer=self.analyzer,
+											   token_pattern=self.token_pattern, decode_error=self.decode_error,
+											   strip_accents=self.strip_accents, input=self.input, ngram_range=self.ngram_range,
+											   random_state=self.random_state, subsampling_rate=self.subsampling_rate,
+											   wort_white_list=self.word_white_list, window_size=window_size,
+											   context_window_weighting=self.context_window_weighting, binary=binary,
+											   weighting=weighting, cds=cds, sppmi_shift=sppmi_shift)
+		self.io_handler_ = IOHandler(cache_path=cache_path, log_level=log_level, log_file=log_file)
 
 	def _delete_from_vocab(self, W, idx):
 		W = np.delete(W, idx)
@@ -276,7 +259,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		cols = array.array('I') #cols = array.array('i')
 		data = array.array('I' if self.context_window_weighting == 'constant' else 'f')
 
-		window_weighting_fn = getattr(context_window_weighting, '{}_window_weighting'.format(self.context_window_weighting))
+		window_weighting_fn = getattr(context_weighting, '{}_window_weighting'.format(self.context_window_weighting))
 
 		for doc in tqdm(raw_documents):
 			buffer = array.array('i')
@@ -420,45 +403,29 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		analyser = self.build_analyzer()
 
-		# TODO: put that whole fucking I/O stuff into its own files
 		### FIT VOCABULARY
-		vocab_folder = self.config_registry_.vocab_cache_folder(self.min_frequency, self.lowercase, self.stop_words,
-							self.encoding, self.max_features, self.preprocessor, self.tokenizer, self.analyzer,
-							self.token_pattern, self.decode_error, self.strip_accents, self.input, self.ngram_range,
-							self.random_state, self.subsampling_rate, self.wort_white_list)
+		vocab_folder = self.config_registry_.vocab_cache_folder()
 		if (vocab_folder is not None and vocab_folder != ''):
 			# Load cached resources
-			if (os.path.exists(os.path.join(os.path.join(self.cache_path, vocab_folder, 'p_w.hdf')))):
-				self.p_w_ = utils.hdf_to_numpy(os.path.join(self.cache_path, vocab_folder), 'p_w')
-			else:
-				self.p_w_ = joblib.load(os.path.join(self.cache_path, vocab_folder, 'p_w.joblib'))
-			self.vocab_count_ = joblib.load(os.path.join(self.cache_path, vocab_folder, 'vocab_count.joblib'))['vocab_count']
-
-			self.index_ = joblib.load(os.path.join(self.cache_path, vocab_folder, 'index.joblib'))
-			self.inverted_index_ = joblib.load(os.path.join(self.cache_path, vocab_folder, 'inverted_index.joblib'))
+			self.p_w_ = self.io_handler_.load_p_w(vocab_folder)
+			self.vocab_count_ = self.io_handler_.load_vocab_count(vocab_folder)
+			self.index_ = self.io_handler_.load_index(vocab_folder)
+			self.inverted_index_ = self.io_handler_.load_inverted_index(vocab_folder)
 		else:
 			# Create vocabulary
 			logging.info('Fitting vocabulary...')
 			self.fit_vocabulary(raw_documents=raw_documents, analyser=analyser)
 			logging.info('Vocabulary fitted!')
 
+			# Cache vocabulary
 			if (self.cache_intermediary_results):
-				sub_folder = self.config_registry_.register_vocab(self.min_frequency, self.lowercase, self.stop_words,
-								self.encoding, self.max_features, self.preprocessor, self.tokenizer, self.analyzer,
-								self.token_pattern, self.decode_error, self.strip_accents, self.input, self.ngram_range,
-								self.random_state, self.subsampling_rate, self.wort_white_list)
-				if (not os.path.exists(os.path.join(self.cache_path, sub_folder))):
-					os.makedirs(os.path.join(self.cache_path, sub_folder))
+				sub_folder = self.config_registry_.register_vocab()
+				self.io_handler_.save_index(self.index_, sub_folder)
+				self.io_handler_.save_inverted_index(self.inverted_index_, sub_folder)
+				self.io_handler_.save_vocab_count(self.vocab_count_, sub_folder)
+				self.io_handler_.save_p_w(self.p_w_, sub_folder)
 
-				joblib.dump(self.index_, os.path.join(self.cache_path, sub_folder, 'index.joblib'), compress=3)
-				joblib.dump(self.inverted_index_, os.path.join(self.cache_path, sub_folder, 'inverted_index.joblib'), compress=3)
-				joblib.dump({'vocab_count': self.vocab_count_}, os.path.join(self.cache_path, sub_folder, 'vocab_count.joblib'), compress=3)
-				utils.numpy_to_hdf(self.p_w_, os.path.join(self.cache_path, sub_folder), 'p_w')
-
-
-
-			# TODO: Store vocab here (`fit_vocab()`)
-
+		#### FIT CO-OCCURRENCE MATRIX
 		if (self.config_registry_.cooc_cache_exists()):
 			pass
 		else:

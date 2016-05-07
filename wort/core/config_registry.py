@@ -5,8 +5,33 @@ import uuid
 
 
 class ConfigRegistry(object):
-	def __init__(self, path):
+	def __init__(self, path, min_frequency, lowercase, stop_words, encoding, max_features, preprocessor, tokenizer,
+				 analyzer, token_pattern, decode_error, strip_accents, input, ngram_range, random_state, subsampling_rate,
+				 wort_white_list, window_size, context_window_weighting, binary, weighting, cds, sppmi_shift):
 		self.db_path_ = os.path.join(path, 'wort_config_registry.sqlite')
+
+		self.min_frequency_ = min_frequency
+		self.lowercase_ = lowercase
+		self.stop_words_ = stop_words
+		self.encoding_ = encoding
+		self.max_features_ = max_features
+		self.preprocessor_ = preprocessor
+		self.tokenizer_ = tokenizer
+		self.analyzer_ = analyzer
+		self.token_pattern_ = token_pattern
+		self.decode_error_ = decode_error
+		self.strip_accents_ = strip_accents
+		self.input_ = input
+		self.ngram_range_ = ngram_range
+		self.random_state_ = random_state
+		self.subsampling_rate_ = subsampling_rate
+		self.wort_white_list_ = wort_white_list
+		self.window_size_ = window_size
+		self.context_window_weighting_ = context_window_weighting
+		self.binary_ = binary
+		self.weighting_ = weighting
+		self.cds_ = cds
+		self.sppmi_shift_ = sppmi_shift
 
 		self._setup()
 
@@ -100,9 +125,7 @@ class ConfigRegistry(object):
 			conn.commit()
 			conn.close()
 
-	def vocab_cache_folder(self, min_frequency, lowercase, stop_words, encoding, max_features, preprocessor, tokenizer,
-						   analyzer, token_pattern, decode_error, strip_accents, input, ngram_range, random_state,
-						   subsampling_rate, wort_white_list):
+	def vocab_cache_folder(self):
 		conn = sqlite3.connect(self.db_path_)
 		cursor = conn.cursor()
 
@@ -126,17 +149,16 @@ class ConfigRegistry(object):
 				wort_white_list = ? AND
 		"""
 
-		cursor.execute(stmt, (min_frequency, 1 if lowercase else 0, str(stop_words), encoding,
-							  -1 if max_features is None else max_features, str(preprocessor), str(tokenizer),
-							  str(analyzer), token_pattern, decode_error, str(strip_accents), input, str(ngram_range),
-							  str(random_state), 0.0 if subsampling_rate is None else subsampling_rate,
-							  str(wort_white_list)))
+		cursor.execute(stmt, (self.min_frequency_, 1 if self.lowercase_ else 0, str(self.stop_words_), self.encoding_,
+							  -1 if self.max_features_ is None else self.max_features_, str(self.preprocessor_),
+							  str(self.tokenizer_), str(self.analyzer_), self.token_pattern_, self.decode_error_,
+							  str(self.strip_accents_),  self.input_, str(self.ngram_range_), str(self.random_state_),
+							  0.0 if self.subsampling_rate_ is None else self.subsampling_rate_,
+							  str(self.wort_white_list_)))
 
 		return cursor.fetchone()[0]
 
-	def register_vocab(self, min_frequency, lowercase, stop_words, encoding, max_features, preprocessor, tokenizer,
-					   analyzer, token_pattern, decode_error, strip_accents, input, ngram_range, random_state,
-					   subsampling_rate, wort_white_list):
+	def register_vocab(self):
 		conn = sqlite3.connect(self.db_path_)
 		cursor = conn.cursor()
 
@@ -148,11 +170,12 @@ class ConfigRegistry(object):
 		"""
 
 		sub_folder = str(uuid.uuid1())
-		cursor.execute(stmt, (min_frequency, 1 if lowercase else 0, str(stop_words), encoding,
-							  -1 if max_features is None else max_features, str(preprocessor), str(tokenizer),
-							  str(analyzer), token_pattern, decode_error, str(strip_accents), input, str(ngram_range),
-							  str(random_state), 0.0 if subsampling_rate is None else subsampling_rate,
-							  str(wort_white_list), sub_folder))
+		cursor.execute(stmt, (self.min_frequency_, 1 if self.lowercase_ else 0, str(self.stop_words_), self.encoding_,
+							  -1 if self.max_features_ is None else self.max_features_, str(self.preprocessor_),
+							  str(self.tokenizer_), str(self.analyzer_), self.token_pattern_, self.decode_error_,
+							  str(self.strip_accents_),  self.input_, str(self.ngram_range_), str(self.random_state_),
+							  0.0 if self.subsampling_rate_ is None else self.subsampling_rate_,
+							  str(self.wort_white_list_), sub_folder))
 
 		return sub_folder
 
