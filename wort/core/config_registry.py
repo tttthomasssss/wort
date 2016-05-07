@@ -204,8 +204,8 @@ class ConfigRegistry(object):
 				random_state = ? AND
 				subsampling_rate = ? AND
 				wort_white_list = ? AND
-				window_size = ? AND,
-				context_window_weighting = ? AND,
+				window_size = ? AND
+				context_window_weighting = ? AND
 				binary = ?;
 		"""
 
@@ -265,8 +265,8 @@ class ConfigRegistry(object):
 				random_state = ? AND
 				subsampling_rate = ? AND
 				wort_white_list = ? AND
-				window_size = ? AND,
-				context_window_weighting = ? AND,
+				window_size = ? AND
+				context_window_weighting = ? AND
 				binary = ? AND
 				weighting = ? AND
 				cds = ? AND
