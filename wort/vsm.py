@@ -16,6 +16,7 @@ import joblib
 import numpy as np
 
 from wort.core.config_registry import ConfigRegistry
+from wort.core.io_handler import IOHandler
 from wort.core import context_window_weighting
 from wort.core import feature_transformation
 from wort.core import oov_handler
@@ -136,8 +137,9 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self._setup_logging()
 
 		self.config_registry_ = ConfigRegistry(path=self.cache_path)
+		self.io_handler_ = IOHandler()
 
-	def _setup_logging(self):
+	def _setup_logging(self): # TODO: Move to utils?
 		log_formatter = logging.Formatter(fmt='%(asctime)s: %(levelname)s - %(message)s', datefmt='[%d/%m/%Y %H:%M:%S %p]')
 		root_logger = logging.getLogger()
 		root_logger.setLevel(self.log_level_)
