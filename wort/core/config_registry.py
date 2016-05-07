@@ -41,7 +41,7 @@ class ConfigRegistry(object):
 			cursor = conn.cursor()
 
 			vocab_table = """
-				CRETE TABLE IF NOT EXISTS Vocab (
+				CREATE TABLE IF NOT EXISTS Vocab (
 					id INTEGER PRIMARY KEY AUTOINCREMENT,
 					min_frequency INTEGER,
 					lowercase INTEGER,
