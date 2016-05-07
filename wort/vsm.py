@@ -8,7 +8,6 @@ import os
 import sys
 
 from scipy import sparse
-from scipy.special import expit as sigmoid
 from sklearn.base import BaseEstimator
 from sklearn.feature_extraction.text import VectorizerMixin
 from sparsesvd import sparsesvd
@@ -17,6 +16,9 @@ import joblib
 import numpy as np
 
 from wort.core.config_registry import ConfigRegistry
+from wort.core import context_window_weighting
+from wort.core import feature_transformation
+from wort.core import oov_handler
 from wort.core import utils
 
 # TODO: SVD based on http://www.aclweb.org/anthology/Q/Q15/Q15-1016.pdf, esp. chapter 7, practical recommendations
@@ -166,34 +168,6 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		return W
 
-	# TODO: move to own file
-	def _constant_window_weighting(self, *_):
-		return 1
-
-	def _aggressive_window_weighting(self, distance, _):
-		return 2 ** (1 - abs(distance))
-
-	def _very_aggressive_window_weighting(self, distance, _):
-		return 2 ** (1 - (distance ** 2))
-
-	def _harmonic_window_weighting(self, distance, _):
-		return 1. / abs(distance) # Thats what GloVe is doing
-
-	def _distance_window_weighting(self, distance, window_size):
-		return (window_size - abs(distance)) / window_size # Thats what word2vec is doing
-
-	def _sigmoid_window_weighting(self, distance, _):
-		return sigmoid(distance)
-
-	def _inverse_sigmoid_window_weighting(self, distance, _):
-		return 1 - sigmoid(distance)
-
-	def _absolute_sigmoid_window_weighting(self, distance, _):
-		return abs(sigmoid(distance))
-
-	def _absolut_inverse_sigmoid_window_weighting(self, distance, _):
-		return 1 - abs(sigmoid(distance))
-
 	def fit_vocabulary(self, raw_documents, analyser=None):
 		if (analyser is None):
 			analyser = self.build_analyzer()
@@ -300,7 +274,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		cols = array.array('I') #cols = array.array('i')
 		data = array.array('I' if self.context_window_weighting == 'constant' else 'f')
 
-		window_weighting_fn = getattr(self, '_{}_window_weighting'.format(self.context_window_weighting))
+		window_weighting_fn = getattr(context_window_weighting, '{}_window_weighting'.format(self.context_window_weighting))
 
 		for doc in tqdm(raw_documents):
 			buffer = array.array('i')
@@ -340,19 +314,6 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# Apply Binarisation
 		if (self.binary):
 			self.M_ = self.M_.minimum(1)
-
-	# TODO: move to own file
-	def _apply_weight_option(self, PMI, P_w_c, p_c):
-		# TODO: re-check results for `plmi` and `pnpmi`
-		if (self.weighting == 'ppmi'):
-			return PMI
-		elif (self.weighting == 'plmi'):
-			return P_w_c.multiply(PMI)
-		elif (self.weighting == 'pnpmi'):
-			# Tricky one, could normalise by -log(P(w)), -log(P(c)) or -log(P(w, c)); choose the latter because it normalises the upper & the lower bound,
-			# and is nicer implementationwise (see Bouma 2009: https://svn.spraakdata.gu.se/repos/gerlof/pub/www/Docs/npmi-pfd.pdf)
-			P_w_c.data = 1 / -np.log(P_w_c.data)
-			return P_w_c.multiply(PMI)
 
 	def _weight_transformation(self):
 		logging.info('Applying {} weight transformation...'.format(self.weighting))
@@ -406,8 +367,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# TODO: with the new & optimised PMI variant, some of the assets required by the other PMI options need to calculated
 		# TODO: explicitely, hence that needs to be supported properly
 		# ...apply the PMI variant (e.g. PPMI, SPPMI, PLMI or PNPMI)
-		PMI = self._apply_weight_option(sparse.csr_matrix((data, (rows, cols)), shape=self.M_.shape, dtype=np.float64), None, p_c)
-
+		fn_feat_transformation = getattr(feature_transformation, '{}_transformation'.format(self.weighting))
+		PMI = fn_feat_transformation(sparse.csr_matrix((data, (rows, cols)), shape=self.M_.shape, dtype=np.float64), None, self.p_w_, p_c)
 		logging.info('after weight option, type(PMI)={}, PMI.shape={}'.format(type(PMI), PMI.shape))
 
 		# Apply shift
@@ -544,19 +505,6 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		return self
 
-	# TODO: move to own file
-	def _random_oov_handler(self, shape):
-		return sparse.random(shape[0], shape[1], density=self.density_, format='csr', random_state=self.random_state, dtype=self.T_.dtype)
-
-	def _ignore_oov_handler(self, _):
-		pass
-
-	def _zeros_oov_handler(self, shape):
-		return sparse.csr_matrix(np.zeros(shape))
-
-	def _ones_oov_handler(self, shape):
-		return sparse.csr_matrix(np.ones(shape))
-
 	def transform(self, raw_documents, as_matrix=False, oov='zeros'):
 		'''
 
@@ -568,9 +516,9 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		analyser = self.build_analyzer()
 
 		if (isinstance(oov, Callable)):
-			oov_handler = oov
+			oov_fn = oov
 		else:
-			oov_handler = getattr(self, '_{}_oov_handler'.format(oov))
+			oov_fn = getattr(oov_handler, '{}_oov_handler'.format(oov))
 
 		l = []
 		# Peek if a list or a string are passed
@@ -582,7 +530,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 						d.append(self[feature])
 					else:
 						if (oov != 'ignore'):
-							d.append(oov_handler((1, self.get_vector_size())))
+							d.append(oov_fn((1, self.get_vector_size()), self.T_.dtype, self.density_, self.random_state))
 				l.append(d)
 
 			# Convert list of lists of sparse vectors to list of sparse matrices (scipy doesn't support sparse tensors afaik)
@@ -600,7 +548,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 					l.append(self[feature])
 				else:
 					if (oov != 'ignore'):
-						l.append(oov_handler((1, self.get_vector_size())))
+						l.append(oov_fn((1, self.get_vector_size()), self.T_.dtype, self.density_, self.random_state))
 
 			# Convert list of sparse vectors to sparse matrix
 			if (as_matrix):
