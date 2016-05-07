@@ -157,7 +157,8 @@ class ConfigRegistry(object):
 							  0.0 if self.subsampling_rate_ is None else self.subsampling_rate_,
 							  str(self.wort_white_list_)))
 
-		return cursor.fetchone()[0]
+		result = cursor.fetchone()
+		return result if not isinstance(result, tuple) else result[0]
 
 	def register_vocab(self):
 		conn = sqlite3.connect(self.db_path_)
@@ -216,7 +217,8 @@ class ConfigRegistry(object):
 							  str(self.wort_white_list_), str(self.window_size_), self.context_window_weighting_,
 							  1 if self.binary_ else 0))
 
-		return cursor.fetchone()[0]
+		result = cursor.fetchone()
+		return result if not isinstance(result, tuple) else result[0]
 
 	def register_cooccurrence_matrix(self):
 		conn = sqlite3.connect(self.db_path_)
@@ -279,7 +281,8 @@ class ConfigRegistry(object):
 							  str(self.wort_white_list_), str(self.window_size_), self.context_window_weighting_,
 							  1 if self.binary_ else 0, self.weighting_, self.cds_, self.sppmi_shift_))
 
-		return cursor.fetchone()[0]
+		result = cursor.fetchone()
+		return result if not isinstance(result, tuple) else result[0]
 
 	def register_pmi_matrix(self):
 		conn = sqlite3.connect(self.db_path_)
