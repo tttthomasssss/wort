@@ -134,6 +134,7 @@ class ConfigRegistry(object):
 			WHERE
 				min_frequency = ? AND
 				lowercase = ? AND
+				stop_words = ? AND
 				encoding = ? AND
 				max_features = ? AND
 				preprocessor = ? AND
@@ -188,6 +189,7 @@ class ConfigRegistry(object):
 			WHERE
 				min_frequency = ? AND
 				lowercase = ? AND
+				stop_words = ? AND
 				encoding = ? AND
 				max_features = ? AND
 				preprocessor = ? AND
@@ -247,6 +249,7 @@ class ConfigRegistry(object):
 			WHERE
 				min_frequency = ? AND
 				lowercase = ? AND
+				stop_words = ? AND
 				encoding = ? AND
 				max_features = ? AND
 				preprocessor = ? AND
