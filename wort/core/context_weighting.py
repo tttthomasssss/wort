@@ -3,7 +3,7 @@ from scipy.special import expit as sigmoid
 
 
 def constant_window_weighting(*_):
-		return 1
+	return 1
 
 
 def aggressive_window_weighting(distance, _):
