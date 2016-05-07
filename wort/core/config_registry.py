@@ -60,7 +60,7 @@ class ConfigRegistry(object):
 					subsampling_rate FLOAT,
 					wort_white_list TEXT,
 					sub_folder TEXT
-				)
+				);
 			"""
 
 			cooc_table = """
@@ -82,11 +82,11 @@ class ConfigRegistry(object):
 					random_state TEXT,
 					subsampling_rate FLOAT,
 					wort_white_list TEXT,
-					window_size INTEGER,
+					window_size TEXT,
 					context_window_weighting TEXT,
 					binary INTEGER,
 					sub_folder TEXT
-				)
+				);
 			"""
 
 			pmi_table = """
@@ -108,14 +108,14 @@ class ConfigRegistry(object):
 					random_state TEXT,
 					subsampling_rate FLOAT,
 					wort_white_list TEXT,
-					window_size INTEGER,
+					window_size TEXT,
 					context_window_weighting TEXT,
 					binary INTEGER,
 					weighting TEXT,
 					cds FLOAT,
 					sppmi_shift INTEGER,
 					sub_folder TEXT
-				)
+				);
 			"""
 
 			cursor.execute(vocab_table)
@@ -146,7 +146,7 @@ class ConfigRegistry(object):
 				ngram_range = ? AND
 				random_state = ? AND
 				subsampling_rate = ? AND
-				wort_white_list = ? AND
+				wort_white_list = ?;
 		"""
 
 		cursor.execute(stmt, (self.min_frequency_, 1 if self.lowercase_ else 0, str(self.stop_words_), self.encoding_,
@@ -166,7 +166,7 @@ class ConfigRegistry(object):
 			INSERT INTO Vocab (min_frequency, lowercase, encoding, max_features, preprocessor, tokenizer, analyzer,
 							token_pattern, decode_error, strip_accents, input, ngram_range, random_state,
 							subsampling_rate, wort_white_list, sub_folder)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 		"""
 
 		sub_folder = str(uuid.uuid1())
@@ -178,4 +178,41 @@ class ConfigRegistry(object):
 							  str(self.wort_white_list_), sub_folder))
 
 		return sub_folder
+
+	def cooccurrence_matrix_folder(self):
+		conn = sqlite3.connect(self.db_path_)
+		cursor = conn.cursor()
+
+		stmt = """
+			SELECT sub_folder FROM Vocab
+			WHERE
+				min_frequency = ? AND
+				lowercase = ? AND
+				encoding = ? AND
+				max_features = ? AND
+				preprocessor = ? AND
+				tokenizer = ? AND
+				analyzer = ? AND
+				token_pattern = ? AND
+				decode_error = ? AND
+				strip_accents = ? AND
+				input = ? AND
+				ngram_range = ? AND
+				random_state = ? AND
+				subsampling_rate = ? AND
+				wort_white_list = ? AND
+				window_size = ? AND,
+				context_window_weighting = ? AND,
+				binary = ?;
+		"""
+
+		cursor.execute(stmt, (self.min_frequency_, 1 if self.lowercase_ else 0, str(self.stop_words_), self.encoding_,
+							  -1 if self.max_features_ is None else self.max_features_, str(self.preprocessor_),
+							  str(self.tokenizer_), str(self.analyzer_), self.token_pattern_, self.decode_error_,
+							  str(self.strip_accents_),  self.input_, str(self.ngram_range_), str(self.random_state_),
+							  0.0 if self.subsampling_rate_ is None else self.subsampling_rate_,
+							  str(self.wort_white_list_), str(self.window_size_), self.context_window_weighting_,
+							  1 if self.binary_ else 0))
+
+		return cursor.fetchone()[0]
 

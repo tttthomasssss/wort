@@ -78,3 +78,6 @@ class IOHandler(object):
 			os.makedirs(os.path.join(self.cache_path_, sub_folder))
 
 		joblib.dump(inverted_index, os.path.join(self.cache_path_, sub_folder, 'inverted_index.joblib'), compress=3)
+
+	def load_cooccurrence_matrix(self, sub_folder):
+		return utils.hdf_to_sparse_csx_matrix(os.path.join(self.cache_path_, sub_folder), 'M.hdf', sparse_format='csr')

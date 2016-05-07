@@ -426,12 +426,17 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				self.io_handler_.save_p_w(self.p_w_, sub_folder)
 
 		#### FIT CO-OCCURRENCE MATRIX
-		if (self.config_registry_.cooc_cache_exists()):
-			pass
+		cooc_folder = self.config_registry_.cooccurrence_matrix_folder()
+		if (cooc_folder is not None and cooc_folder != ''):
+			self.M_ = self.io_handler_.load_cooccurrence_matrix(cooc_folder)
 		else:
 			logging.info('Fitting co-occurrence matrix...')
 			self.fit_cooccurrence_matrix(raw_documents=raw_documents, analyser=analyser)
 			logging.info('Co-occurrence matrix fitted!')
+
+			# Cache co-occurrence matrix
+			if (self.cache_intermediary_results):
+
 
 			# TODO: Store co-occurrence matrix here (`fit_cooccurrence_matrix()`)
 
