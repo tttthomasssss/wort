@@ -15,8 +15,6 @@ from scipy.stats import spearmanr
 from wort.core import utils
 from wort.core.utils import LemmaTokenizer
 from wort.vsm import VSMVectorizer
-from wort.corpus_readers import FrostReader
-from wort.corpus_readers import MovieReviewReader
 from wort.corpus_readers import CSVStreamReader
 from wort.corpus_readers import GzipStreamReader
 from wort.corpus_readers import TextStreamReader
@@ -105,15 +103,6 @@ def test_discoutils_loader():
 	print('dog: {}'.format(disco_vectors.get_nearest_neighbours('dog')))
 
 
-def test_frost():
-	base_path = os.path.join(paths.get_dataset_path(), 'frost', 'stopping_by_woods_on_a_snowy_evening.txt')
-	f = FrostReader(base_path)
-	vec = VSMVectorizer(window_size=3, min_frequency=1, context_window_weighting='aggressive')
-
-	vec.fit(f)
-	joblib.dump(vec, os.path.join(os.path.split(base_path)[0], 'VSMVectorizer.joblib'), compress=3)
-
-
 def test_pizza():
 	import math
 	base_path = os.path.join(paths.get_dataset_path(), 'pizza_small', 'pizza_small.txt')
@@ -164,26 +153,6 @@ def test_movie_reviews_from_cache():
 	print(vec.T_.shape)
 	print(vec.T_.max())
 	print(vec.T_.min())
-
-
-def test_movie_reviews():
-	p = os.path.join(os.path.join(paths.get_dataset_path(), 'movie_reviews', 'aclImdb', 'unlabelled_docs'))
-	mr = MovieReviewReader(p)
-
-	out_path = os.path.join(paths.get_dataset_path(), 'movie_reviews', 'wort_vectors')
-	if (not os.path.exists(out_path)):
-		os.makedirs(out_path)
-
-	vec = VSMVectorizer(window_size=10, min_frequency=50, cache_intermediary_results=True, cache_path=out_path)
-	vec = vec.fit(mr)
-
-	# Store model
-	print('Dumping model to {}'.format(os.path.join(out_path, 'VSMVectorizer.joblib')))
-	joblib.dump(vec, os.path.join(out_path, 'VSMVectorizer.joblib'), compress=3)
-	print('SHAPE: ', vec.M_.shape)
-	print('MAX: ', np.amax(vec.M_.A))
-	print('MIN: ', np.amin(vec.M_.A))
-	print('NNZ: {}; thats a ratio of {}'.format(np.count_nonzero(vec.M_.A), np.count_nonzero(vec.M_.A) / (vec.M_.shape[0] * vec.M_.shape[1])))
 
 
 def test_wikipedia():
