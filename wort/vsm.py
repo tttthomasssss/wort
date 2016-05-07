@@ -255,7 +255,10 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		cols = array.array('I') #cols = array.array('i')
 		data = array.array('I' if self.context_window_weighting == 'constant' else 'f')
 
-		window_weighting_fn = getattr(context_weighting, '{}_window_weighting'.format(self.context_window_weighting))
+		if (isinstance(self.context_window_weighting, Callable)):
+			window_weighting_fn = self.context_window_weighting
+		else:
+			window_weighting_fn = getattr(context_weighting, '{}_window_weighting'.format(self.context_window_weighting))
 
 		for doc in tqdm(raw_documents):
 			buffer = array.array('i')
@@ -348,7 +351,11 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# TODO: with the new & optimised PMI variant, some of the assets required by the other PMI options need to calculated
 		# TODO: explicitely, hence that needs to be supported properly
 		# ...apply the PMI variant (e.g. PPMI, SPPMI, PLMI or PNPMI)
-		fn_feat_transformation = getattr(feature_transformation, '{}_transformation'.format(self.weighting))
+		if (isinstance(self.weighting, Callable)):
+			fn_feat_transformation = self.weighting
+		else:
+			fn_feat_transformation = getattr(feature_transformation, '{}_transformation'.format(self.weighting))
+
 		PMI = fn_feat_transformation(sparse.csr_matrix((data, (rows, cols)), shape=self.M_.shape, dtype=np.float64), None, self.p_w_, p_c)
 		logging.info('after weight option, type(PMI)={}, PMI.shape={}'.format(type(PMI), PMI.shape))
 
