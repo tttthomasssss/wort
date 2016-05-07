@@ -46,11 +46,14 @@ class IOHandler(object):
 
 		return p_w
 
-	def save_p_w(self, p_w, sub_folder):
+	def save_p_w(self, p_w, sub_folder, base_path=None):
 		if (not os.path.exists(os.path.join(self.cache_path_, sub_folder))):
 			os.makedirs(os.path.join(self.cache_path_, sub_folder))
 
-		utils.numpy_to_hdf(p_w, os.path.join(self.cache_path_, sub_folder), 'p_w')
+		if (base_path is None):
+			base_path = self.cache_path_
+
+		utils.numpy_to_hdf(p_w, os.path.join(base_path, sub_folder), 'p_w')
 
 	def load_vocab_count(self, sub_folder):
 		return joblib.load(os.path.join(self.cache_path_, sub_folder, 'vocab_count.joblib'))['vocab_count']
@@ -64,20 +67,43 @@ class IOHandler(object):
 	def load_index(self, sub_folder):
 		return joblib.load(os.path.join(self.cache_path_, sub_folder, 'index.joblib'))
 
-	def save_index(self, index, sub_folder):
+	def save_index(self, index, sub_folder, base_path=None):
 		if (not os.path.exists(os.path.join(self.cache_path_, sub_folder))):
 			os.makedirs(os.path.join(self.cache_path_, sub_folder))
 
-		joblib.dump(index, os.path.join(self.cache_path_, sub_folder, 'index.joblib'), compress=3)
+		if (base_path is None):
+			base_path = self.cache_path_
+
+		joblib.dump(index, os.path.join(base_path, sub_folder, 'index.joblib'), compress=3)
 
 	def load_inverted_index(self, sub_folder):
 		return joblib.load(os.path.join(self.cache_path_, sub_folder, 'inverted_index.joblib'))
 
-	def save_inverted_index(self, inverted_index, sub_folder):
+	def save_inverted_index(self, inverted_index, sub_folder, base_path=None):
 		if (not os.path.exists(os.path.join(self.cache_path_, sub_folder))):
 			os.makedirs(os.path.join(self.cache_path_, sub_folder))
 
-		joblib.dump(inverted_index, os.path.join(self.cache_path_, sub_folder, 'inverted_index.joblib'), compress=3)
+		if (base_path is None):
+			base_path = self.cache_path_
+
+		joblib.dump(inverted_index, os.path.join(base_path, sub_folder, 'inverted_index.joblib'), compress=3)
 
 	def load_cooccurrence_matrix(self, sub_folder):
 		return utils.hdf_to_sparse_csx_matrix(os.path.join(self.cache_path_, sub_folder), 'M.hdf', sparse_format='csr')
+
+	def save_cooccurrence_matrix(self, M, sub_folder):
+		if (not os.path.exists(os.path.join(self.cache_path_, sub_folder))):
+			os.makedirs(os.path.join(self.cache_path_, sub_folder))
+
+		utils.sparse_matrix_to_hdf(M, os.path.join(self.cache_path_, sub_folder), 'M.hdf')
+
+	def load_pmi_matrix(self, sub_folder):
+		return utils.hdf_to_sparse_csx_matrix(os.path.join(self.cache_path_, sub_folder), 'T.hdf', sparse_format='csr')
+
+	def save_pmi_matrix(self, T, sub_folder, base_path=None):
+		if (not os.path.exists(os.path.join(self.cache_path_, sub_folder))):
+			os.makedirs(os.path.join(self.cache_path_, sub_folder))
+
+		if (base_path is None):
+			base_path = self.cache_path_
+		utils.sparse_matrix_to_hdf(T, os.path.join(base_path, sub_folder), 'T.hdf')

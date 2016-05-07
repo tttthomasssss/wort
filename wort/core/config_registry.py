@@ -216,3 +216,88 @@ class ConfigRegistry(object):
 
 		return cursor.fetchone()[0]
 
+	def register_cooccurrence_matrix(self):
+		conn = sqlite3.connect(self.db_path_)
+		cursor = conn.cursor()
+
+		stmt = """
+			INSERT INTO Cooccurrence_Matrix (min_frequency, lowercase, encoding, max_features, preprocessor, tokenizer,
+							analyzer, token_pattern, decode_error, strip_accents, input, ngram_range, random_state,
+							subsampling_rate, wort_white_list, window_size, context_window_weighting, binary, sub_folder)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+		"""
+
+		sub_folder = str(uuid.uuid1())
+		cursor.execute(stmt, (self.min_frequency_, 1 if self.lowercase_ else 0, str(self.stop_words_), self.encoding_,
+							  -1 if self.max_features_ is None else self.max_features_, str(self.preprocessor_),
+							  str(self.tokenizer_), str(self.analyzer_), self.token_pattern_, self.decode_error_,
+							  str(self.strip_accents_),  self.input_, str(self.ngram_range_), str(self.random_state_),
+							  0.0 if self.subsampling_rate_ is None else self.subsampling_rate_,
+							  str(self.wort_white_list_), str(self.window_size_), self.context_window_weighting_,
+							  1 if self.binary_ else 0, sub_folder))
+
+		return sub_folder
+
+	def pmi_matrix_folder(self):
+		conn = sqlite3.connect(self.db_path_)
+		cursor = conn.cursor()
+
+		stmt = """
+			SELECT sub_folder FROM Vocab
+			WHERE
+				min_frequency = ? AND
+				lowercase = ? AND
+				encoding = ? AND
+				max_features = ? AND
+				preprocessor = ? AND
+				tokenizer = ? AND
+				analyzer = ? AND
+				token_pattern = ? AND
+				decode_error = ? AND
+				strip_accents = ? AND
+				input = ? AND
+				ngram_range = ? AND
+				random_state = ? AND
+				subsampling_rate = ? AND
+				wort_white_list = ? AND
+				window_size = ? AND,
+				context_window_weighting = ? AND,
+				binary = ? AND
+				weighting = ? AND
+				cds = ? AND
+				sppmi_shift = ?;
+		"""
+
+		cursor.execute(stmt, (self.min_frequency_, 1 if self.lowercase_ else 0, str(self.stop_words_), self.encoding_,
+							  -1 if self.max_features_ is None else self.max_features_, str(self.preprocessor_),
+							  str(self.tokenizer_), str(self.analyzer_), self.token_pattern_, self.decode_error_,
+							  str(self.strip_accents_),  self.input_, str(self.ngram_range_), str(self.random_state_),
+							  0.0 if self.subsampling_rate_ is None else self.subsampling_rate_,
+							  str(self.wort_white_list_), str(self.window_size_), self.context_window_weighting_,
+							  1 if self.binary_ else 0, self.weighting_, self.cds_, self.sppmi_shift_))
+
+		return cursor.fetchone()[0]
+
+	def register_pmi_matrix(self):
+		conn = sqlite3.connect(self.db_path_)
+		cursor = conn.cursor()
+
+		stmt = """
+			INSERT INTO PMI_Matrix (min_frequency, lowercase, encoding, max_features, preprocessor, tokenizer,
+							analyzer, token_pattern, decode_error, strip_accents, input, ngram_range, random_state,
+							subsampling_rate, wort_white_list, window_size, context_window_weighting, binary, weighting,
+							cds, sppmi_shift, sub_folder)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+		"""
+
+		sub_folder = str(uuid.uuid1())
+		cursor.execute(stmt, (self.min_frequency_, 1 if self.lowercase_ else 0, str(self.stop_words_), self.encoding_,
+							  -1 if self.max_features_ is None else self.max_features_, str(self.preprocessor_),
+							  str(self.tokenizer_), str(self.analyzer_), self.token_pattern_, self.decode_error_,
+							  str(self.strip_accents_),  self.input_, str(self.ngram_range_), str(self.random_state_),
+							  0.0 if self.subsampling_rate_ is None else self.subsampling_rate_,
+							  str(self.wort_white_list_), str(self.window_size_), self.context_window_weighting_,
+							  1 if self.binary_ else 0, self.weighting_, self.cds_, self.sppmi_shift_, sub_folder))
+
+		return sub_folder
+

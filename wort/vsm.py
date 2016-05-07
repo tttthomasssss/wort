@@ -3,16 +3,13 @@ from collections import Callable
 from types import GeneratorType
 import array
 import logging
-import math
 import os
-import sys
 
 from scipy import sparse
 from sklearn.base import BaseEstimator
 from sklearn.feature_extraction.text import VectorizerMixin
 from sparsesvd import sparsesvd
 from tqdm import *
-import joblib
 import numpy as np
 
 from wort.core.config_registry import ConfigRegistry
@@ -20,7 +17,6 @@ from wort.core.io_handler import IOHandler
 from wort.core import context_weighting
 from wort.core import feature_transformation
 from wort.core import oov_handler
-from wort.core import utils
 
 # TODO: SVD based on http://www.aclweb.org/anthology/Q/Q15/Q15-1016.pdf, esp. chapter 7, practical recommendations
 	# Subsampling
@@ -300,7 +296,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		if (self.binary):
 			self.M_ = self.M_.minimum(1)
 
-	def _weight_transformation(self):
+	def fit_pmi_matrix(self):
 		logging.info('Applying {} weight transformation...'.format(self.weighting))
 
 		self.T_ = sparse.lil_matrix(self.M_.shape, dtype=np.float64)
@@ -368,8 +364,10 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.T_ = PMI.maximum(0)
 		logging.info('PMI ALL DONE [type(self.T_)={}]'.format(type(self.T_)))
 
-		# TODO: Store PMI matrix here (`fit_ppmi_transformation()`)
+		logging.info('Returning [density={}]...'.format(len(self.T_.nonzero()[0]) / (self.T_.shape[0] * self.T_.shape[1])))
+		self.density_ = len(self.T_.nonzero()[0]) / (self.T_.shape[0] * self.T_.shape[1])
 
+	def fit_dimensionality_reduction(self):
 		# Apply SVD
 		if (self.dim_reduction == 'svd'):
 			logging.info('Applying SVD...')
@@ -387,13 +385,6 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			else:
 				self.T_ = W
 
-		logging.info('Returning [density={}]...'.format(len(self.T_.nonzero()[0]) / (self.T_.shape[0] * self.T_.shape[1])))
-		self.density_ = len(self.T_.nonzero()[0]) / (self.T_.shape[0] * self.T_.shape[1])
-
-		# TODO: Offer `fit_dimensionality_reduction()`
-
-		return self.T_
-
 	def fit(self, raw_documents, y=None):
 
 		# Shameless copy/paste from Radims word2vec Tutorial, no generators matey, need multi-pass!!!
@@ -403,7 +394,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		analyser = self.build_analyzer()
 
-		### FIT VOCABULARY
+		##### FIT VOCABULARY
 		vocab_folder = self.config_registry_.vocab_cache_folder()
 		if (vocab_folder is not None and vocab_folder != ''):
 			# Load cached resources
@@ -424,8 +415,9 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				self.io_handler_.save_inverted_index(self.inverted_index_, sub_folder)
 				self.io_handler_.save_vocab_count(self.vocab_count_, sub_folder)
 				self.io_handler_.save_p_w(self.p_w_, sub_folder)
+		##################
 
-		#### FIT CO-OCCURRENCE MATRIX
+		##### FIT CO-OCCURRENCE MATRIX
 		cooc_folder = self.config_registry_.cooccurrence_matrix_folder()
 		if (cooc_folder is not None and cooc_folder != ''):
 			self.M_ = self.io_handler_.load_cooccurrence_matrix(cooc_folder)
@@ -436,46 +428,30 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 			# Cache co-occurrence matrix
 			if (self.cache_intermediary_results):
+				sub_folder = self.config_registry_.register_cooccurrence_matrix()
+				self.io_handler_.save_cooccurrence_matrix(self.M_, sub_folder)
+		##################
 
+		##### FIT PMI FEATURE TRANSFORMATION
+		pmi_folder = self.config_registry_.pmi_matrix_folder()
+		if (pmi_folder is not None and pmi_folder != ''):
+			self.T_ = self.io_handler_.load_pmi_matrix(pmi_folder)
+		else:
+			logging.info('Fitting PMI matrix...')
+			self.fit_pmi_matrix()
+			logging.info('PMI matrix fitted!')
 
-			# TODO: Store co-occurrence matrix here (`fit_cooccurrence_matrix()`)
-
+			# Cache PMI matrix
 			if (self.cache_intermediary_results):
-				# Store the matrix bits and pieces in several different files due to performance and size
-				logging.info('Caching co-occurrence matrix to path: {}...'.format(self.cache_path))
-				utils.sparse_matrix_to_hdf(self.M_, self.cache_path, 'M.hdf')
-				logging.info('Finished caching co-occurence matrix!')
+				sub_folder = self.config_registry_.register_pmi_matrix()
+				self.io_handler_.save_pmi_matrix(self.T_, sub_folder)
+		##################
 
-				logging.info('Caching word probability distribution to path: {}...'.format(os.path.join(self.cache_path, 'p_w.joblib')))
-				joblib.dump(self.p_w_, os.path.join(self.cache_path, 'p_w.joblib'), compress=3)
-				logging.info('Finished caching word probability distribution!')
-
-				logging.info('Caching index to path: {}...'.format(os.path.join(self.cache_path, 'index.joblib')))
-				joblib.dump(self.index_, os.path.join(self.cache_path, 'index.joblib'), compress=3)
-				logging.info('Finished caching index!')
-
-				logging.info('Caching inverted index to path: {}...'.format(os.path.join(self.cache_path, 'inverted_index.joblib')))
-				joblib.dump(self.inverted_index_, os.path.join(self.cache_path, 'inverted_index.joblib'), compress=3)
-				logging.info('Finished caching inverted index!')
-
-			# Apply weighting transformation
-			self._weight_transformation()
-		else:
-			logging.info('Found cached co-occurrence matrix at {}! Applying {} from cache!'.format(self.cache_path, self.weighting))
-			self.weight_transformation_from_cache()
-
-		return self
-
-	def weight_transformation_from_cache(self):
-		self.M_ = utils.hdf_to_sparse_csx_matrix(self.cache_path, 'M.hdf', sparse_format='csr')
-		if (os.path.exists(os.path.join(self.cache_path, 'p_w.hdf'))):
-			self.p_w_ = utils.hdf_to_numpy(self.cache_path, 'p_w')
-		else:
-			self.p_w_ = joblib.load(os.path.join(self.cache_path, 'p_w.joblib'))
-		self.index_ = joblib.load(os.path.join(self.cache_path, 'index.joblib'))
-		self.inverted_index_ = joblib.load(os.path.join(self.cache_path, 'inverted_index.joblib'))
-
-		self._weight_transformation()
+		##### FIT DIMENSIONALITY REDUCTION
+		logging.info('Fitting dimensionality reduction...')
+		self.fit_dimensionality_reduction()
+		logging.info('Dimensionality reduction fitted!')
+		##################
 
 		return self
 
@@ -569,18 +545,11 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 	@classmethod
 	def load_from_file(cls, path, as_dict=False):
-		model = VSMVectorizer(window_size=5)
-
-		logging.info('Loading hdf file...')
-		model.T_ = utils.hdf_to_sparse_csx_matrix(path, 'T.hdf', sparse_format='csr') # TODO: static hack on sparse_format!!!
-		logging.info('Loading rest...')
-		model.index_ = joblib.load(os.path.join(path, 'index.joblib'))
-		model.inverted_index_ = joblib.load(os.path.join(path, 'inverted_index.joblib'))
-		if (os.path.exists(os.path.join(path, 'p_w.hdf'))):
-			model.p_w_ = utils.hdf_to_numpy(path, 'p_w')
-		else:
-			model.p_w_ = joblib.load(os.path.join(path, 'p_w.joblib'))
-		logging.info('Everything loaded!')
+		model = VSMVectorizer(window_size=0, cache_path=path)
+		model.T_ = model.io_handler_.load_pmi_matrix('')
+		model.index_ = model.io_handler_.load_index('')
+		model.inverted_index_ = model.io_handler_.load_inverted_index('')
+		model.p_w_ = model.io_handler_.load_p_w('')
 
 		return model
 
@@ -588,9 +557,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# If as_dict=True, call to_dict on self.T_ prior to serialisation
 		# Store a few type infos in a metadata file, e.g. the type of self.T_
 		# Get all params as well
-		utils.sparse_csx_matrix_to_hdf(self.T_, path, 'T.hdf')
-		joblib.dump(self.index_, os.path.join(path, 'index.joblib'), compress=3)
-		joblib.dump(self.inverted_index_, os.path.join(path, 'inverted_index.joblib'), compress=3)
-
-		utils.numpy_to_hdf(self.p_w_, path, 'p_w')
-		#joblib.dump(self.p_w_, os.path.join(path, 'p_w.joblib'), compress=3)
+		self.io_handler_.save_pmi_matrix(self.T_, sub_folder='', base_path=path)
+		self.io_handler_.save_index(self.index_, sub_folder='', base_path=path)
+		self.io_handler_.save_inverted_index(self.inverted_index_, sub_folder='', base_path=path)
+		self.io_handler_.save_p_w(self.p_w_, sub_folder='', base_path=path)
