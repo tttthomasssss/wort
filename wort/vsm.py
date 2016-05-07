@@ -159,7 +159,6 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		white_list_idx = set()
 
 		# Extract vocabulary
-		logging.info('Extracting vocabulary...')
 		for doc in tqdm(raw_documents):
 			for feature in analyser(doc):
 				idx = self.inverted_index_.get(feature, n_vocab+1)
@@ -179,7 +178,6 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# Vocab was used for indexing (hence, started at 0 for the first item (NOT init!)), so has to be incremented by 1
 		# to reflect the true vocab count
 		n_vocab += 1
-
 		logging.info('Finished Extracting vocabulary! n_vocab={}'.format(n_vocab))
 
 		W = np.array(w, dtype=np.uint64)
@@ -229,7 +227,6 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			W = self._delete_from_vocab(W, idx)
 
 			n_vocab -= len(idx)
-
 		logging.info('Finished Filtering extremes! n_vocab={}'.format(n_vocab))
 
 		self.p_w_ = W / token_count
