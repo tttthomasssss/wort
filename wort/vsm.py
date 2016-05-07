@@ -137,7 +137,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 											   wort_white_list=self.word_white_list, window_size=window_size,
 											   context_window_weighting=self.context_window_weighting, binary=binary,
 											   weighting=weighting, cds=cds, sppmi_shift=sppmi_shift)
-		self.io_handler_ = IOHandler(cache_path=cache_path, log_level=log_level, log_file=log_file)
+		self.io_handler_ = IOHandler(cache_path=cache_path, log_file=log_file, log_level=log_level)
+		self.io_handler_.setup_logging()
 
 	def _delete_from_vocab(self, W, idx):
 		W = np.delete(W, idx)
