@@ -246,6 +246,51 @@ def lemmatise_ukwac():
 			if (idx % 10000 == 0): print('{} lines processed!'.format(idx))
 
 
+def vectorize_pizza_epic():
+	base_path = os.path.join(paths.get_dataset_path(), 'pizza_small', 'pizza_small.txt')
+	f = CSVStreamReader(base_path)
+
+	out_path = os.path.join(paths.get_dataset_path(), 'pizza', 'wort_vectors_min_freq_100')
+	if (not os.path.exists(out_path)):
+		os.makedirs(out_path)
+
+	import math
+	for log_sppmi, sppmi in zip([0, math.log(5), math.log(10), math.log(40), math.log(100)], [0, 5, 10, 40, 100]):
+		for pmi_type in ['ppmi']:
+			for cds in [1., 0.75]:
+				for window_size in [1, 2, 5, 10]:# [5, 2]:
+					for dim in [0, 50, 100, 300, 600, 1000, 5000]:
+						for add_ctx_vectors in [False, True]:
+							print('CONFIG: pmi_type={}; window_size={}; cds={}; shift={}...'.format(pmi_type, window_size, cds, sppmi))
+							transformed_out_path = os.path.join(paths.get_dataset_path(), 'pizza', 'epic_wort',
+								'wort_model_ppmi_lemma-True_window-{}_cds-{}-sppmi_shift-{}_dim-{}_add_ctx-{}'.format(
+								window_size, cds, sppmi, dim, add_ctx_vectors
+							))
+							if (not os.path.exists(transformed_out_path)):
+								cache_path = os.path.join(paths.get_dataset_path(), 'pizza', 'epic_wort_cache')
+								if (not os.path.exists(cache_path)):
+									os.makedirs(cache_path)
+
+								red = None if dim <= 0 else 'svd'
+								vec = VSMVectorizer(window_size=window_size, min_frequency=2, cds=cds, weighting=pmi_type,
+													sppmi_shift=log_sppmi, cache_path=cache_path, cache_intermediary_results=True,
+													dim_reduction=red, svd_dim=dim, add_context_vectors=add_ctx_vectors)
+
+								vec.fit(f)
+
+								if (not os.path.exists(transformed_out_path)):
+									os.makedirs(transformed_out_path)
+
+								try:
+									print('Saving to file')
+									vec.save_to_file(transformed_out_path)
+									print('Doing the DisCo business...')
+								except OSError as ex:
+									print('FAILFAILFAIL: {}'.format(ex))
+							else:
+								print('{} already exists!'.format(transformed_out_path))
+
+
 def vectorize_wikipedia_epic():
 	from discoutils.thesaurus_loader import Vectors
 	from wort.datasets import get_miller_charles_30_words
@@ -1025,6 +1070,7 @@ def test_read_ukwac():
 
 
 if (__name__ == '__main__'):
+	vectorize_pizza_epic()
 	#test_pizza()
 	#transform_wikipedia_from_cache()
 	#vectorize_wikipedia()

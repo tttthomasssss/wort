@@ -158,6 +158,8 @@ class ConfigRegistry(object):
 							  str(self.wort_white_list_)))
 
 		result = cursor.fetchone()
+		conn.close()
+
 		return result if not isinstance(result, tuple) else result[0]
 
 	def register_vocab(self):
@@ -178,6 +180,9 @@ class ConfigRegistry(object):
 							  str(self.strip_accents_),  self.input_, str(self.ngram_range_), str(self.random_state_),
 							  0.0 if self.subsampling_rate_ is None else self.subsampling_rate_,
 							  str(self.wort_white_list_), sub_folder))
+
+		conn.commit()
+		conn.close()
 
 		return sub_folder
 
@@ -218,6 +223,8 @@ class ConfigRegistry(object):
 							  1 if self.binary_ else 0))
 
 		result = cursor.fetchone()
+		conn.close()
+
 		return result if not isinstance(result, tuple) else result[0]
 
 	def register_cooccurrence_matrix(self):
@@ -239,6 +246,9 @@ class ConfigRegistry(object):
 							  0.0 if self.subsampling_rate_ is None else self.subsampling_rate_,
 							  str(self.wort_white_list_), str(self.window_size_), self.context_window_weighting_,
 							  1 if self.binary_ else 0, sub_folder))
+
+		conn.commit()
+		conn.close()
 
 		return sub_folder
 
@@ -282,6 +292,8 @@ class ConfigRegistry(object):
 							  1 if self.binary_ else 0, self.weighting_, self.cds_, self.sppmi_shift_))
 
 		result = cursor.fetchone()
+		conn.close()
+
 		return result if not isinstance(result, tuple) else result[0]
 
 	def register_pmi_matrix(self):
@@ -304,6 +316,9 @@ class ConfigRegistry(object):
 							  0.0 if self.subsampling_rate_ is None else self.subsampling_rate_,
 							  str(self.wort_white_list_), str(self.window_size_), self.context_window_weighting_,
 							  1 if self.binary_ else 0, self.weighting_, self.cds_, self.sppmi_shift_, sub_folder))
+
+		conn.commit()
+		conn.close()
 
 		return sub_folder
 
