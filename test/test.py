@@ -1070,7 +1070,7 @@ def test_read_ukwac():
 
 
 if (__name__ == '__main__'):
-	vectorize_pizza_epic()
+	#vectorize_pizza_epic()
 	#test_pizza()
 	#transform_wikipedia_from_cache()
 	#vectorize_wikipedia()
