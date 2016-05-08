@@ -7,21 +7,21 @@ _~~~ Stanislaw Jerzy Lec ~~~_
 `wort` is a `python` library for creating count-based distributional semantic word vectors. It adopts a `scikit-learn` like API and is built on top of `numpy`, `scipy` and `scikit-learn`.
 
 # Table of Contents
-1. [Installation](Page#installation)
+1. [Installation](#installation)
 
-2. [Quickstart](Page#quickstart)
+2. [Quickstart](#quickstart)
 	
-3. [Reading a corpus from disk](Page#reading-a-corpus-from-disk)
+3. [Reading a corpus from disk](#reading-a-corpus-from-disk)
 
-4. [Creating and fitting `wort` models](Page#creating-and-fitting-wort-models)
+4. [Creating and fitting `wort` models](#creating-and-fitting-wort-models)
 
-5. [Serialising and deserialising `wort` models](Page#serialising-and-deserialising-wort-models)
+5. [Serialising and deserialising `wort` models](#serialising-and-deserialising-wort-models)
 
-6. [Accessing individual word vectors](Page#accessing-individual-word-vectors)
+6. [Accessing individual word vectors](#accessing-individual-word-vectors)
 
-7. [Evaluating `wort` models](Page#evaluating-wort-models)
+7. [Evaluating `wort` models](#evaluating-wort-models)
 
-8. [Optimising model throughput](Page#optimising-model-throughput)
+8. [Optimising model throughput](#optimising-model-throughput)
 
 ---
 
