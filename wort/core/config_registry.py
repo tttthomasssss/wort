@@ -186,7 +186,7 @@ class ConfigRegistry(object):
 		cursor = conn.cursor()
 
 		stmt = """
-			SELECT sub_folder FROM Vocab
+			SELECT sub_folder FROM Cooccurrence_Matrix
 			WHERE
 				min_frequency = ? AND
 				lowercase = ? AND
@@ -247,7 +247,7 @@ class ConfigRegistry(object):
 		cursor = conn.cursor()
 
 		stmt = """
-			SELECT sub_folder FROM Vocab
+			SELECT sub_folder FROM PMI_Matrix
 			WHERE
 				min_frequency = ? AND
 				lowercase = ? AND
