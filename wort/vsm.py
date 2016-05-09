@@ -403,7 +403,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		vocab_folder = self.config_registry_.vocab_cache_folder()
 		if (vocab_folder is not None and vocab_folder != ''):
 			# Load cached resources
-			logging.info('Loading cached resources from {}...'.format(os.path.join(self.cache_path, vocab_folder)))
+			logging.info('Loading cached vocabulary resources from {}...'.format(os.path.join(self.cache_path, vocab_folder)))
 			self.p_w_ = self.io_handler_.load_p_w(vocab_folder)
 			self.vocab_count_ = self.io_handler_.load_vocab_count(vocab_folder)
 			self.index_ = self.io_handler_.load_index(vocab_folder)
@@ -418,7 +418,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			# Cache vocabulary
 			if (self.cache_intermediary_results):
 				sub_folder = self.config_registry_.register_vocab()
-				logging.info('Storing cache to folder {}...'.format(sub_folder))
+				logging.info('Storing vocabulary cache to folder {}...'.format(sub_folder))
 				self.io_handler_.save_index(self.index_, sub_folder)
 				self.io_handler_.save_inverted_index(self.inverted_index_, sub_folder)
 				self.io_handler_.save_vocab_count(self.vocab_count_, sub_folder)
@@ -429,7 +429,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		##### FIT CO-OCCURRENCE MATRIX
 		cooc_folder = self.config_registry_.cooccurrence_matrix_folder()
 		if (cooc_folder is not None and cooc_folder != ''):
-			logging.info('Loading cached resources from {}...'.format(os.path.join(self.cache_path, cooc_folder)))
+			logging.info('Loading cached co-occurrence matrix resources from {}...'.format(os.path.join(self.cache_path, cooc_folder)))
 			self.M_ = self.io_handler_.load_cooccurrence_matrix(cooc_folder)
 			logging.info('Cache loaded!')
 		else:
@@ -440,7 +440,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			# Cache co-occurrence matrix
 			if (self.cache_intermediary_results):
 				sub_folder = self.config_registry_.register_cooccurrence_matrix()
-				logging.info('Storing cache to folder {}...'.format(sub_folder))
+				logging.info('Storing co-occurrence matrix cache to folder {}...'.format(sub_folder))
 				self.io_handler_.save_cooccurrence_matrix(self.M_, sub_folder)
 				logging.info('Cache stored!')
 		##################
@@ -448,7 +448,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		##### FIT PMI FEATURE TRANSFORMATION
 		pmi_folder = self.config_registry_.pmi_matrix_folder()
 		if (pmi_folder is not None and pmi_folder != ''):
-			logging.info('Loading cached resources from {}...'.format(os.path.join(self.cache_path, pmi_folder)))
+			logging.info('Loading cached PMI matrix resources from {}...'.format(os.path.join(self.cache_path, pmi_folder)))
 			self.T_ = self.io_handler_.load_pmi_matrix(pmi_folder)
 			logging.info('Cache loaded!')
 		else:
@@ -459,7 +459,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			# Cache PMI matrix
 			if (self.cache_intermediary_results):
 				sub_folder = self.config_registry_.register_pmi_matrix()
-				logging.info('Storing cache to folder {}...'.format(sub_folder))
+				logging.info('Storing PMI matrix cache to folder {}...'.format(sub_folder))
 				self.io_handler_.save_pmi_matrix(self.T_, sub_folder)
 				logging.info('Cache stored!')
 		##################
