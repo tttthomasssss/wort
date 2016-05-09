@@ -314,7 +314,7 @@ def vectorize_wikipedia_epic():
 		for pmi_type in ['ppmi']:
 			for cds in [1., 0.75]:
 				for window_size in [1, 2, 5, 10]:# [5, 2]:
-					for dim in [0, 50, 100, 300, 600, 1000, 5000]:
+					for dim in [0, 50, 100, 300, 600, 1000]:
 						for add_ctx_vectors in [False, True]:
 							print('CONFIG: pmi_type={}; window_size={}; cds={}; shift={}...'.format(pmi_type, window_size, cds, sppmi))
 							transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'epic_wort',
