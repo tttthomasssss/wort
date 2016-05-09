@@ -375,7 +375,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 	def fit_dimensionality_reduction(self):
 		# Apply SVD
 		if (self.dim_reduction == 'svd'):
-			logging.info('Applying SVD...')
+			logging.info('Applying SVD with dimensionality={}...'.format(self.svd_dim))
 			Ut, S, Vt = sparsesvd(self.T_.tocsc() if sparse.issparse(self.T_) else sparse.csc_matrix(self.T_), self.svd_dim)
 
 			# Perform Context Weighting
