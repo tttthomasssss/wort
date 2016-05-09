@@ -175,4 +175,21 @@ Checking whether a word is present in the model can be done by:
 
 #### Optimising model throughput
 
-	TBD
+The model fitting process can be broken down into 3 individual steps (4 if dimensionality reduction is performed):
+
+* Vocabulary extraction (can easily take 1 hour)
+* Co-Occurrence Matrix construction (can easily take 3 hours or more)
+* PMI transformation (~ a few minutes)
+* Dimensionality reduction (depending on the number of dimensions, can tak anything from a few seconds to several hours)
+
+To optimise model throughput when multiple parameters are investigated (e.g. different window sizes, context weighting functions, context distribution smoothing values, sppmi shifts, etc), `wort` employs a caching scheme that (if `cache_intermediary_results=True` in the `VSMVectorizer` constructor) that re-uses results from previous processing steps by noticing that:
+
+* The vocabulary stays the same, independent of the options affecting the co-occurrence matrix construction (e.g. `window_size`, `context_window_weighting`)
+* The co-occurrence matrix stays the same, independent of the options affecting the PMI calculation (e.g. `cds`, `sppmi_shift`, `weighting`)
+* The PMI matrix stays the same, independent of the options affecting the dimensionality reduction (e.g. `svd_dim`, `svd_eig_weighting`, `add_context_vectors`)
+
+Thus, `wort` re-uses whatever it can when past model configurations match the current configuration in order to optimise the time spent on creating models.
+
+With time the cache will grow and potentially occupy a large amount of disk space, in which case the cache can be deleted by executing the `delete_cache.sh` script in `wort/tools` (by default `wort` uses `~/.wort_data/model_cache` as cache location):
+
+	./tools/delete_cache.sh -v -p /path/to/cache
