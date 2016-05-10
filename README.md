@@ -23,6 +23,8 @@ _~~~ Stanislaw Jerzy Lec ~~~_
 
 8. [Optimising model throughput](#optimising-model-throughput)
 
+9. [A complete example](#a-complete-example)
+
 ---
 
 #### Installation
@@ -222,3 +224,60 @@ With time the cache will grow and potentially occupy a large amount of disk spac
 	./tools/delete_cache.sh -v -p /path/to/cache
 
 ---
+
+#### A complete example
+
+This small example illustrates a complete use case of `wort` (Note that support of the `scikit-learn` parameter search API is not yet supported, but will be soon!). In practice, it is recommended to split the creation of `wort` models and their evaluation into two separate bits
+
+	import os
+	import json
+	
+	from wort import evaluation
+	from wort.corpus_readers import TextStreamReader
+	from wort.datasets import get_men_words
+	from wort.datasets import get_simlex_999_words
+	from wort.datasets import get_ws353_words
+	from wort.vsm import VSMVectorizer
+	
+	# Load Corpus
+	corpus_path = 'path/to/corpus/on/disk'
+	corpus = TextStreamReader(corpus_path)
+	
+	# Define word_white_list of words needed for evaluation
+	white_list = get_men_words() | get_simlex_999_words() | get_ws353_words()
+	
+	# Investigate effect of `window_size`, `context_window_weighting` and `cds`
+	window_size_values = [1, 2, 5, 10]
+	context_window_weighting_values = ['constant', 'harmonic', 'aggressive']
+	cds_values = [1.0, 0.75, 0.5]
+	min_frequency = 100
+	
+	wort_base_path = 'path/to/location/on/disk'
+	
+	collected_model_paths = [] # Note that this is just for illustrative purposes, in practice the bash script in wort/tools should be used
+	
+	# Create `wort` models
+	for window_size in window_size_values:
+		for weighting in context_window_weighting_values:
+			for cds in cds_values:
+				print('Running with configuration: window_size={}; context_window_weighting={}; cds={}...'.format(window_size, weighting, cds))
+				
+				model_name = 'wort_model_window-{}_weighting-{}_cds-{}'.format(window_size, weighting, cds)
+				model_out_path = os.path.join(wort_base_path, model_name)
+				collected_model_paths.append(model_out_path)
+				
+				wort = VSMVectorizer(window_size=window_size, context_window_weighting=weighting, cds=cds, 
+									 min_frequency=min_frequency, word_white_list=white_list)
+				
+				wort.fit(corpus)
+				
+				print('Storing wort model at {}...'.format(model_out_path))
+				wort.save_to_file(path=model_out_path)
+				
+	# Evaluate `wort` models
+	for model in collected_model_paths:
+		results = evaluation.intrinsic_word_similarity_evaluation(wort_model=model, datasets=['men', 'simlex999', 'ws353'])
+		
+		print('Performance scores of {}:'.format(model))
+		print(json.dumps(results, indent=4))
+		print('====================================================================================')

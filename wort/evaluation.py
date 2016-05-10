@@ -32,6 +32,8 @@ def intrinsic_word_similarity_evaluation(wort_model, datasets=['ws353', 'ws353_s
 	if (not isinstance(wort_model, VSMVectorizer)):
 		wort_model = VSMVectorizer.load_from_file(wort_model)
 
+	results = {}
+
 	for ds_key in datasets:
 		logging.info('Evaluating model on {}...'.format(ds_key))
 		ds = DATASET_FETCH_MAP[ds_key](data_home=data_home, **ds_fetcher_kwargs)
@@ -50,8 +52,9 @@ def intrinsic_word_similarity_evaluation(wort_model, datasets=['ws353', 'ws353_s
 		model_performance = correlation_fn(np.array(human_sims), np.array(scores))
 
 		logging.info('[{}] - score: {}!'.format(ds_key, model_performance))
+		results[ds_key] = model_performance
 
-		#return model_performance
+	return results
 
 
 # TODO: 3cosmul, 3cosadd (https://www.cs.bgu.ac.il/~yoavg/publications/conll2014analogies.pdf), standard, etc
