@@ -1,5 +1,7 @@
 __author__ = 'thomas'
+from argparse import ArgumentParser
 import logging
+import os
 import random
 
 from scipy.spatial.distance import cosine
@@ -8,38 +10,49 @@ from sklearn.neighbors import NearestNeighbors
 from tqdm import *
 import numpy as np
 
+from wort.datasets import DATASET_FETCH_MAP
 from wort.vsm import VSMVectorizer
 
 # TODO: Selector for datasets
 # TODO: OOV mode ('ignore', 'random', 0.5)
 # TODO: replace NaNs
+# TODO: Some kind of cross-validation
+parser = ArgumentParser()
+parser.add_argument('-i', '--input-file', type=str, required=True, help='input file')
+parser.add_argument('-ip', '--input-path', type=str, required=True, help='path to input file')
+parser.add_argument('-e', '--evaluation', type=str, default='intrinsic_word_similarity', help='kind of evaluation to perform')
+parser.add_argument('-h', '--data-home', type=str, default='~/.wort_data', help='path to data home')
+parser.add_argument('-ds', '--datasets', nargs='+', type=str, help='datasets to use for evaluation', default=[
+	'ws353', 'ws353_similarity', 'ws353_relatedness', 'mturk', 'men', 'simlex999'
+])
 
 
-def intrinsic_word_similarity_evaluation(wort_model, ds_fetcher, distance_fn=cosine, correlation_fn=spearmanr, random_seed=1105, **ds_fetcher_kwargs):
+def intrinsic_word_similarity_evaluation(wort_model, datasets=['ws353', 'ws353_similarity', 'ws353_relatedness', 'mturk', 'men', 'simlex999'],
+										 distance_fn=cosine, correlation_fn=spearmanr, random_seed=1105, data_home='~/.wort_data', **ds_fetcher_kwargs):
 	if (not isinstance(wort_model, VSMVectorizer)):
 		wort_model = VSMVectorizer.load_from_file(wort_model)
 
-	ds = ds_fetcher(ds_fetcher_kwargs)
+	for ds_key in datasets:
+		logging.info('Evaluating model on {}...'.format(ds_key))
+		ds = DATASET_FETCH_MAP[ds_key](data_home=data_home, **ds_fetcher_kwargs)
 
-	random.seed(random_seed)
+		scores = []
+		human_sims = []
+		for w1, w2, sim in ds:
+			if (w1 not in wort_model or w2 not in wort_model):
+				logging.warning('"{}" or "{}" not in model vocab! Assigning sim_score=0'.format(w1, w2))
+				human_sims.append(sim)
+				scores.append(0)
+			else:
+				human_sims.append(sim)
+				scores.append(1 - distance_fn(wort_model[w1].A, wort_model[w2].A))
 
-	scores = []
-	human_sims = []
-	for w1, w2, sim in ds:
-		if (w1 not in wort_model or w2 not in wort_model):
-			score = random.random()
-			logging.warning('"{}" or "{}" not in model vocab! Assigning random sim_score={}'.format(w1, w2, score))
-			human_sims.append(sim)
-			scores.append(score)
-		else:
-			human_sims.append(sim)
-			scores.append(1 - distance_fn(wort_model[w1].A, wort_model[w2].A))
+		model_performance = correlation_fn(np.array(human_sims), np.array(scores))
 
-	model_performance = correlation_fn(np.array(human_sims), np.array(scores))
+		logging.info('[{}] - score: {}!'.format(ds_key, model_performance))
 
-	logging.info('Model Performance: {}!'.format(model_performance))
+		return model_performance
 
-	return model_performance
 
 # TODO: 3cosmul, 3cosadd (https://www.cs.bgu.ac.il/~yoavg/publications/conll2014analogies.pdf), standard, etc
 def intrinsic_word_analogy_evaluation(wort_model, ds_fetcher, distance_fn=cosine, strategy='standard', random_seed=1105, num_neighbours=5, **ds_fetcher_kwargs):
@@ -85,3 +98,13 @@ def intrinsic_word_analogy_evaluation(wort_model, ds_fetcher, distance_fn=cosine
 	accuracy = (counts / counts.sum())[1]
 
 	return accuracy
+
+
+if (__name__ == '__main__'):
+	args = parser.parse_args()
+
+	if (args.evaluation == 'intrinsic_word_similarity'):
+		wort_model = os.path.join(args.input_path, args.input_file)
+		intrinsic_word_analogy_evaluation(wort_model=wort_model, datasets=args.datasets, data_home=args.data_home)
+	else:
+		raise ValueError('Unknown evaluation: {}!'.format(args.evaluation))

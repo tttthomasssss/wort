@@ -1,13 +1,13 @@
 __author__ = 'thomas'
 from io import BytesIO
 from zipfile import ZipFile
+import functools
 import os
 import tarfile
 import urllib
 
 # TODO: Lots of the dataset loaders work the same way --> encapsulate into single function (e.g. WS353 full, MEN, RW, ...)
 # TODO: Ditto with the `words` loaders
-
 
 def get_msr_syntactic_analogies_words(data_home='~/.wort_data'):
 	data_home = os.path.expanduser(data_home) if '~' in data_home else data_home
@@ -518,3 +518,30 @@ def fetch_msr_syntactic_analogies_dataset(data_home='~/.wort_data'):
 			ds.append((parts[0].strip(), parts[1].strip(), parts[2].strip(), parts[4].strip()))
 
 	return ds
+
+
+DATASET_KEYS = [
+	#'msr_syntactic_analogies', TODO
+	#'google_analogies', TODO
+	'ws353',
+	'ws353_similarity',
+	'ws353_relatedness',
+	'mc30',
+	'rg65',
+	'rw',
+	'men',
+	'mturk',
+	'simlex999'
+]
+
+DATASET_FETCH_MAP = {
+	'ws353': functools.partial(fetch_ws353_dataset, similarity_type=None),
+	'ws353_similarity': functools.partial(fetch_ws353_dataset, similarity_type='similarity'),
+	'ws353_relatedness': functools.partial(fetch_ws353_dataset, similarity_type='relatedness'),
+	'mc30': fetch_miller_charles_30_dataset,
+	'rg65': fetch_rubinstein_goodenough_65_dataset,
+	'rw': fetch_rare_words_dataset,
+	'men': fetch_men_dataset,
+	'mturk': fetch_mturk_dataset,
+	'simlex999': fetch_simlex_999_dataset
+}
