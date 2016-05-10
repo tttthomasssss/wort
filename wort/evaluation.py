@@ -32,7 +32,7 @@ def intrinsic_word_similarity_evaluation(wort_model, datasets=['ws353', 'ws353_s
 	if (not isinstance(wort_model, VSMVectorizer)):
 		wort_model = VSMVectorizer.load_from_file(wort_model)
 
-	logging.info('Evaluating wort model on {}...'.format(datasets))
+	logging.info('Evaluating wort model on {}, len={}, type={}...'.format(datasets, len(datasets), type(datasets)))
 
 	for ds_key in datasets:
 		logging.info('Evaluating model on {}...'.format(ds_key))
