@@ -21,7 +21,7 @@ parser = ArgumentParser()
 parser.add_argument('-i', '--input-file', type=str, required=True, help='input file')
 parser.add_argument('-ip', '--input-path', type=str, required=True, help='path to input file')
 parser.add_argument('-e', '--evaluation', type=str, default='intrinsic_word_similarity', help='kind of evaluation to perform')
-parser.add_argument('-h', '--data-home', type=str, default='~/.wort_data', help='path to data home')
+parser.add_argument('-dh', '--data-home', type=str, default='~/.wort_data', help='path to data home')
 parser.add_argument('-ds', '--datasets', nargs='+', type=str, help='datasets to use for evaluation', default=[
 	'ws353', 'ws353_similarity', 'ws353_relatedness', 'mturk', 'men', 'simlex999'
 ])

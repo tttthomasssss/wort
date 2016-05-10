@@ -18,6 +18,6 @@ fi
 find $INPUT_PATH -name "*$PATTERN*" | while read line; do
 	INPUT_FILE=$(basename $line)
 	echo "Running intrinsic evaluation with model=$INPUT_FILE..."
-	python -m wort.evaluation -ip $INPUT_PATH -i $INPUT_FILE -h $DATA_HOME
+	python -m wort.evaluation -ip $INPUT_PATH -i $INPUT_FILE -dh $DATA_HOME
 	echo "==============================================================================="
 done
