@@ -53,7 +53,7 @@ def intrinsic_word_similarity_evaluation(wort_model, datasets=['ws353', 'ws353_s
 
 		logging.info('[{}] - score: {}!'.format(ds_key, model_performance))
 
-		return model_performance
+		#return model_performance
 
 
 # TODO: 3cosmul, 3cosadd (https://www.cs.bgu.ac.il/~yoavg/publications/conll2014analogies.pdf), standard, etc
