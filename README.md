@@ -169,8 +169,35 @@ Checking whether a word is present in the model can be done by:
 
 #### Evaluating `wort` models
 
-	TBD
+The most common (though arguably not the ideal) evaluation strategy for word vectors is an "intrinsic" evaluation on Word Similarity tasks, where the `cosine` similarity of two word pairs is compared against (aggregated) human similarity judgements.
 
+Over the years a number of word similarity datasets have been created, of which `wort` currently supports the following:
+
+* WS353 (`key='ws353'`), see [Finkelstein et al. (2001) - Placing Search in Context: The Concept Revisited](http://www.cs.technion.ac.il/~gabr/papers/context_search.pdf)
+* WS353 (similarity) (`key='ws353_similarity'`), see [Agirre et al. (2009) - A Study on Similarity and Relatedness Using Distributional and WordNet-based Approaches](http://www.aclweb.org/anthology/N09-1003)
+* WS353 (relatedness) (`key='ws353_relatedness'`), see [Agirre et al. (2009) - A Study on Similarity and Relatedness Using Distributional and WordNet-based Approaches](http://www.aclweb.org/anthology/N09-1003)
+* SimLex-999 (`key='simlex999'`), see [Hill et al. (2014) - SimLex-999: Evaluating Semantic Models with (Genuine) Similarity Estimation](http://arxiv.org/abs/1408.3456v1)
+* MEN (`key='men'`), see [Bruni et al. (2014) - Multimodal Distributional Semantics](https://www.jair.org/media/4135/live-4135-7609-jair.pdf)
+* Mechanical Turk (MTurk) (`key='mturk'`), see [Radinsky et al. (2011) - A word at a time: computing word relatedness using temporal semantic analysis](http://dl.acm.org/citation.cfm?id=1963455)
+* Rare Words (rw) (`key='rw'`), see [Luong et al. (2013) - Better word representations with recursive neural networks for morphology](http://nlp.stanford.edu/~lmthang/data/papers/conll13_morpho.pdf)
+* MC30 (`key='mc30'`), see [Miller & Charles (1991) - Contextual correlates of semantic similarity](http://www.tandfonline.com/doi/pdf/10.1080/01690969108406936)
+* RG65 (`key='rg65'`), see [Rubinstein & Goodenough (1965) - Contextual correlates of synonymy](http://dl.acm.org/citation.cfm?id=365657)
+
+Evaluating a `wort` model on one of these datasets is straightforward:
+
+	# Evaluate `wort` model on SimLex-999
+	from wort import evaluation
+	from wort.vsm import VSMVectorizer
+	
+	# Load `wort` model from disk
+	wort = VSMVectorizer.load_from_file(path='path/to/existing/wort_model')
+	
+	evaluation.intrinsic_word_similarity_evaluation(wort_model=wort, datasets=['simlex999'])
+	
+Furthermore, `wort` supports batched evaluation of a number of different `wort` models on all available word similarity datasets in `wort/tools`:
+
+	./tools/batch_intrinsic_word_similarity_evaluation.sh -i path/to/wort/models -p naming_pattern_of_wort_models
+	
 ---
 
 #### Optimising model throughput
@@ -193,3 +220,5 @@ Thus, `wort` re-uses whatever it can when past model configurations match the cu
 With time the cache will grow and potentially occupy a large amount of disk space, in which case the cache can be deleted by executing the `delete_cache.sh` script in `wort/tools` (by default `wort` uses `~/.wort_data/model_cache` as cache location):
 
 	./tools/delete_cache.sh -v -p /path/to/cache
+
+---
