@@ -105,6 +105,6 @@ if (__name__ == '__main__'):
 
 	if (args.evaluation == 'intrinsic_word_similarity'):
 		wort_model = os.path.join(args.input_path, args.input_file)
-		intrinsic_word_analogy_evaluation(wort_model=wort_model, datasets=args.datasets, data_home=args.data_home)
+		intrinsic_word_similarity_evaluation(wort_model=wort_model, datasets=args.datasets, data_home=args.data_home)
 	else:
 		raise ValueError('Unknown evaluation: {}!'.format(args.evaluation))
