@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -f # disable glob
+IFS=' ' # split on space characters
+
 # Parse options
 while getopts ":d:i:h:p:" OPT; do
 	case $OPT in
