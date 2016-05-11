@@ -35,7 +35,7 @@ def intrinsic_word_similarity_evaluation(wort_model, datasets=['ws353', 'ws353_s
 	logging.info('Evaluating model on {} datasets[type={}]: {}...'.format(len(datasets), type(datasets), datasets))
 
 	if (isinstance(datasets, str)):
-		datasets = datasets.split()
+		datasets = datasets.split(',')
 
 	results = {}
 
