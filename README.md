@@ -33,6 +33,7 @@ First
 
 	git clone https://github.com/tttthomasssss/wort.git
 	cd wort
+	git checkout tags/v0.1.0
 
 Then 
 	
