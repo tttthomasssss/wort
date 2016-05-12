@@ -124,6 +124,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.index_ = {}
 		self.p_w_ = None
 		self.vocab_count_ = 0
+		self.token_count_ = 0
 		self.M_ = None
 		self.T_ = None
 		self.density_ = 0.
@@ -227,10 +228,11 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			W = self._delete_from_vocab(W, idx)
 
 			n_vocab -= len(idx)
-		logging.info('Finished Filtering extremes! n_vocab={}'.format(n_vocab))
+		logging.info('Finished Filtering extremes! n_vocab={}; n_tokens={}'.format(n_vocab, token_count))
 
 		self.p_w_ = W / token_count
 		self.vocab_count_ = n_vocab
+		self.token_count_ = token_count
 
 		# Watch out when rebuilding the index, `self.index_` needs to be built _before_ `self.inverted_index_`
 		# to reflect the updated `W` array
