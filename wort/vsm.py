@@ -3,6 +3,7 @@ from collections import Callable
 from types import GeneratorType
 import array
 import logging
+import math
 import os
 
 from scipy import sparse
@@ -260,11 +261,24 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		else:
 			window_weighting_fn = getattr(context_weighting, '{}_window_weighting'.format(self.context_window_weighting))
 
+		dtype = np.uint64 if self.context_window_weighting == 'constant' else np.float64
+
+		# Chunking the co-occurrence matrix construction, because the 3 arrays `rows`, `cols` and `data` become huge and overflow memory
+		# This is probably a pretty bad hack, but if it works, its at least possible to create (could use `psutil`(https://pypi.python.org/pypi/psutil))
+		# to figure out how much memory is available and then chunk it accordingly, but thats potentially a bit overkill (+ introduces another dependency)
+		# Rather fix it properly than hacking around like this...
+		chunk_size = 100000000 # hardcoded!
+		num_chunks = math.ceil(self.token_count_ / chunk_size)
+		processed_chunks = 1
+		processed_tokens = 0
+		self.M_ = sparse.lil_matrix((self.vocab_count_, self.vocab_count_), dtype=dtype)
+
 		for doc in tqdm(raw_documents):
 			buffer = array.array('i')
 			for feature in analyser(doc):
 				if (feature in self.inverted_index_):
 					buffer.append(self.inverted_index_[feature])
+					processed_tokens += 1
 
 			# Track co-occurrences
 			l = len(buffer)
@@ -281,18 +295,32 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 					cols.append(buffer[j])
 					data.append(window_weighting_fn(distance, self.r_window_size))
 
-		# TODO: This is still a bit of a bottleneck
-		#		Either cythonize the shit
-		#		Or chunk it up and create several sparse arrays that get added (?)
+			# Convert currently chunked stuff into a co-occurrence array and add it with the previously constructed co-occurrence data
+			if (processed_tokens > chunk_size):
+				logging.info('Chunk limit for chunk {}/{} reached, creating sparse matrix and continuing...'.format(processed_chunks, num_chunks))
+				processed_tokens = 0
+
+				data = np.array(data, dtype=np.uint8 if self.context_window_weighting == 'constant' else np.float64, copy=False)
+				rows = np.array(rows, dtype=np.uint32, copy=False)
+				cols = np.array(cols, dtype=np.uint32, copy=False)
+
+				self.M_ += sparse.csr_matrix((data.astype(dtype), (rows, cols)), shape=(self.vocab_count_, self.vocab_count_)).tolil()
+
+				rows = array.array('I') #rows = array.array('i')
+				cols = array.array('I') #cols = array.array('i')
+				data = array.array('I' if self.context_window_weighting == 'constant' else 'f')
+				logging.info('Finished processing chunk {}/{}!'.format(processed_chunks, num_chunks))
+				processed_chunks += 1
+
+		# Add the trailing chunk to the rest
 		logging.info('Numpyifying co-occurrence data...')
 		data = np.array(data, dtype=np.uint8 if self.context_window_weighting == 'constant' else np.float64, copy=False)
 		rows = np.array(rows, dtype=np.uint32, copy=False)
 		cols = np.array(cols, dtype=np.uint32, copy=False)
 
-		logging.info('Creating sparse matrix...')
-		# Create a csr_matrix straight away!!!
-		dtype = np.uint64 if self.context_window_weighting == 'constant' else np.float64
-		self.M_ = sparse.csr_matrix((data.astype(dtype), (rows, cols)), shape=(self.vocab_count_, self.vocab_count_))
+		logging.info('Finalising sparse matrix...')
+		self.M_ += sparse.csr_matrix((data.astype(dtype), (rows, cols)), shape=(self.vocab_count_, self.vocab_count_)).tolil()
+		self.M_ = self.M_.tocsr()
 		logging.info('M.shape={}'.format(self.M_.shape))
 
 		# Apply Binarisation
