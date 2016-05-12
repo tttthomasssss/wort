@@ -187,24 +187,24 @@ def vectorize_ukwac():
 		os.makedirs(os.path.join(out_path, 'ukwac_cooccurrence_cache'))
 
 	#whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words() | get_mturk_words() | get_men_words() | get_rare_words() | get_simlex_999_words() | get_msr_syntactic_analogies_words() | get_google_analogies_words()
-	whitelist = get_ws353_words() | get_men_words() | get_simlex_999_words()
+	whitelist = get_ws353_words() | get_men_words() | get_simlex_999_words() | get_ws353_words(subset='similarity') | get_ws353_words(subset='relatedness')
 
 	print('Word whitelist contains {} words!'.format(len(whitelist)))
 	import math
 	for log_sppmi, sppmi in zip([0, math.log(5), math.log(10), math.log(40), math.log(100)], [0, 5, 10, 40, 100]):
 		for pmi_type in ['ppmi']:
 			for cds in [1., 0.75]:
-				for window_size in [5, 2, 1, 10]:
+				for window_size in [5, 2]:
 					print('CONFIG: pmi_type={}; window_size={}; cds={}; shift={}...'.format(pmi_type, window_size, cds, sppmi))
 					transformed_out_path = os.path.join(paths.get_dataset_path(), 'ukwac', 'wort_model_ppmi_lemma-True_window-{}_cds-{}-sppmi_shift-{}'.format(
 						window_size, cds, sppmi
 					))
 					if (not os.path.exists(transformed_out_path)):
-						cache_path = os.path.join(paths.get_dataset_path(), 'ukwac', 'wort_cache', 'window_size-{}'.format(window_size))
+						cache_path = os.path.join(paths.get_dataset_path(), 'ukwac', 'wort_cache')
 						if (not os.path.exists(cache_path)):
 							os.makedirs(cache_path)
 
-						vec = VSMVectorizer(window_size=window_size, min_frequency=200, cds=cds, weighting=pmi_type,
+						vec = VSMVectorizer(window_size=window_size, min_frequency=100, cds=cds, weighting=pmi_type,
 											word_white_list=whitelist, sppmi_shift=log_sppmi, cache_path=cache_path,
 											cache_intermediary_results=True)
 
@@ -1138,7 +1138,7 @@ def test_read_ukwac():
 
 
 if (__name__ == '__main__'):
-	test_token_and_vocab_count()
+	#test_token_and_vocab_count()
 	#vectorize_pizza_epic()
 	#test_pizza()
 	#transform_wikipedia_from_cache()
@@ -1167,7 +1167,7 @@ if (__name__ == '__main__'):
 
 	#'''
 	#vectorize_wikipedia()
-	#vectorize_ukwac()
+	vectorize_ukwac()
 	#vectorize_wikipedia_epic()
 
 	'''
