@@ -64,6 +64,15 @@ class IOHandler(object):
 
 		joblib.dump({'vocab_count': vocab_count}, os.path.join(self.cache_path_, sub_folder, 'vocab_count.joblib'), compress=3)
 
+	def load_token_count(self, sub_folder):
+		return joblib.load(os.path.join(self.cache_path_, sub_folder, 'token_count.joblib'))['token_count']
+
+	def save_token_count(self, token_count, sub_folder):
+		if (not os.path.exists(os.path.join(self.cache_path_, sub_folder))):
+			os.makedirs(os.path.join(self.cache_path_, sub_folder))
+
+		joblib.dump({'token_count': token_count}, os.path.join(self.cache_path_, sub_folder, 'token_count.joblib'), compress=3)
+
 	def load_index(self, sub_folder):
 		return joblib.load(os.path.join(self.cache_path_, sub_folder, 'index.joblib'))
 
