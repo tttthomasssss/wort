@@ -521,46 +521,16 @@ def test_mc30_evaluation(dataset='wikipedia'):
 	scores_by_model = {}
 
 	for wort_model_name in [
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-0',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-10',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-100',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-10',
 		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-100'
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-5'
 	]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
@@ -595,46 +565,16 @@ def test_rg65_evaluation(dataset='wikipedia'):
 	scores_by_model = {}
 
 	for wort_model_name in [
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-0',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-10',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-100',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-10',
 		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-100'
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-5'
 	]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
@@ -669,46 +609,16 @@ def test_rw_evaluation(dataset='wikipedia'):
 	scores_by_model = {}
 
 	for wort_model_name in [
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-0',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-10',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-100',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-10',
 		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-100'
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-5'
 	]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
@@ -743,46 +653,16 @@ def test_men_evaluation(dataset='wikipedia'):
 	scores_by_model = {}
 
 	for wort_model_name in [
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-0',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-10',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-100',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-10',
 		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-100'
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-5'
 	]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
@@ -817,46 +697,16 @@ def test_mturk_evaluation(dataset='wikipedia'):
 	scores_by_model = {}
 
 	for wort_model_name in [
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-0',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-10',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-100',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-10',
 		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-100'
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-5'
 	]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
@@ -892,46 +742,16 @@ def test_ws353_evaluation(dataset='wikipedia'):
 		ds = fetch_ws353_dataset(similarity_type=st)
 
 		for wort_model_name in [
-			'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-0',
-			'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-0',
 			'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-0',
-			'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-0',
-			'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-5',
-			'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-5',
-			'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-5',
-			'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-5',
-			'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-10',
-			'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-10',
-			'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-10',
-			'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-10',
-			'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-40',
-			'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-40',
-			'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-40',
-			'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-40',
-			'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-100',
-			'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-100',
-			'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-100',
-			'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100',
-			'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-0',
-			'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-0',
-			'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-0',
-			'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-0',
-			'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-5',
-			'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-5',
-			'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-5',
-			'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-5',
-			'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-10',
-			'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-10',
-			'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-10',
-			'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-10',
-			'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-40',
-			'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-40',
-			'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-40',
-			'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-40',
-			'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-100',
-			'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-100',
-			'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-100',
-			'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-100'
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-10',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-5'
 		]:
 			print('Loading Wort Model: {}...'.format(wort_model_name))
 			wort_path = os.path.join(base_path, dataset, wort_model_name)
@@ -969,46 +789,16 @@ def test_simlex_evaluation(dataset='wikipedia'):
 	scores_by_model = {}
 
 	for wort_model_name in [
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-0',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-10',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-2_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-2_cds-1.0-sppmi_shift-100',
 		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-100',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-5_cds-0.75-sppmi_shift-5',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-0',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-10',
 		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-0',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-5',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-10',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-40',
-		'wort_model_ppmi_lemma-True_window-1_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-1_cds-1.0-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-10_cds-0.75-sppmi_shift-100',
-		'wort_model_ppmi_lemma-True_window-10_cds-1.0-sppmi_shift-100'
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-40',
+		'wort_model_ppmi_lemma-True_window-5_cds-1.0-sppmi_shift-5'
 	]:
 		print('Loading Wort Model: {}...'.format(wort_model_name))
 		wort_path = os.path.join(base_path, dataset, wort_model_name)
@@ -1167,10 +957,10 @@ if (__name__ == '__main__'):
 
 	#'''
 	#vectorize_wikipedia()
-	vectorize_ukwac()
+	#vectorize_ukwac()
 	#vectorize_wikipedia_epic()
 
-	'''
+
 	print('Running evaluations...')
 	rg65_scores = test_rg65_evaluation('ukwac')
 	mc30_scores = test_mc30_evaluation('ukwac')
@@ -1205,6 +995,6 @@ if (__name__ == '__main__'):
 	print('MEN SCORES: {}'.format(json.dumps(men_scores, indent=4)))
 	#print('MTURK SCORES: {}'.format(json.dumps(mturk_scores, indent=4)))
 	print('SIMLEX SCORES: {}'.format(json.dumps(simlex_scores, indent=4)))
-	'''
+
 	#'''
 	#test_ws353_words_loader()
