@@ -176,8 +176,8 @@ def test_wikipedia():
 
 
 def vectorize_ukwac():
-	#ukwac_reader = GzipStreamReader(path='/research/calps/data2/public/corpora/ukwac1.0/raw/ukwac_preproc.gz')
-	ukwac_reader = TextStreamReader(path='/lustre/scratch/inf/thk22/_datasets/ukwac/ukwac_lemmatised.txt')
+	ukwac_reader = GzipStreamReader(path='/research/calps/data2/public/corpora/ukwac1.0/raw/ukwac_preproc.gz')
+	#ukwac_reader = TextStreamReader(path='/lustre/scratch/inf/thk22/_datasets/ukwac/ukwac_lemmatised.txt')
 
 	out_path = os.path.join(paths.get_dataset_path(), 'ukwac', 'wort')
 	if (not os.path.exists(out_path)):
@@ -187,7 +187,7 @@ def vectorize_ukwac():
 		os.makedirs(os.path.join(out_path, 'ukwac_cooccurrence_cache'))
 
 	#whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words() | get_mturk_words() | get_men_words() | get_rare_words() | get_simlex_999_words() | get_msr_syntactic_analogies_words() | get_google_analogies_words()
-	whitelist = get_ws353_words() | get_men_words() | get_simlex_999_words() | get_ws353_words(subset='similarity') | get_ws353_words(subset='relatedness')
+	whitelist = get_ws353_words() | get_rare_words() | get_ws353_words(subset='similarity') | get_ws353_words(subset='relatedness')
 
 	print('Word whitelist contains {} words!'.format(len(whitelist)))
 	import math
@@ -196,11 +196,11 @@ def vectorize_ukwac():
 			for cds in [1., 0.75]:
 				for window_size in [5, 2]:
 					print('CONFIG: pmi_type={}; window_size={}; cds={}; shift={}...'.format(pmi_type, window_size, cds, sppmi))
-					transformed_out_path = os.path.join(paths.get_dataset_path(), 'ukwac', 'wort_model_ppmi_lemma-True_window-{}_cds-{}-sppmi_shift-{}'.format(
+					transformed_out_path = os.path.join(paths.get_dataset_path(), 'ukwac', 'wort_model_ppmi_lemma-False_window-{}_cds-{}-sppmi_shift-{}'.format(
 						window_size, cds, sppmi
 					))
 					if (not os.path.exists(transformed_out_path)):
-						cache_path = os.path.join(paths.get_dataset_path(), 'ukwac', 'wort_cache')
+						cache_path = os.path.join(paths.get_dataset_path(), 'ukwac', 'wort_cache_nolemma')
 						if (not os.path.exists(cache_path)):
 							os.makedirs(cache_path)
 
@@ -957,7 +957,7 @@ if (__name__ == '__main__'):
 
 	#'''
 	#vectorize_wikipedia()
-	#vectorize_ukwac()
+	vectorize_ukwac()
 	#vectorize_wikipedia_epic()
 
 
