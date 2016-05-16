@@ -437,7 +437,7 @@ def vectorize_wikipedia():
 	for log_sppmi, sppmi in zip([0, math.log(5), math.log(10), math.log(40), math.log(100)], [0, 5, 10, 40, 100]):
 		for pmi_type in ['ppmi']:
 			for cds in [1., 0.75]:
-				for window_size in [5]:# [5, 2]:
+				for window_size in [2, 1]:# [5, 2]:
 					print('CONFIG: pmi_type={}; window_size={}; cds={}; shift={}...'.format(pmi_type, window_size, cds, sppmi))
 					transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_ml2010', 'wort_model_ppmi_lemma-True_window-{}_cds-{}-sppmi_shift-{}'.format(
 						window_size, cds, sppmi
@@ -956,8 +956,8 @@ if (__name__ == '__main__'):
 
 
 	#'''
-	#vectorize_wikipedia()
-	vectorize_ukwac()
+	vectorize_wikipedia()
+	#vectorize_ukwac()
 	#vectorize_wikipedia_epic()
 
 
