@@ -440,7 +440,7 @@ def vectorize_wikipedia():
 			for cds in [1., 0.75]:
 				for window_size in [2, 1]:# [5, 2]:
 					print('CONFIG: pmi_type={}; window_size={}; cds={}; shift={}...'.format(pmi_type, window_size, cds, sppmi))
-					transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_ml2010', 'wort_model_ppmi_lemma-True_window-{}_cds-{}-sppmi_shift-{}'.format(
+					transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_wordsim_acl', 'wort_model_ppmi_lemma-True_window-{}_cds-{}-sppmi_shift-{}'.format(
 						window_size, cds, sppmi
 					))
 					if (not os.path.exists(transformed_out_path)):
