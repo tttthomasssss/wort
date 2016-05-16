@@ -81,7 +81,7 @@ Creating meaningful word vector representations requires _a lot_ of data (e.g. a
 	# Reading csv/tsv files
 	from wort.corpus_readers import CSVStreamReader
 	
-	corpus = CSVStreamReader(corpus_path, delimiter='\t') # tsv file, the default assues delimiter=',' (csv file)
+	corpus = CSVStreamReader(corpus_path, delimiter='\t') # tsv file, the default assumes delimiter=',' (csv file)
 	
 	# Reading gzip files
 	from wort.corpus_readers import GzipStreamReader(corpus_path)

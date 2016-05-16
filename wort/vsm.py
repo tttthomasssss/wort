@@ -437,6 +437,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			logging.info('Loading cached vocabulary resources from {}...'.format(os.path.join(self.cache_path, vocab_folder)))
 			self.p_w_ = self.io_handler_.load_p_w(vocab_folder)
 			self.vocab_count_ = self.io_handler_.load_vocab_count(vocab_folder)
+			self.token_count_ = self.io_handler_.load_token_count(vocab_folder)
 			self.index_ = self.io_handler_.load_index(vocab_folder)
 			self.inverted_index_ = self.io_handler_.load_inverted_index(vocab_folder)
 			logging.info('Cache loaded!')
@@ -453,6 +454,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				self.io_handler_.save_index(self.index_, sub_folder)
 				self.io_handler_.save_inverted_index(self.inverted_index_, sub_folder)
 				self.io_handler_.save_vocab_count(self.vocab_count_, sub_folder)
+				self.io_handler_.save_token_count(self.token_count_, sub_folder)
 				self.io_handler_.save_p_w(self.p_w_, sub_folder)
 				logging.info('Cache stored!')
 		##################
