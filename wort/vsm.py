@@ -267,6 +267,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# This is probably a pretty bad hack, but if it works, its at least possible to create (could use `psutil`(https://pypi.python.org/pypi/psutil))
 		# to figure out how much memory is available and then chunk it accordingly, but thats potentially a bit overkill (+ introduces another dependency)
 		# Rather fix it properly than hacking around like this...
+		# On OS X/BSD this works: `os.popen('sysctl hw.physmem').readlines()`, on Linux, this works: `os.popen('free -m').readlines()`, ignore Windows
 		chunk_size = 100000000 # hardcoded!
 		num_chunks = math.ceil(self.token_count_ / chunk_size)
 		processed_chunks = 1
