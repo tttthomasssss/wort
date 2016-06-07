@@ -124,7 +124,7 @@ def determine_chunk_size(dtype_size, p=0.2):
 			idx = header.index('free')
 
 			mem = re.split(r'\s+', o[1].lower().strip())
-			available_mem = mem[idx]
+			available_mem = int(mem[idx])
 			going_to_use_mem = available_mem * p
 			chunk_size = math.floor(going_to_use_mem / dtype_size)
 
