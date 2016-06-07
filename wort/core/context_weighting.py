@@ -46,4 +46,4 @@ def inverse_harmonic_window_weighting(distance, _):
 def gaussian_window_weighting(distance, _):
 	gaussian = norm(0, 1)
 
-	return gaussian.pdf(distance) / gaussian.pdf(0)
+	return gaussian.pdf(distance-1) / gaussian.pdf(0)
