@@ -1,6 +1,10 @@
 __author__ = 'thk22'
-# Code more or less shamelessly stolen from: http://stackoverflow.com/questions/11129429/storing-numpy-sparse-matrix-in-hdf5-pytables/11130235#11130235
+# PyTables code more or less shamelessly stolen from: http://stackoverflow.com/questions/11129429/storing-numpy-sparse-matrix-in-hdf5-pytables/11130235#11130235
+import logging
+import math
 import os
+import re
+import sys
 from nltk import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from scipy import sparse
@@ -110,3 +114,42 @@ def sparse_coo_matrix_to_hdf(obj, path):
 		atom = tables.Atom.from_dtype(np.asarray(obj.shape).dtype)
 		d = f.create_carray(f.root, 'coo_shape', atom, np.asarray(obj.shape).shape)
 		d[:] = np.asarray(obj.shape)
+
+
+def determine_chunk_size(dtype_size, p=0.2):
+	if ('linux' in sys.platform.lower()): # Linux
+		try:
+			o = os.popen('free -m').read().split('\n')
+			header = re.split(r'\s+', o[0].lower().strip())
+			idx = header.index('free')
+
+			mem = re.split(r'\s+', o[1].lower().strip())
+			available_mem = mem[idx]
+			going_to_use_mem = available_mem * p
+			chunk_size = math.floor(going_to_use_mem / dtype_size)
+
+			logging.info('OS={}; chunk size={}'.format(sys.platform, chunk_size))
+		except Exception as ex:
+			logging.error('Failed to determine memory of system: {}; falling back on hardcoded value.'.format(ex))
+			chunk_size = 100000000
+		except: # Pokemon catching, if shit goes wrong, just fall back on a hardcoded value to not break everything
+			logging.error('Failed to determine memory of system; falling back on hardcoded value.')
+			chunk_size = 100000000
+	elif ('darwin' in sys.platform.lower()): # OS X / BSD(?)
+		try:
+			available_mem = int(os.popen('sysctl -n hw.memsize').read().strip())
+			going_to_use_mem = available_mem * p
+			chunk_size = math.floor(going_to_use_mem / dtype_size)
+
+			logging.info('OS={}; chunk size={}'.format(sys.platform, chunk_size))
+		except Exception as ex:
+			logging.error('Failed to determine memory of system: {}; falling back on hardcoded value.'.format(ex))
+			chunk_size = 100000000
+		except: # Pokemon catching, if shit goes wrong, just fall back on a hardcoded value to not break everything
+			logging.error('Failed to determine memory of system; falling back on hardcoded value.')
+			chunk_size = 100000000
+	else: # Windows and other stuff, use hardcoded number
+		logging.info('OS={}; mem allocation heuristic not implemented for OS. using hardcoded chunk size={}'.format(chunk_size))
+		chunk_size = 100000000
+
+	return chunk_size

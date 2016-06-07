@@ -18,6 +18,7 @@ from wort.core.io_handler import IOHandler
 from wort.core import context_weighting
 from wort.core import feature_transformation
 from wort.core import oov_handler
+from wort.core.utils import determine_chunk_size
 
 # TODO: SVD based on http://www.aclweb.org/anthology/Q/Q15/Q15-1016.pdf, esp. chapter 7, practical recommendations
 	# Subsampling
@@ -262,14 +263,15 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			window_weighting_fn = getattr(context_weighting, '{}_window_weighting'.format(self.context_window_weighting))
 
 		dtype = np.uint64 if self.context_window_weighting == 'constant' else np.float64
+		dtype_size = 64
 
 		# Chunking the co-occurrence matrix construction, because the 3 arrays `rows`, `cols` and `data` become huge and overflow memory
 		# This is probably a pretty bad hack, but if it works, its at least possible to create (could use `psutil`(https://pypi.python.org/pypi/psutil))
 		# to figure out how much memory is available and then chunk it accordingly, but thats potentially a bit overkill (+ introduces another dependency)
 		# Rather fix it properly than hacking around like this...
-		# On OS X/BSD this works: `os.popen('sysctl hw.physmem').readlines()`, on Linux, this works: `os.popen('free -m').readlines()`, ignore Windows
-		chunk_size = 100000000 # hardcoded!
-		num_chunks = math.ceil(self.token_count_ / chunk_size)
+		# On OS X/BSD this works: `os.popen('sysctl -n hw.memsize').readlines()`, on Linux, this works: `os.popen('free -m').readlines()`, ignore Windows
+		chunk_size = determine_chunk_size(dtype_size=dtype_size)
+		num_chunks = math.floor(self.token_count_ / chunk_size)
 		processed_chunks = 1
 		processed_tokens = 0
 		self.M_ = sparse.lil_matrix((self.vocab_count_, self.vocab_count_), dtype=dtype)
