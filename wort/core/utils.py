@@ -116,7 +116,7 @@ def sparse_coo_matrix_to_hdf(obj, path):
 		d[:] = np.asarray(obj.shape)
 
 
-def determine_chunk_size(dtype_size, p=0.4):
+def determine_chunk_size(dtype_size, p=0.8):
 	if ('linux' in sys.platform.lower()): # Linux
 		try:
 			o = os.popen('free -b').read().split('\n')
