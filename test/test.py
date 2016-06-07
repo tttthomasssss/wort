@@ -1,5 +1,6 @@
 __author__ = 'thomas'
 import json
+import logging
 import math
 import os
 
@@ -242,6 +243,16 @@ def lemmatise_ukwac():
 			out_file.write(new_line + '\n')
 			if (idx % 10000 == 0): print('{} lines processed!'.format(idx))
 
+def lemmatise_bnc():
+	bnc_reader = TextStreamReader(path='/lustre/scratch/inf/thk22/_datasets/bnc/corpus/bnc_lc.txt')
+	ltk = LemmaTokenizer()
+
+	with open(os.path.join(paths.get_dataset_path(), 'bnc', 'corpus', 'bnc_lc_lemma.txt'), 'w') as out_file:
+		for idx, line in enumerate(bnc_reader, 1):
+			new_line = ' '.join(ltk(line.strip()))
+			out_file.write(new_line + '\n')
+			if (idx % 10000 == 0): logging.info('{} lines processed!'.format(idx))
+
 
 def vectorize_pizza_epic():
 	base_path = os.path.join(paths.get_dataset_path(), 'pizza_small', 'pizza_small.txt')
@@ -413,12 +424,8 @@ def test_token_and_vocab_count():
 
 
 def vectorize_bnc():
-	p = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wikipedia_utf8_filtered_20pageviews_lc_noid_lemma.tsv')
-	wiki_reader = CSVStreamReader(p, delimiter='\t')
-
-	out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors_min_freq_100')
-	if (not os.path.exists(out_path)):
-		os.makedirs(out_path)
+	p = os.path.join(paths.get_dataset_path(), 'bnc', 'corpus', 'bnc_lc_lemma.txt')
+	bnc_reader = CSVStreamReader(p, delimiter='\t')
 
 	#whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words() | get_mturk_words() | get_men_words() | get_rare_words() | get_simlex_999_words() | get_msr_syntactic_analogies_words() | get_google_analogies_words()
 	#whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words() | get_men_words() | get_simlex_999_words()
@@ -455,7 +462,7 @@ def vectorize_bnc():
 												word_white_list=whitelist, sppmi_shift=log_sppmi, cache_path=cache_path,
 												context_window_weighting=weighting_fn, cache_intermediary_results=True)
 
-							vec.fit(wiki_reader)
+							vec.fit(bnc_reader)
 
 							if (not os.path.exists(transformed_out_path)):
 								os.makedirs(transformed_out_path)
@@ -1009,6 +1016,9 @@ if (__name__ == '__main__'):
 	#print('Lemmatising UKWAC...')
 	#lemmatise_ukwac()
 	#print('Lemmatisation Done!')
+	print('Lemmatising BNC...')
+	lemmatise_bnc()
+	print('Lemmatisation Done!')
 
 
 	#'''
