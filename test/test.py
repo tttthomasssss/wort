@@ -425,7 +425,7 @@ def test_token_and_vocab_count():
 
 def vectorize_bnc():
 	p = os.path.join(paths.get_dataset_path(), 'bnc', 'corpus', 'bnc_lc_lemma.txt')
-	bnc_reader = CSVStreamReader(p, delimiter='\t')
+	bnc_reader = TextStreamReader(p)
 
 	#whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words() | get_mturk_words() | get_men_words() | get_rare_words() | get_simlex_999_words() | get_msr_syntactic_analogies_words() | get_google_analogies_words()
 	#whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words() | get_men_words() | get_simlex_999_words()
@@ -1016,9 +1016,9 @@ if (__name__ == '__main__'):
 	#print('Lemmatising UKWAC...')
 	#lemmatise_ukwac()
 	#print('Lemmatisation Done!')
-	print('Lemmatising BNC...')
-	lemmatise_bnc()
-	print('Lemmatisation Done!')
+	#print('Lemmatising BNC...')
+	#lemmatise_bnc()
+	#print('Lemmatisation Done!')
 
 
 	#'''
