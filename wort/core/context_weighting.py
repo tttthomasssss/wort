@@ -36,3 +36,7 @@ def absolute_sigmoid_window_weighting(distance, _):
 
 def absolut_inverse_sigmoid_window_weighting(distance, _):
 	return 1 - abs(sigmoid(distance))
+
+
+def inverse_harmonic_window_weighting(distance, _):
+	return distance
