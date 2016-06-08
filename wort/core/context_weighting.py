@@ -20,7 +20,7 @@ def harmonic_window_weighting(distance, _):
 
 
 def distance_window_weighting(distance, window_size):
-	return (window_size - abs(distance)) / window_size # Thats what word2vec is doing
+	return max(window_size - abs(distance), 1) / window_size # Thats what word2vec is doing
 
 
 def sigmoid_window_weighting(distance, _):
