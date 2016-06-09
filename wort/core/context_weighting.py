@@ -43,8 +43,8 @@ def absolut_inverse_sigmoid_window_weighting(distance, _):
 
 
 def inverse_harmonic_window_weighting(distance, _):
-	return distance
+	return abs(distance)
 
 
 def gaussian_window_weighting(distance, _):
-	return GAUSSIAN.pdf(distance-1) / NORM_0
+	return GAUSSIAN.pdf(abs(distance)-1) / NORM_0
