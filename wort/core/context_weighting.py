@@ -2,6 +2,9 @@ __author__ = 'thomas'
 from scipy.special import expit as sigmoid
 from scipy.stats import norm
 
+GAUSSIAN = norm(0, 1)
+NORM_0 = GAUSSIAN.pdf(0)
+
 
 def constant_window_weighting(*_):
 	return 1
@@ -44,6 +47,4 @@ def inverse_harmonic_window_weighting(distance, _):
 
 
 def gaussian_window_weighting(distance, _):
-	gaussian = norm(0, 1)
-
-	return gaussian.pdf(distance-1) / gaussian.pdf(0)
+	return GAUSSIAN.pdf(distance-1) / NORM_0
