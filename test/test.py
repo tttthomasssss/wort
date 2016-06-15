@@ -451,7 +451,10 @@ def vectorize_bnc():
 				for window_size in [7]:#[3, 5, 10, 7]:
 					for weighting_fn in ['constant', 'aggressive', 'very_aggressive', 'harmonic', 'distance', 'inverse_harmonic', 'gaussian']:
 						print('CONFIG: pmi_type={}; window_size={}; cds={}; shift={}; context_weighting={}...'.format(pmi_type, window_size, cds, sppmi, weighting_fn))
-						transformed_out_path = os.path.join(paths.get_dataset_path(), 'bnc', 'coling_wort', 'wort_model_ppmi_lemma-True_window-{}_cds-{}-sppmi_shift-{}_{}'.format(
+						#transformed_out_path = os.path.join(paths.get_dataset_path(), 'bnc', 'coling_wort', 'wort_model_ppmi_lemma-True_window-{}_cds-{}-sppmi_shift-{}_{}'.format(
+						#	window_size, cds, sppmi, weighting_fn
+						#))
+						transformed_out_path = os.path.join('/data/thk22/_datasets', 'bnc', 'coling_wort', 'wort_model_ppmi_lemma-True_window-{}_cds-{}-sppmi_shift-{}_{}'.format(
 							window_size, cds, sppmi, weighting_fn
 						))
 						if (not os.path.exists(transformed_out_path)):
