@@ -424,7 +424,8 @@ def test_token_and_vocab_count():
 
 
 def vectorize_bnc():
-	p = os.path.join(paths.get_dataset_path(), 'bnc', 'corpus', 'bnc_lc_lemma.txt')
+	#p = os.path.join(paths.get_dataset_path(), 'bnc', 'corpus', 'bnc_lc_lemma.txt')
+	p = os.path.join('/data/thk22/_datasets', 'bnc', 'corpus', 'bnc_lc_lemma.txt')
 	bnc_reader = TextStreamReader(p)
 
 	#whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words() | get_mturk_words() | get_men_words() | get_rare_words() | get_simlex_999_words() | get_msr_syntactic_analogies_words() | get_google_analogies_words()
@@ -454,7 +455,8 @@ def vectorize_bnc():
 							window_size, cds, sppmi, weighting_fn
 						))
 						if (not os.path.exists(transformed_out_path)):
-							cache_path = os.path.join(paths.get_dataset_path(), 'bnc', 'wort_cache_coling')
+							#cache_path = os.path.join(paths.get_dataset_path(), 'bnc', 'wort_cache_coling')
+							cache_path = os.path.join('/data/thk22/_datasets', 'bnc', 'wort_cache_coling')
 							if (not os.path.exists(cache_path)):
 								os.makedirs(cache_path)
 
