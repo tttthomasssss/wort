@@ -116,7 +116,7 @@ def sparse_coo_matrix_to_hdf(obj, path):
 		d[:] = np.asarray(obj.shape)
 
 
-def determine_chunk_size(dtype_size, p=0.8):
+def determine_chunk_size(dtype_size, p=0.8): # This is an awful hack, once the co-occurrence construction is optimised this MUST BE NUKED
 	if ('linux' in sys.platform.lower()): # Linux
 		try:
 			o = os.popen('free -b').read().split('\n')
@@ -149,7 +149,7 @@ def determine_chunk_size(dtype_size, p=0.8):
 			logging.error('Failed to determine memory of system; falling back on hardcoded value.')
 			chunk_size = 100000000
 	else: # Windows and other stuff, use hardcoded number
-		logging.info('OS={}; mem allocation heuristic not implemented for OS. using hardcoded chunk size={}'.format(chunk_size))
 		chunk_size = 100000000
+		logging.info('OS={}; mem allocation heuristic not implemented for OS. using hardcoded chunk size={}'.format(chunk_size))
 
 	return chunk_size
