@@ -100,11 +100,14 @@ class IOHandler(object):
 	def load_cooccurrence_matrix(self, sub_folder):
 		return utils.hdf_to_sparse_csx_matrix(os.path.join(self.cache_path_, sub_folder), 'M.hdf', sparse_format='csr')
 
-	def save_cooccurrence_matrix(self, M, sub_folder):
+	def save_cooccurrence_matrix(self, M, sub_folder, base_path=None):
 		if (not os.path.exists(os.path.join(self.cache_path_, sub_folder))):
 			os.makedirs(os.path.join(self.cache_path_, sub_folder))
 
-		utils.sparse_matrix_to_hdf(M, os.path.join(self.cache_path_, sub_folder), 'M.hdf')
+		if (base_path is None):
+			base_path = self.cache_path_
+
+		utils.sparse_matrix_to_hdf(M, os.path.join(base_path, sub_folder), 'M.hdf')
 
 	def load_pmi_matrix(self, sub_folder):
 		return utils.hdf_to_sparse_csx_matrix(os.path.join(self.cache_path_, sub_folder), 'T.hdf', sparse_format='csr')
