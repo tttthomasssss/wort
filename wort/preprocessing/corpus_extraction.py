@@ -21,7 +21,7 @@ def download_wikipedia_dump(data_home='~/.wort_data/wikipedia', url='https://dum
 		out_file_name = filename.rsplit('.', 1)[0]
 
 		with bz2.open(os.path.join(data_home, out_file_name), 'w') as wiki_dump:
-			decompress(wikipedia_dump.read())
+			wiki_dump.write(decompress(wikipedia_dump.read()))
 
 
 def extract_wikipedia_dump():
