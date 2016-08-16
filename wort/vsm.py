@@ -9,13 +9,14 @@ import os
 from scipy import sparse
 from sklearn.base import BaseEstimator
 from sklearn.feature_extraction.text import VectorizerMixin
-from sparsesvd import sparsesvd
 from tqdm import *
 import numpy as np
 
 from wort.core.config_registry import ConfigRegistry
 from wort.core.io_handler import IOHandler
+from wort.core import context_vector_integration
 from wort.core import context_weighting
+from wort.core import dim_reduction
 from wort.core import feature_transformation
 from wort.core import oov_handler
 from wort.core.utils import determine_chunk_size
@@ -39,9 +40,9 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 	def __init__(self, window_size, weighting='ppmi', min_frequency=0, lowercase=True, stop_words=None, encoding='utf-8',
 				 max_features=None, preprocessor=None, tokenizer=None, analyzer='word', binary=False, sppmi_shift=0,
 				 token_pattern=r'(?u)\b\w\w+\b', decode_error='strict', strip_accents=None, input='content',
-				 ngram_range=(1, 1), cds=1., dim_reduction=None, svd_dim=None, svd_eig_weighting=1, random_state=1105,
-				 context_window_weighting='constant', add_context_vectors=True, word_white_list=set(),
-				 subsampling_rate=None, cache_intermediary_results=False, cache_path='~/.wort_data/model_cache',
+				 ngram_range=(1, 1), cds=1., dim_reduction=None, dim_reduction_kwargs={}, random_state=1105,
+				 context_window_weighting='constant', context_vector_integration=None, context_vector_integration_kwargs={},
+				 word_white_list=set(), subsampling_rate=None, cache_intermediary_results=False, cache_path='~/.wort_data/model_cache',
 				 log_level=logging.INFO, log_file=None):
 		"""
 		TODO: documentation...
@@ -109,10 +110,10 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.context_window_weighting = context_window_weighting
 		self.random_state = random_state
 		self.cds = cds
-		self.svd_dim = svd_dim
-		self.svd_eig_weighting = svd_eig_weighting
+		self.dim_reduction_kwargs = dim_reduction_kwargs
 		self.dim_reduction = dim_reduction
-		self.add_context_vectors = add_context_vectors
+		self.context_vector_integration = context_vector_integration
+		self.context_vector_integration_kwargs = context_vector_integration_kwargs
 		self.word_white_list = word_white_list
 		self.subsampling_rate = subsampling_rate
 		self.cache_intermediary_results = cache_intermediary_results
@@ -406,22 +407,12 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.density_ = len(self.T_.nonzero()[0]) / (self.T_.shape[0] * self.T_.shape[1])
 
 	def fit_dimensionality_reduction(self):
-		# Apply SVD
-		if (self.dim_reduction == 'svd'):
-			logging.info('Applying SVD with dimensionality={}...'.format(self.svd_dim))
-			Ut, S, Vt = sparsesvd(self.T_.tocsc() if sparse.issparse(self.T_) else sparse.csc_matrix(self.T_), self.svd_dim)
+		if (isinstance(self.dim_reduction, Callable)):
+			dim_reduction_fn = self.dim_reduction
+		else:
+			dim_reduction_fn = getattr(dim_reduction, '{}_dim_reduction'.format(self.dim_reduction))
 
-			# Perform Context Weighting
-			S = sparse.csr_matrix(np.diag(S ** self.svd_eig_weighting))
-
-			W = sparse.csr_matrix(Ut.T).dot(S)
-			V = sparse.csr_matrix(Vt.T).dot(S)
-
-			# Add context vectors
-			if (self.add_context_vectors):
-				self.T_ = W + V
-			else:
-				self.T_ = W
+		return dim_reduction_fn(X=self.T_, **self.dim_reduction_kwargs)
 
 	def fit(self, raw_documents, y=None):
 
@@ -500,9 +491,30 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		##################
 
 		##### FIT DIMENSIONALITY REDUCTION
-		logging.info('Fitting dimensionality reduction...')
-		self.fit_dimensionality_reduction()
-		logging.info('Dimensionality reduction fitted!')
+		if (self.context_vector_integration is not None):
+			if (isinstance(self.context_vector_integration, Callable)):
+				context_vector_integration_fn = self.context_vector_integration
+			else:
+				context_vector_integration_fn = getattr(context_vector_integration, '{}_context_vectors'.format(self.context_vector_integration))
+		else:
+			context_vector_integration_fn = None
+		##################
+
+		##### ADD CONTEXT VECTORS (OR NOT)
+		if (self.dim_reduction is not None):
+			logging.info('Fitting dimensionality reduction...')
+			W, C = self.fit_dimensionality_reduction()
+			logging.info('Dimensionality reduction fitted!')
+
+			# Add context vectors
+			if (context_vector_integration_fn is not None):
+				self.T_ = context_vector_integration_fn(W=W, C=C, **self.context_vector_integration_kwargs)
+			else:
+				self.T_ = W
+		else:
+			# Add context vectors for the sparse case
+			if (context_vector_integration_fn is not None):
+				self.T_ = context_vector_integration_fn(W=self.T_.tolil(), C=self.T_.transpose().tolil()).tocsr()
 		##################
 
 		return self
@@ -596,16 +608,17 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		return item in self.inverted_index_
 
 	@classmethod
-	def load_from_file(cls, path, as_dict=False):
+	def load_from_file(cls, path):
 		model = VSMVectorizer(window_size=0, cache_path=path)
 		model.T_ = model.io_handler_.load_pmi_matrix('')
 		model.index_ = model.io_handler_.load_index('')
 		model.inverted_index_ = model.io_handler_.load_inverted_index('')
 		model.p_w_ = model.io_handler_.load_p_w('')
+		model.M_ = model.io_handler_.load_cooccurrence_matrix('')
 
 		return model
 
-	def save_to_file(self, path, as_dict=False):
+	def save_to_file(self, path, store_cooccurrence_matrix=False):
 		# If as_dict=True, call to_dict on self.T_ prior to serialisation
 		# Store a few type infos in a metadata file, e.g. the type of self.T_
 		# Get all params as well
@@ -613,3 +626,5 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.io_handler_.save_index(self.index_, sub_folder='', base_path=path)
 		self.io_handler_.save_inverted_index(self.inverted_index_, sub_folder='', base_path=path)
 		self.io_handler_.save_p_w(self.p_w_, sub_folder='', base_path=path)
+		if (store_cooccurrence_matrix):
+			self.io_handler_.save_cooccurrence_matrix(self.M_, sub_folder='', base_path=path)
