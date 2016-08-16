@@ -33,13 +33,17 @@ class GzipStreamReader(object):
 
 
 class CSVStreamReader(object):
-	def __init__(self, path, delimiter=','):
+	def __init__(self, path, lowercase=True, delimiter=',', data_index=0):
 		self.path_ = path
 		self.delimiter = delimiter
+		self.data_index = data_index
+		self.lowercase_ = lowercase
 
 	def __iter__(self):
 		with open(self.path_, 'r') as csv_file:
 			csv_reader = csv.reader(csv_file, delimiter=self.delimiter)
 
 			for line in csv_reader:
-				yield line[0]
+				processed_line = line[self.data_index] if not self.lowercase_ else line[self.data_index].lower()
+
+				yield processed_line
