@@ -18,10 +18,9 @@ def download_wikipedia_dump(data_home='~/.wort_data/wikipedia', url='https://dum
 		meta = wikipedia_dump.info()
 		print('Downloading data from {} ({} mb)'.format(dump_url, round(int(meta['Content-Length'])/1000000)))
 
-		out_file_name = filename.rsplit('.', 1)[0]
-
-		with bz2.open(os.path.join(data_home, out_file_name), 'w') as wiki_dump:
-			wiki_dump.write(decompress(wikipedia_dump.read()))
+		with bz2.open(os.path.join(data_home, filename), 'w') as wiki_dump:
+			wiki_dump.write(wikipedia_dump.read())
+	print('Download finished!')
 
 
 def extract_wikipedia_dump():
