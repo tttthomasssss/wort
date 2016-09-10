@@ -355,52 +355,25 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		This allows P(w) (or P(c), depending on how the chain rule is applied) to be eliminated
 		PMI = log(P(c | w) / P(c))
 		'''
-
-		logging.info('Calculating PMI the new and fancy way...')
-
-		# Need the conditional probability P(c | w) and the marginal P(c), but need to maintain the sparsity structure of the matrix
-		# Doing it this way, keeps the matrices sparse: http://stackoverflow.com/questions/3247775/how-to-elementwise-multiply-a-scipy-sparse-matrix-by-a-broadcasted-dense-1d-arra
-		P_w = sparse.lil_matrix(self.M_.shape, dtype=np.float64)
-		P_c = sparse.lil_matrix(self.M_.shape, dtype=np.float64)
-		P_w.setdiag(1 / self.M_.sum(axis=1))
-		P_c.setdiag(1 / p_c)
-
-		logging.info('type(P_w)={}; P_w.shape={}; type(P_c)={}; P_c.shape={}'.format(type(P_w), P_w.shape, type(P_c), P_c.shape))
-
-		'''
-		(P_w * self.M_) calculates the conditional probability P(c | w) vectorised and rowwise while keeping the matrices sparse
-		Multiplication by P_c (which contains the reciprocal 1 / p_c values), achieves the division by P(c)
-		'''
-		PMI = (P_w * self.M_) * P_c
-
-		logging.info('type(PMI)={}; PMI.shape={}'.format(type(PMI), PMI.shape))
-
-		# Perform log on the nonzero elements of PMI
-		data = np.log(PMI.data)
-		rows, cols = PMI.nonzero()
-
-		logging.info('Applying the PMI option')
-		# TODO: with the new & optimised PMI variant, some of the assets required by the other PMI options need to calculated
-		# TODO: explicitely, hence that needs to be supported properly
 		# ...apply the PMI variant (e.g. PPMI, SPPMI, PLMI or PNPMI)
 		if (isinstance(self.weighting, Callable)):
 			fn_feat_transformation = self.weighting
 		else:
 			fn_feat_transformation = getattr(feature_transformation, '{}_transformation'.format(self.weighting))
 
-		PMI = fn_feat_transformation(sparse.csr_matrix((data, (rows, cols)), shape=self.M_.shape, dtype=np.float64), None, self.p_w_, p_c)
-		logging.info('after weight option, type(PMI)={}, PMI.shape={}'.format(type(PMI), PMI.shape))
+		T = fn_feat_transformation(self.M_, self.p_w_, p_c)
+		logging.info('after weight option, type(PMI)={}, PMI.shape={}'.format(type(T), T.shape))
 
 		# Apply shift
 		if (self.sppmi_shift is not None and self.sppmi_shift > 0):
 			logging.info('Applying shift={}...'.format(self.sppmi_shift))
-			rows, cols = PMI.nonzero()
+			rows, cols = T.nonzero()
 			data = np.full(rows.shape, self.sppmi_shift, dtype=np.float64)
-			PMI -= sparse.csr_matrix((data, (rows, cols)), shape=PMI.shape, dtype=np.float64)
+			T -= sparse.csr_matrix((data, (rows, cols)), shape=T.shape, dtype=np.float64)
 
-		logging.info('Applying the threshold [type(PMI)={}]...'.format(type(PMI)))
+		logging.info('Applying the threshold [type(PMI)={}]...'.format(type(T)))
 		# Apply threshold
-		self.T_ = PMI.maximum(0)
+		self.T_ = T.maximum(0)
 		logging.info('PMI ALL DONE [type(self.T_)={}]'.format(type(self.T_)))
 
 		logging.info('Returning [density={}]...'.format(len(self.T_.nonzero()[0]) / (self.T_.shape[0] * self.T_.shape[1])))

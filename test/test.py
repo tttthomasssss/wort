@@ -108,7 +108,7 @@ def test_pizza():
 	import math
 	base_path = os.path.join(paths.get_dataset_path(), 'pizza_small', 'pizza_small.txt')
 	f = CSVStreamReader(base_path)
-	vec = VSMVectorizer(window_size=2, min_frequency=2, weighting='ppmi', token_pattern=r'(?u)\b\w+\b', cds=0.75, sppmi_shift=math.log(2))
+	vec = VSMVectorizer(window_size=2, min_frequency=2, weighting='plmi', token_pattern=r'(?u)\b\w+\b')
 
 	vec.fit(f)
 	#joblib.dump(vec, os.path.join(os.path.split(base_path)[0], 'VSMVectorizer.joblib'), compress=3)
@@ -998,7 +998,7 @@ def test_read_ukwac():
 if (__name__ == '__main__'):
 	#test_token_and_vocab_count()
 	#vectorize_pizza_epic()
-	#test_pizza()
+	test_pizza()
 	#transform_wikipedia_from_cache()
 	#vectorize_wikipedia()
 	#vectorize_kafka()
@@ -1030,6 +1030,7 @@ if (__name__ == '__main__'):
 	#vectorize_wikipedia()
 	#vectorize_ukwac()
 	#vectorize_wikipedia_epic()
+	exit(0)
 	vectorize_bnc()
 
 
