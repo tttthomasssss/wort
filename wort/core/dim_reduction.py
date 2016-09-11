@@ -2,6 +2,7 @@ __author__ = 'thomas'
 import logging
 
 from scipy import sparse
+from sklearn.decomposition import NMF
 from sparsesvd import sparsesvd
 import numpy as np
 
@@ -18,5 +19,17 @@ def svd_dim_reduction(X, **kwargs):
 
 	W = sparse.csr_matrix(Ut.T).dot(S) # Word vectors
 	C = sparse.csr_matrix(Vt.T).dot(S) # Context vectors
+
+	return W, C
+
+
+def nmf_dim_reduction(X, **kwargs):
+	dim = kwargs['dimensionality'] if 'dimensionality' in kwargs else kwargs['n_components'] # must be one of the two, latter is sklearn NMF lingo
+
+	logging.info('Applying NMF with dimensionality={}...'.format(dim))
+	nmf = NMF(n_components=dim, **kwargs)
+
+	W = nmf.fit_transform(X)
+	C = nmf.components_
 
 	return W, C

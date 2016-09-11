@@ -122,6 +122,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		if (not os.path.exists(cache_path)):
 			os.makedirs(cache_path)
 		self.cache_path = cache_path
+		self.kneighbours = None
 
 		self.inverted_index_ = {}
 		self.index_ = {}
@@ -491,6 +492,9 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		##################
 
 		return self
+
+	def init_neighbours(self):
+		raise NotImplementedError
 
 	def transform(self, raw_documents, as_matrix=False, oov='zeros'):
 		'''
