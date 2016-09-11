@@ -9,6 +9,7 @@ import os
 from scipy import sparse
 from sklearn.base import BaseEstimator
 from sklearn.feature_extraction.text import VectorizerMixin
+from sklearn.neighbors import NearestNeighbors
 from tqdm import *
 import numpy as np
 
@@ -122,7 +123,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		if (not os.path.exists(cache_path)):
 			os.makedirs(cache_path)
 		self.cache_path = cache_path
-		self.kneighbours = None
+		self.nn = None
 
 		self.inverted_index_ = {}
 		self.index_ = {}
@@ -493,8 +494,18 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		return self
 
-	def init_neighbours(self):
-		raise NotImplementedError
+	def init_neighbours(self, algorithm='brute', nn_metric='cosine', num_neighbours=10):
+		self.nn = NearestNeighbors(algorithm=algorithm, metric=nn_metric, n_neighbors=num_neighbours).fit(self.T_)
+
+	def neighbours(self, w, return_distance=False):
+		D, I = self.nn.kneighbors(self[w], return_distance=True)
+
+		neighbour_list = list(map(lambda i: self.index_[i], I))
+
+		if (return_distance):
+			return D, neighbour_list
+
+		return neighbour_list
 
 	def transform(self, raw_documents, as_matrix=False, oov='zeros'):
 		'''
