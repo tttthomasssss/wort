@@ -1,6 +1,5 @@
 __author__ = 'thomas'
 from collections import Callable
-from collections import Iterable
 from types import GeneratorType
 import array
 import logging
@@ -8,19 +7,21 @@ import math
 import os
 
 from scipy import sparse
+from scipy.sparse import sputils
 from sklearn.base import BaseEstimator
 from sklearn.feature_extraction.text import VectorizerMixin
 from sklearn.neighbors import NearestNeighbors
 from tqdm import *
 import numpy as np
 
-from wort.core.config_registry import ConfigRegistry
-from wort.core.io_handler import IOHandler
 from wort.core import context_vector_integration
 from wort.core import context_weighting
 from wort.core import dim_reduction
 from wort.core import feature_transformation
 from wort.core import oov_handler
+from wort.core import vector_composition
+from wort.core.config_registry import ConfigRegistry
+from wort.core.io_handler import IOHandler
 from wort.core.utils import determine_chunk_size
 
 # TODO: SVD based on http://www.aclweb.org/anthology/Q/Q15/Q15-1016.pdf, esp. chapter 7, practical recommendations
@@ -516,7 +517,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		return neighbour_list
 
-	def transform(self, raw_documents, as_matrix=False, oov='zeros'):
+	def transform(self, raw_documents, as_matrix=False, oov='zeros', composition='none'):
 		'''
 
 		:param raw_documents:
@@ -526,10 +527,17 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		'''
 		analyser = self.build_analyzer()
 
+		# Build OOV handler
 		if (isinstance(oov, Callable)):
 			oov_fn = oov
 		else:
 			oov_fn = getattr(oov_handler, '{}_oov_handler'.format(oov))
+
+		# Build composer
+		if (isinstance(composition, Callable)):
+			mozart = composition
+		else:
+			mozart = getattr(vector_composition, '{}_vectors'.format(composition))
 
 		l = []
 		# Peek if a list or a string are passed
@@ -542,15 +550,17 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 					else:
 						if (oov != 'ignore'):
 							d.append(oov_fn((1, self.get_vector_size()), self.T_.dtype, self.density_, self.random_state))
-				l.append(d)
+
+				# Compose and add to list
+				l.append(mozart(d))
 
 			# Convert list of lists of sparse vectors to list of sparse matrices (scipy doesn't support sparse tensors afaik)
-			if (as_matrix):
+			if (as_matrix and composition == 'none'):
 				ll = []
 				for l_doc in l:
 					X = l_doc.pop(0)
 					for x in l_doc:
-						X = sparse.vstack((X, x))
+						X = sparse.vstack((X, x), format='csr')
 					ll.append(X)
 				return ll
 		else:
@@ -561,12 +571,17 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 					if (oov != 'ignore'):
 						l.append(oov_fn((1, self.get_vector_size()), self.T_.dtype, self.density_, self.random_state))
 
+			# Compose
+			l = mozart(l)
+
 			# Convert list of sparse vectors to sparse matrix
-			if (as_matrix):
+			if (as_matrix and composition == 'none'):
 				X = l.pop(0)
 				for x in l:
-					X = sparse.vstack((X, x))
+					X = sparse.vstack((X, x), format='csr')
 				return X
+			elif (not as_matrix and composition != 'none'):
+				l = [l]
 
 		return l
 

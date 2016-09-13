@@ -116,6 +116,9 @@ def test_pizza():
 	print('Pizza Neighbours: {}'.format(vec.neighbours('pizza')))
 	print('Favourite Neighbours: {}'.format(vec.neighbours('favourite')))
 
+	x = vec.transform('I love pizza and beer', composition='add', as_matrix=False)
+	print(x)
+
 	#joblib.dump(vec, os.path.join(os.path.split(base_path)[0], 'VSMVectorizer.joblib'), compress=3)
 
 
