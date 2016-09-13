@@ -111,6 +111,11 @@ def test_pizza():
 	vec = VSMVectorizer(window_size=2, min_frequency=2, weighting='plmi', token_pattern=r'(?u)\b\w+\b')
 
 	vec.fit(f)
+
+	vec.init_neighbours(num_neighbours=2)
+	print('Pizza Neighbours: {}'.format(vec.neighbours('pizza')))
+	print('Favourite Neighbours: {}'.format(vec.neighbours('favourite')))
+
 	#joblib.dump(vec, os.path.join(os.path.split(base_path)[0], 'VSMVectorizer.joblib'), compress=3)
 
 

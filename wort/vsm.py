@@ -1,5 +1,6 @@
 __author__ = 'thomas'
 from collections import Callable
+from collections import Iterable
 from types import GeneratorType
 import array
 import logging
@@ -44,7 +45,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				 ngram_range=(1, 1), cds=1., dim_reduction=None, dim_reduction_kwargs={}, random_state=1105,
 				 context_window_weighting='constant', context_vector_integration=None, context_vector_integration_kwargs={},
 				 word_white_list=set(), subsampling_rate=None, cache_intermediary_results=False, cache_path='~/.wort_data/model_cache',
-				 log_level=logging.INFO, log_file=None):
+				 log_level=logging.INFO, log_file=None, nn_eps=1.e-14):
 		"""
 		TODO: documentation...
 		:param window_size:
@@ -124,6 +125,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			os.makedirs(cache_path)
 		self.cache_path = cache_path
 		self.nn = None
+		self.nn_eps = nn_eps
 
 		self.inverted_index_ = {}
 		self.index_ = {}
@@ -495,12 +497,19 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		return self
 
 	def init_neighbours(self, algorithm='brute', nn_metric='cosine', num_neighbours=10):
-		self.nn = NearestNeighbors(algorithm=algorithm, metric=nn_metric, n_neighbors=num_neighbours).fit(self.T_)
+		self.nn = NearestNeighbors(algorithm=algorithm, metric=nn_metric, n_neighbors=num_neighbours+1).fit(self.T_)
 
 	def neighbours(self, w, return_distance=False):
 		D, I = self.nn.kneighbors(self[w], return_distance=True)
 
-		neighbour_list = list(map(lambda i: self.index_[i], I))
+		if (D[0, 0] <= self.nn_eps): # Make sure first neighbour isn't query item
+			D = D[0, 1:]
+			I = I[0, 1:]
+		else:
+			D = D[0, :-1]
+			I = I[0, :-1]
+
+		neighbour_list = list(map(lambda i: self.index_[i], I.squeeze()))
 
 		if (return_distance):
 			return D, neighbour_list
