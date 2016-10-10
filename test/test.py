@@ -495,10 +495,11 @@ def vectorize_wikipedia():
 	from wort.datasets import get_miller_charles_30_words
 	from wort.datasets import get_rubinstein_goodenough_65_words
 
-	p = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wikipedia_utf8_filtered_20pageviews_lc_noid_lemma.tsv')
+	#p = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wikipedia_utf8_filtered_20pageviews_lc_noid_lemma.tsv')
+	p = '/bkp/thk22/_datasets/wikipedia/corpus/wikipedia_utf8_filtered_20pageviews_lc_noid.tsv'
 	wiki_reader = CSVStreamReader(p, delimiter='\t')
 
-	out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors_min_freq_100')
+	out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors')
 	if (not os.path.exists(out_path)):
 		os.makedirs(out_path)
 
@@ -510,36 +511,37 @@ def vectorize_wikipedia():
 	
 	print('Word whitelist contains {} words!'.format(len(whitelist)))
 	import math
-	for log_sppmi, sppmi in zip([0, math.log(5), math.log(10), math.log(40), math.log(100)], [0, 5, 10, 40, 100]):
+	for log_sppmi, sppmi in zip([0, math.log(5), math.log(10)], [0, 5, 10]):
 		for pmi_type in ['ppmi']:
 			for cds in [1., 0.75]:
-				for window_size in [2, 1]:# [5, 2]:
-					print('CONFIG: pmi_type={}; window_size={}; cds={}; shift={}...'.format(pmi_type, window_size, cds, sppmi))
-					transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_wordsim_acl', 'wort_model_ppmi_lemma-True_window-{}_cds-{}-sppmi_shift-{}'.format(
-						window_size, cds, sppmi
-					))
-					if (not os.path.exists(transformed_out_path)):
-						cache_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_cache_wordsim')
-						if (not os.path.exists(cache_path)):
-							os.makedirs(cache_path)
-
-						vec = VSMVectorizer(window_size=window_size, min_frequency=50, cds=cds, weighting=pmi_type,
-											word_white_list=whitelist, sppmi_shift=log_sppmi, cache_path=cache_path,
-											cache_intermediary_results=True)
-
-						vec.fit(wiki_reader)
-
+				for window_size in [2, 1, 5]:# [5, 2]:
+					for dim in [50, 100, 300]:
+						print('CONFIG: pmi_type={}; window_size={}; cds={}; shift={}; dim={}...'.format(pmi_type, window_size, cds, sppmi, dim))
+						transformed_out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'word_vectors', 'wort_model_ppmi_lemma-True_window-{}_cds-{}-sppmi_shift-{}_dim={}'.format(
+							window_size, cds, sppmi, dim
+						))
 						if (not os.path.exists(transformed_out_path)):
-							os.makedirs(transformed_out_path)
+							cache_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_cache')
+							if (not os.path.exists(cache_path)):
+								os.makedirs(cache_path)
 
-						try:
-							print('Saving to file')
-							vec.save_to_file(transformed_out_path)
-							print('Doing the DisCo business...')
-						except OSError as ex:
-							print('FAILFAILFAIL: {}'.format(ex))
-					else:
-						print('{} already exists!'.format(transformed_out_path))
+							vec = VSMVectorizer(window_size=window_size, min_frequency=50, cds=cds, weighting=pmi_type,
+												word_white_list=whitelist, sppmi_shift=log_sppmi, cache_path=cache_path,
+												cache_intermediary_results=True, dim_reduction='svd', dim_reduction_kwargs={'dimensionality': dim})
+
+							vec.fit(wiki_reader)
+
+							if (not os.path.exists(transformed_out_path)):
+								os.makedirs(transformed_out_path)
+
+							try:
+								print('Saving to file')
+								vec.save_to_file(transformed_out_path)
+								print('Doing the DisCo business...')
+							except OSError as ex:
+								print('FAILFAILFAIL: {}'.format(ex))
+						else:
+							print('{} already exists!'.format(transformed_out_path))
 
 
 def vectorize_kafka():
@@ -1006,7 +1008,7 @@ def test_read_ukwac():
 if (__name__ == '__main__'):
 	#test_token_and_vocab_count()
 	#vectorize_pizza_epic()
-	test_pizza()
+	#test_pizza()
 	#transform_wikipedia_from_cache()
 	#vectorize_wikipedia()
 	#vectorize_kafka()
@@ -1035,11 +1037,11 @@ if (__name__ == '__main__'):
 
 
 	#'''
-	#vectorize_wikipedia()
+	vectorize_wikipedia()
 	#vectorize_ukwac()
 	#vectorize_wikipedia_epic()
-	exit(0)
-	vectorize_bnc()
+	#exit(0)
+	#vectorize_bnc()
 
 
 	print('Running evaluations...')
