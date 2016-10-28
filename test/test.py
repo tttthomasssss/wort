@@ -251,12 +251,46 @@ def lemmatise_ukwac():
 			out_file.write(new_line + '\n')
 			if (idx % 10000 == 0): print('{} lines processed!'.format(idx))
 
+
 def lemmatise_bnc():
-	bnc_reader = TextStreamReader(path='/lustre/scratch/inf/thk22/_datasets/bnc/corpus/bnc_lc.txt')
+	reader = TextStreamReader(path='/lustre/scratch/inf/thk22/_datasets/bnc/corpus/bnc_lc.txt')
 	ltk = LemmaTokenizer()
 
 	with open(os.path.join(paths.get_dataset_path(), 'bnc', 'corpus', 'bnc_lc_lemma.txt'), 'w') as out_file:
-		for idx, line in enumerate(bnc_reader, 1):
+		for idx, line in enumerate(reader, 1):
+			new_line = ' '.join(ltk(line.strip()))
+			out_file.write(new_line + '\n')
+			if (idx % 10000 == 0): logging.info('{} lines processed!'.format(idx))
+
+
+def lemmatise_gutenberg():
+	reader = CSVStreamReader(path='/lustre/scratch/inf/thk22/_datasets/gutenberg/corpus/gutenberg_lowercase-True.tsv', delimiter='\t')
+	ltk = LemmaTokenizer()
+
+	with open(os.path.join('/lustre/scratch/inf/thk22/_datasets/gutenberg/corpus/', 'gutenberg_lc_lemma.txt'), 'w') as out_file:
+		for idx, line in enumerate(reader, 1):
+			new_line = ' '.join(ltk(line.strip()))
+			out_file.write(new_line + '\n')
+			if (idx % 10000 == 0): logging.info('{} lines processed!'.format(idx))
+
+
+def lemmatise_toronto():
+	reader = TextStreamReader(path='/lustre/scratch/inf/thk22/_datasets/toronto_books_corpus/corpus/books_combined.txt', lowercase=True)
+	ltk = LemmaTokenizer()
+
+	with open(os.path.join('/lustre/scratch/inf/thk22/_datasets/toronto_books_corpus/corpus/', 'books_combined_lc_lemma.txt'), 'w') as out_file:
+		for idx, line in enumerate(reader, 1):
+			new_line = ' '.join(ltk(line.strip()))
+			out_file.write(new_line + '\n')
+			if (idx % 10000 == 0): logging.info('{} lines processed!'.format(idx))
+
+
+def lemmatise_gigaword():
+	reader = TextStreamReader(path='/lustre/scratch/inf/thk22/_datasets/gigaword/cleaned_texts/gigaword.txt', lowercase=True)
+	ltk = LemmaTokenizer()
+
+	with open(os.path.join('/lustre/scratch/inf/thk22/_datasets/gigaword/cleaned_texts/', 'gigaword_lc_lemma.txt'), 'w') as out_file:
+		for idx, line in enumerate(reader, 1):
 			new_line = ' '.join(ltk(line.strip()))
 			out_file.write(new_line + '\n')
 			if (idx % 10000 == 0): logging.info('{} lines processed!'.format(idx))
@@ -1092,6 +1126,9 @@ if (__name__ == '__main__'):
 	#print('Lemmatisation Done!')
 	#print('Lemmatising BNC...')
 	#lemmatise_bnc()
+	lemmatise_gutenberg()
+	lemmatise_toronto()
+	#lemmatise_gigaword()
 	#print('Lemmatisation Done!')
 
 
@@ -1101,7 +1138,7 @@ if (__name__ == '__main__'):
 	#vectorize_ukwac()
 	#vectorize_wikipedia_epic()
 	#exit(0)
-	vectorize_bnc()
+	#vectorize_bnc()
 
 
 	print('Running evaluations...')
