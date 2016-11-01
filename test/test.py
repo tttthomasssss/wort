@@ -264,10 +264,12 @@ def lemmatise_bnc():
 
 
 def lemmatise_gutenberg():
-	reader = CSVStreamReader(path='/lustre/scratch/inf/thk22/_datasets/gutenberg/corpus/gutenberg_lowercase-True.tsv', delimiter='\t')
+	#reader = CSVStreamReader(path='/lustre/scratch/inf/thk22/_datasets/gutenberg/corpus/gutenberg_lowercase-True.tsv', delimiter='\t')
+	reader = CSVStreamReader(path='/infinity/_datasets/gutenberg/corpus/gutenberg_lowercase-True.tsv',
+							 delimiter='\t')
 	ltk = LemmaTokenizer()
 
-	with open(os.path.join('/lustre/scratch/inf/thk22/_datasets/gutenberg/corpus/', 'gutenberg_lc_lemma.txt'), 'w') as out_file:
+	with open(os.path.join('/infinity/_datasets/gutenberg/corpus/', 'gutenberg_lc_lemma.txt'), 'w') as out_file:
 		for idx, line in enumerate(reader, 1):
 			new_line = ' '.join(ltk(line.strip()))
 			out_file.write(new_line + '\n')
@@ -275,10 +277,10 @@ def lemmatise_gutenberg():
 
 
 def lemmatise_toronto():
-	reader = TextStreamReader(path='/lustre/scratch/inf/thk22/_datasets/toronto_books_corpus/corpus/books_combined.txt', lowercase=True)
+	reader = TextStreamReader(path='/infinity/_datasets/toronto_books_corpus/corpus/books_combined.txt', lowercase=True)
 	ltk = LemmaTokenizer()
 
-	with open(os.path.join('/lustre/scratch/inf/thk22/_datasets/toronto_books_corpus/corpus/', 'books_combined_lc_lemma.txt'), 'w') as out_file:
+	with open(os.path.join('/infinity/_datasets/toronto_books_corpus/corpus/', 'books_combined_lc_lemma.txt'), 'w') as out_file:
 		for idx, line in enumerate(reader, 1):
 			new_line = ' '.join(ltk(line.strip()))
 			out_file.write(new_line + '\n')
@@ -286,10 +288,10 @@ def lemmatise_toronto():
 
 
 def lemmatise_gigaword():
-	reader = TextStreamReader(path='/lustre/scratch/inf/thk22/_datasets/gigaword/cleaned_texts/gigaword.txt', lowercase=True)
+	reader = TextStreamReader(path='/infinity/_datasets/gigaword/cleaned_texts/gigaword.txt', lowercase=True)
 	ltk = LemmaTokenizer()
 
-	with open(os.path.join('/lustre/scratch/inf/thk22/_datasets/gigaword/cleaned_texts/', 'gigaword_lc_lemma.txt'), 'w') as out_file:
+	with open(os.path.join('/infinity/_datasets/gigaword/cleaned_texts/', 'gigaword_lc_lemma.txt'), 'w') as out_file:
 		for idx, line in enumerate(reader, 1):
 			new_line = ' '.join(ltk(line.strip()))
 			out_file.write(new_line + '\n')
