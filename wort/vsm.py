@@ -517,6 +517,21 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		return neighbour_list
 
+	def neighbour_indices(self, w, return_distance=False):
+		D, I = self.nn.kneighbors(self[w], return_distance=True)
+
+		if (D[0, 0] <= self.nn_eps):  # Make sure first neighbour isn't query item
+			D = D[0, 1:]
+			I = I[0, 1:]
+		else:
+			D = D[0, :-1]
+			I = I[0, :-1]
+
+		if (return_distance):
+			return D, I
+
+		return I
+
 	def transform(self, raw_documents, as_matrix=False, oov='zeros', composition='none'):
 		'''
 
