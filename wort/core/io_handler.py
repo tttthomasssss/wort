@@ -98,6 +98,10 @@ class IOHandler(object):
 		joblib.dump(inverted_index, os.path.join(base_path, sub_folder, 'inverted_index.joblib'), compress=3)
 
 	def load_cooccurrence_matrix(self, sub_folder):
+		p = os.path.join(self.cache_path_, sub_folder, 'M.hdf')
+		if (not os.path.exists(p)):
+			logging.warning('No co-occurrence matrix found at path={}!'.format(p))
+			return None
 		return utils.hdf_to_sparse_csx_matrix(os.path.join(self.cache_path_, sub_folder), 'M.hdf', sparse_format='csr')
 
 	def save_cooccurrence_matrix(self, M, sub_folder, base_path=None):
