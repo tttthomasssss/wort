@@ -264,10 +264,10 @@ def lemmatise_bnc():
 
 
 def lemmatise_wackypedia():
-	reader = TextStreamReader(path='/media/data4/thk22/_datasets/wackypedia/corpus/wackypedia.txt')
+	reader = TextStreamReader(path='/media/data4/_datasets/wackypedia/corpus/wackypedia.txt')
 	ltk = LemmaTokenizer()
 
-	with open('/media/data4/thk22/_datasets/wackypedia/corpus/wackypedia_lc_lemma.txt', 'w') as out_file:
+	with open('/media/data4/_datasets/wackypedia/corpus/wackypedia_lc_lemma.txt', 'w') as out_file:
 		for idx, line in enumerate(reader, 1):
 			new_line = ' '.join(ltk(line.lower().strip()))
 			out_file.write(new_line + '\n')
