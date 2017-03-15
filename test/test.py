@@ -263,6 +263,17 @@ def lemmatise_bnc():
 			if (idx % 10000 == 0): logging.info('{} lines processed!'.format(idx))
 
 
+def lemmatise_wackypedia():
+	reader = TextStreamReader(path='/media/data4/thk22/_datasets/wackypedia/corpus/wackypedia.txt')
+	ltk = LemmaTokenizer()
+
+	with open('/media/data4/thk22/_datasets/wackypedia/corpus/wackypedia_lc_lemma.txt', 'w') as out_file:
+		for idx, line in enumerate(reader, 1):
+			new_line = ' '.join(ltk(line.lower().strip()))
+			out_file.write(new_line + '\n')
+			if (idx % 10000 == 0): logging.info('{} lines processed!'.format(idx))
+
+
 def lemmatise_gutenberg():
 	#reader = CSVStreamReader(path='/lustre/scratch/inf/thk22/_datasets/gutenberg/corpus/gutenberg_lowercase-True.tsv', delimiter='\t')
 	reader = CSVStreamReader(path='/infinity/_datasets/gutenberg/corpus/gutenberg_lowercase-True.tsv',
@@ -1128,9 +1139,11 @@ if (__name__ == '__main__'):
 	#print('Lemmatisation Done!')
 	#print('Lemmatising BNC...')
 	#lemmatise_bnc()
-	lemmatise_gutenberg()
-	lemmatise_toronto()
+	#lemmatise_gutenberg()
+	#lemmatise_toronto()
 	#lemmatise_gigaword()
+	lemmatise_wackypedia()
+	exit(0)
 	#print('Lemmatisation Done!')
 
 

@@ -33,3 +33,5 @@ def nmf_dim_reduction(X, **kwargs):
 	C = nmf.components_
 
 	return W, C
+
+# Random Indexing: https://www.diva-portal.org/smash/get/diva2:1041127/FULLTEXT01.pdf
