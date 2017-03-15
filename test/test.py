@@ -182,10 +182,11 @@ def test_wikipedia():
 
 
 def vectorize_ukwac():
-	ukwac_reader = GzipStreamReader(path='/research/calps/data2/public/corpora/ukwac1.0/raw/ukwac_preproc.gz')
+	#ukwac_reader = GzipStreamReader(path='/research/calps/data2/public/corpora/ukwac1.0/raw/ukwac_preproc.gz')
 	#ukwac_reader = TextStreamReader(path='/lustre/scratch/inf/thk22/_datasets/ukwac/ukwac_lemmatised.txt')
+	ukwac_reader = TextStreamReader(path='/media/data4/_datasets/ukwac_wackypedia_bnc/corpus/ukwac_wackypedia_bnc_lc_lemma.txt')
 
-	out_path = os.path.join(paths.get_dataset_path(), 'ukwac', 'wort')
+	out_path = os.path.join('/media/data4/_datasets/ukwac_wackypedia_bnc/', 'wort')
 	if (not os.path.exists(out_path)):
 		os.makedirs(out_path)
 
@@ -197,20 +198,20 @@ def vectorize_ukwac():
 
 	print('Word whitelist contains {} words!'.format(len(whitelist)))
 	import math
-	for log_sppmi, sppmi in zip([0, math.log(5), math.log(10), math.log(40), math.log(100)], [0, 5, 10, 40, 100]):
+	for log_sppmi, sppmi in zip([0, math.log(5), math.log(10)], [0, 5, 10]):
 		for pmi_type in ['ppmi']:
 			for cds in [1., 0.75]:
 				for window_size in [5, 2]:
 					print('CONFIG: pmi_type={}; window_size={}; cds={}; shift={}...'.format(pmi_type, window_size, cds, sppmi))
-					transformed_out_path = os.path.join(paths.get_dataset_path(), 'ukwac', 'wort_model_ppmi_lemma-False_window-{}_cds-{}-sppmi_shift-{}'.format(
+					transformed_out_path = os.path.join('/media/data4/_datasets/ukwac_wackypedia_bnc/', 'wort', 'wort_model_ppmi_lemma-False_window-{}_cds-{}-sppmi_shift-{}'.format(
 						window_size, cds, sppmi
 					))
 					if (not os.path.exists(transformed_out_path)):
-						cache_path = os.path.join(paths.get_dataset_path(), 'ukwac', 'wort_cache_nolemma')
+						cache_path = os.path.join('/media/data4/_datasets/ukwac_wackypedia_bnc/', 'wort', 'wort_cache')
 						if (not os.path.exists(cache_path)):
 							os.makedirs(cache_path)
 
-						vec = VSMVectorizer(window_size=window_size, min_frequency=100, cds=cds, weighting=pmi_type,
+						vec = VSMVectorizer(window_size=window_size, min_frequency=50, cds=cds, weighting=pmi_type,
 											word_white_list=whitelist, sppmi_shift=log_sppmi, cache_path=cache_path,
 											cache_intermediary_results=True)
 
@@ -1142,17 +1143,16 @@ if (__name__ == '__main__'):
 	#lemmatise_gutenberg()
 	#lemmatise_toronto()
 	#lemmatise_gigaword()
-	lemmatise_wackypedia()
-	exit(0)
+	#lemmatise_wackypedia()
 	#print('Lemmatisation Done!')
 
 
 	#'''
 	#vectorize_wikipedia()
 	#vectorize_amazon_reviews()
-	#vectorize_ukwac()
+	vectorize_ukwac()
 	#vectorize_wikipedia_epic()
-	#exit(0)
+	exit(0)
 	#vectorize_bnc()
 
 
