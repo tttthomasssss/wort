@@ -309,11 +309,12 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				logging.info('Chunk limit for chunk {}/{} reached, creating sparse matrix and continuing...'.format(processed_chunks, num_chunks))
 				processed_tokens = 0
 
-				data = np.array(data, dtype=np.uint8 if self.context_window_weighting == 'constant' else np.float64, copy=False)
-				rows = np.array(rows, dtype=np.uint32, copy=False)
-				cols = np.array(cols, dtype=np.uint32, copy=False)
+				arr_data = np.array(data, dtype=np.uint8 if self.context_window_weighting == 'constant' else np.float64, copy=False)
+				arr_rows = np.array(rows, dtype=np.uint32, copy=False)
+				arr_cols = np.array(cols, dtype=np.uint32, copy=False)
 
-				self.M_ += sparse.csr_matrix((data.astype(dtype), (rows, cols)), shape=(self.vocab_count_, self.vocab_count_)).tolil()
+				self.M_ += sparse.csr_matrix((arr_data.astype(dtype), (arr_rows, arr_cols)),
+											 shape=(self.vocab_count_, self.vocab_count_)).tolil()
 
 				rows = array.array('I') #rows = array.array('i')
 				cols = array.array('I') #cols = array.array('i')

@@ -108,7 +108,7 @@ def test_pizza():
 	import math
 	base_path = os.path.join(paths.get_dataset_path(), 'pizza_small', 'pizza_small.txt')
 	f = CSVStreamReader(base_path)
-	vec = VSMVectorizer(window_size=2, min_frequency=2, weighting='plmi', token_pattern=r'(?u)\b\w+\b')
+	vec = VSMVectorizer(window_size=2, min_frequency=2, weighting='ppmi', token_pattern=r'(?u)\b\w+\b')
 
 	vec.fit(f)
 
@@ -194,9 +194,9 @@ def vectorize_ukwac():
 		os.makedirs(os.path.join(out_path, 'ukwac_cooccurrence_cache'))
 
 	#whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words() | get_mturk_words() | get_men_words() | get_rare_words() | get_simlex_999_words() | get_msr_syntactic_analogies_words() | get_google_analogies_words()
-	whitelist = get_ws353_words() | get_rare_words() | get_ws353_words(subset='similarity') | get_ws353_words(subset='relatedness')
+	#whitelist = get_ws353_words() | get_ws353_words(subset='similarity') | get_ws353_words(subset='relatedness')
 
-	print('Word whitelist contains {} words!'.format(len(whitelist)))
+	#print('Word whitelist contains {} words!'.format(len(whitelist)))
 	import math
 	for log_sppmi, sppmi in zip([0, math.log(5), math.log(10)], [0, 5, 10]):
 		for pmi_type in ['ppmi']:
@@ -212,8 +212,7 @@ def vectorize_ukwac():
 							os.makedirs(cache_path)
 
 						vec = VSMVectorizer(window_size=window_size, min_frequency=50, cds=cds, weighting=pmi_type,
-											word_white_list=whitelist, sppmi_shift=log_sppmi, cache_path=cache_path,
-											cache_intermediary_results=True)
+											sppmi_shift=log_sppmi, cache_path=cache_path, cache_intermediary_results=True)
 
 						vec.fit(ukwac_reader)
 
