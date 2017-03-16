@@ -1,4 +1,5 @@
 __author__ = 'thomas'
+import json
 import logging
 import os
 import sys
@@ -10,12 +11,29 @@ from wort.core import utils
 
 class IOHandler(object):
 	def __init__(self, cache_path, log_file, log_level, log_format='%(asctime)s: %(levelname)s - %(message)s',
-				 date_format='[%d/%m/%Y %H:%M:%S %p]'):
+				 date_format='[%d/%m/%Y %H:%M:%S %p]', base_config_file='~/.wort_data/config/config.json'):
 		self.cache_path_ = cache_path
 		self.log_file_ = log_file
 		self.log_level_ = log_level
 		self.log_format_ = log_format
 		self.date_format_ = date_format
+
+		if (base_config_file.startswith('~')):
+			base_config_file = os.path.expanduser(base_config_file)
+		if (not os.path.exists(os.path.split(base_config_file)[0])):
+			os.makedirs(os.path.split(base_config_file)[0])
+			config = {
+				'mem_proportion': 0.8,
+				'chunk_size': 10,
+				'dtype_size': 64
+			}
+			with open(base_config_file, 'w') as config_file:
+				json.dump(config, config_file)
+		else:
+			with open(base_config_file, 'r') as config_file:
+				config = json.load(config_file)
+
+		self.base_config_ = config
 
 	def setup_logging(self):
 		log_formatter = logging.Formatter(fmt=self.log_format_, datefmt=self.date_format_)
