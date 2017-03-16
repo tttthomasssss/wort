@@ -24,7 +24,7 @@ def svd_dim_reduction(X, **kwargs):
 
 
 def nmf_dim_reduction(X, **kwargs):
-	dim = kwargs['dimensionality'] if 'dimensionality' in kwargs else kwargs['n_components'] # must be one of the two, latter is sklearn NMF lingo
+	dim = kwargs.pop('dimensionality') if 'dimensionality' in kwargs else kwargs.pop('n_components') # must be one of the two, latter is sklearn NMF lingo
 
 	logging.info('Applying NMF with dimensionality={}...'.format(dim))
 	nmf = NMF(n_components=dim, **kwargs)
