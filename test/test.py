@@ -63,6 +63,14 @@ def test_hdf():
 	print('NUMPY check={}'.format(np.all(X==XX)))
 
 
+def test_conll_reader():
+	from wort.corpus_readers import CoNLLStreamReader
+	r = CoNLLStreamReader(path='/Users/thomas/DevSandbox/EpicDataShelf/tag-lab/parsed_test/1.txt.tagged', data_index=1,
+						  order='dep')
+
+	vec = VSMVectorizer(window_size=2, min_frequency=2, weighting='ppmi', token_pattern=r'(?u)\b\w+\b')
+	vec.fit(r)
+
 def test_discoutils_loader():
 	#from apt_toolkit.utils import vector_utils
 	from discoutils.thesaurus_loader import Vectors
@@ -1115,6 +1123,8 @@ if (__name__ == '__main__'):
 	#test_token_and_vocab_count()
 	#vectorize_pizza_epic()
 	#test_pizza()
+	#test_conll_reader()
+	#exit(0)
 	#transform_wikipedia_from_cache()
 	#vectorize_wikipedia()
 	#vectorize_kafka()

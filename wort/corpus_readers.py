@@ -19,6 +19,55 @@ class TextStreamReader(object):
 				yield processed_line
 
 
+class CoNLLStreamReader(object):
+	def __init__(self, path, data_index, order='seq', lowercase=True, sep='\t', num_columns=7, head_idx=-2, token_idx=0): # order supports 'dep' (dependency order) or 'seq' (standard sequential order)
+		self.path_ = path
+		self.data_index_ = data_index
+		self.order_ = order
+		self.lowercase_ = lowercase
+		self.sep_ = sep
+		self.num_columns_ = num_columns
+		self.head_idx_ = head_idx
+		self.token_idx_ = token_idx
+
+	def __iter__(self):
+		with open(self.path_, 'r') as conll_file:
+			curr_line = []
+			root_idx = -1
+			for line in conll_file:
+				parts = line.strip().split(self.sep_)
+				if (len(parts) < self.num_columns_):
+					if (self.order_ == 'seq'):
+						sent = ' '.join(map(lambda x: x[self.data_index_], curr_line))
+						sent = sent.lower() if self.lowercase_ else sent
+						curr_line = []
+					else: # Dep Context, run a BFS over the dependency tree
+						q = [root_idx]
+						seq = []
+						already_seen = set()
+
+						while (len(q) > 0):
+							item = q.pop(0)
+
+							if (item not in already_seen):
+								seq.append(item)
+								already_seen.add(item)
+
+								for idx, p in enumerate(curr_line):
+									if (p[self.head_idx_] != '_' and int(p[self.head_idx_])-1 == item):
+										q.append(idx)
+
+						sent = ' '.join(map(lambda x: curr_line[x][self.data_index_], seq))
+						sent = sent.lower() if self.lowercase_ else sent
+						curr_line = []
+
+					yield sent
+				else:
+					curr_line.append(parts)
+					if (parts[self.head_idx_] == '0'):
+						root_idx = int(parts[self.token_idx_]) - 1
+
+
 class GzipStreamReader(object):
 	def __init__(self, path, lowercase=True):
 		self.path_ = path
