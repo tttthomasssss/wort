@@ -150,6 +150,6 @@ def determine_chunk_size(dtype_size, p=0.8): # This is an awful hack, once the c
 			chunk_size = 100000000
 	else: # Windows and other stuff, use hardcoded number
 		chunk_size = 100000000
-		logging.info('OS={}; mem allocation heuristic not implemented for OS. using hardcoded chunk size={}'.format(chunk_size))
+		logging.info('OS={}; mem allocation heuristic not implemented for OS. using hardcoded chunk size={}'.format(sys.platform, chunk_size))
 
 	return chunk_size
