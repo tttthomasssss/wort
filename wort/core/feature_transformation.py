@@ -11,6 +11,9 @@ def probability_ratio_transformation(M, p_w, p_c):
 	P_w.setdiag(1 / M.sum(axis=1))
 	P_c.setdiag(1 / p_c)
 
+	# TODO: THERE IS A WEIRD FAIL SOMEWHERE IN THERE!!!
+	print(np.where(M.sum(axis=1)==0))
+
 	'''
 	(P_w * self.M_) calculates the conditional probability P(c | w) vectorised and rowwise while keeping the matrices sparse
 	Multiplication by P_c (which contains the reciprocal 1 / p_c values), achieves the division by P(c)

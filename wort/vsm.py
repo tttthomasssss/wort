@@ -275,13 +275,16 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# to figure out how much memory is available and then chunk it accordingly, but thats potentially a bit overkill (+ introduces another dependency)
 		# Rather fix it properly than hacking around like this...
 		# On OS X/BSD this works: `os.popen('sysctl -n hw.memsize').readlines()`, on Linux, this works: `os.popen('free -m').readlines()`, ignore Windows
-		if (self.io_handler_.base_config_.get('num_chunks', -1) > 0):
+		if (self.io_handler_.base_config_.get('num_chunks', -1) <= 0):
 			dtype_size = self.io_handler_.base_config_.get('dtype_size', 64)
 			chunk_size = determine_chunk_size(dtype_size=dtype_size)
 			num_chunks = math.floor(self.token_count_ / chunk_size)
 		else:
 			num_chunks = self.io_handler_.base_config_['num_chunks']
 			chunk_size = math.ceil(self.token_count_ / num_chunks)
+
+		logging.info('Splitting load into {} chunks...'.format(num_chunks))
+
 		processed_chunks = 1
 		processed_tokens = 0
 		self.M_ = sparse.lil_matrix((self.vocab_count_, self.vocab_count_), dtype=dtype)

@@ -24,7 +24,7 @@ class IOHandler(object):
 			os.makedirs(os.path.split(base_config_file)[0])
 			config = {
 				'mem_proportion': 0.8,
-				'chunk_size': 10,
+				'num_chunks': 10,
 				'dtype_size': 64
 			}
 			with open(base_config_file, 'w') as config_file:
