@@ -25,8 +25,8 @@ def probability_ratio_transformation(M, p_w, p_c, **XXX):
 	return (P_w * M) * P_c
 
 
-def ppmi_transformation(M, p_w, p_c):
-	P = probability_ratio_transformation(M=M, p_w=p_w, p_c=p_c)
+def ppmi_transformation(M, p_w, p_c, **XXX):
+	P = probability_ratio_transformation(M=M, p_w=p_w, p_c=p_c, **XXX)
 
 	# Perform log on the nonzero elements of PMI
 	data = np.log(P.data)
