@@ -15,8 +15,8 @@ def probability_ratio_transformation(M, p_w, p_c, **XXX):
 	print(np.where(M.sum(axis=1)==0))
 	idx = np.where(M.sum(axis=1)==0)[0]
 
-	print('ITEM: {}'.format(XXX['inverted_index'][idx]))
-	print('P={}'.format(p_w[idx]))
+	print('ITEM: {}'.format(XXX['inverted_index'][idx][0]))
+	print('P={}'.format(p_w[idx][0]))
 
 	'''
 	(P_w * self.M_) calculates the conditional probability P(c | w) vectorised and rowwise while keeping the matrices sparse
