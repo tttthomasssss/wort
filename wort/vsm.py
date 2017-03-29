@@ -150,6 +150,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.io_handler_.setup_logging()
 
 	def _delete_from_vocab(self, W, idx):
+		print('DELETING {} ITEMS FROM VOCAB: {}'.format(len(idx), idx))
 		W = np.delete(W, idx)
 
 		for i in idx:
