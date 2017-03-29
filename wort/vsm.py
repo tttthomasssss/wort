@@ -375,7 +375,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		else:
 			fn_feat_transformation = getattr(feature_transformation, '{}_transformation'.format(self.weighting))
 
-		T = fn_feat_transformation(self.M_, self.p_w_, p_c, inverted_index=self.inverted_index_) # TODO: Remove Kwargs
+		T = fn_feat_transformation(self.M_, self.p_w_, p_c, inverted_index=self.inverted_index_, index=self.index_) # TODO: Remove Kwargs
 		logging.info('after weight option, type(PMI)={}, PMI.shape={}'.format(type(T), T.shape))
 
 		# Apply shift
