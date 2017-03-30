@@ -21,7 +21,7 @@ def probability_ratio_transformation(M, p_w, p_c, **XXX):
 	else:
 		print('{} NOT IN INVERTED INDEX!'.format(idx))
 	if (idx[0] in XXX['index']):
-		print('IDX ITEM: {}'.format(XXX['inverted_index'][idx[0]]))
+		print('IDX ITEM: {}'.format(XXX['index'][idx[0]]))
 	else:
 		print('{} NOT IN INDEX!'.format(idx))
 	print('P={}'.format(p_w[idx[0]]))
