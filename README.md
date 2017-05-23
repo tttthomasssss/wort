@@ -6,6 +6,8 @@ _~~~ Stanislaw Jerzy Lec ~~~_
 
 `wort` is a `python` library for creating count-based distributional semantic word vectors. It adopts a `scikit-learn` like API and is built on top of `numpy`, `scipy` and `scikit-learn`.
 
+**NOTE:** Currently `dev_v0.2.0` happens to be the most stable branch.
+
 # Table of Contents
 1. [Installation](#installation)
 
