@@ -613,7 +613,7 @@ def vectorize_wikipedia():
 	wiki_reader = CSVStreamReader(p, delimiter='\t')
 
 	#out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors')
-	out_path = os.path.join('//mnt/data0/thk22/_datasets/wikipedia/corpus/phd_thesis', 'wort_vectors')
+	out_path = os.path.join('/mnt/data0/thk22/_datasets/wikipedia/corpus/phd_thesis', 'wort_vectors')
 	if (not os.path.exists(out_path)):
 		os.makedirs(out_path)
 
@@ -637,7 +637,7 @@ def vectorize_wikipedia():
 						window_size, cds, sppmi
 					))
 					if (not os.path.exists(transformed_out_path)):
-						cache_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_cache', 'phd_thesis')
+						cache_path = os.path.join('/mnt/data0/thk22/_datasets/', 'wikipedia', 'wort_cache', 'phd_thesis')
 						if (not os.path.exists(cache_path)):
 							os.makedirs(cache_path)
 
