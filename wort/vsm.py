@@ -642,6 +642,10 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 	def __contains__(self, item):
 		return item in self.inverted_index_
 
+	def get(self, word, default=None):
+		default = sparse.csr_matrix((1, self.get_vector_size())) if default is None else default
+		return self[word] if word in self else default
+
 	@classmethod
 	def load_from_file(cls, path):
 		model = VSMVectorizer(window_size=0, cache_path=path)
