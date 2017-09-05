@@ -1227,7 +1227,8 @@ if (__name__ == '__main__'):
 	#vectorize_ukwac()
 	#vectorize_wikipedia_epic()
 	#vectorize_bnc()
-	print('Running BNC samples ip={}; i=[}; cp={}; op={}...'.format(args.input_path, args.input_file, args.cache_path, args.output_path))
+	print('Running BNC samples ip={}; i=[}; cp={}; op={}...'.format(args.input_path, args.input_file,
+																	args.cache_path, args.output_path))
 	#vectorize_bnc_samples()
 	exit(0)
 
