@@ -627,10 +627,10 @@ def vectorize_wikipedia():
 	
 	print('Word whitelist contains {} words!'.format(len(whitelist)))
 	import math
-	for log_sppmi, sppmi in zip([0, math.log(5), math.log(10), math.log(20), math.log(40), math.log(100), math.log(250)], [0, 5, 10, 20, 40, 100, 250]):
+	for log_sppmi, sppmi in zip([0], [0]):#zip([0, math.log(5), math.log(10), math.log(20), math.log(40), math.log(100), math.log(250)], [0, 5, 10, 20, 40, 100, 250]):
 		for pmi_type in ['ppmi']:
 			for cds in [1.]:#[1., 0.75]:
-				for window_size in [2, 1, 5]:# [5, 2]:
+				for window_size in [10, 20]:#[2, 1, 5]:# [5, 2]:
 					#for dim in [50, 100, 300]:
 					print('CONFIG: pmi_type={}; window_size={}; cds={}; shift={}; ...'.format(pmi_type, window_size, cds, sppmi))
 					transformed_out_path = os.path.join('/mnt/data0/thk22/_datasets/wikipedia/corpus/phd_thesis', 'wort_vectors', 'wort_model_ppmi_lemma-False_pos-False_window-{}_cds-{}-sppmi_shift-{}'.format(
