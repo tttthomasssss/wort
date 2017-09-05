@@ -557,7 +557,7 @@ def vectorize_bnc():
 							print('{} already exists!'.format(transformed_out_path))
 
 
-def vectorize_bnc_sample(input_file, output_path, cache_path, current_sample):
+def vectorize_bnc_samples(input_file, output_path, cache_path, current_sample):
 	bnc_reader = TextStreamReader(input_file)
 
 	whitelist = get_ws353_words() | \
@@ -1228,11 +1228,8 @@ if (__name__ == '__main__'):
 	#vectorize_wikipedia_epic()
 	#vectorize_bnc()
 	print('Running BNC samples...')
-	print('input-file={}'.format(args.input_file))
-	print('input_path={}'.format(args.input_path))
-	print('output_path={}'.format(args.output_path))
-	print('cache_path={}'.format(args.cache_path))
-	#vectorize_bnc_samples()
+	vectorize_bnc_samples(input_file=os.path.join(args.input_path, args.input_file), output_path=args.output_path,
+						  cache_path=args.cache_path, current_sample=args.current_sample)
 	exit(0)
 
 
