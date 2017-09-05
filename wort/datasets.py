@@ -67,7 +67,7 @@ def get_simlex_999_words(data_home='~/.wort_data'):
 	data_home = os.path.expanduser(data_home) if '~' in data_home else data_home
 
 	if (not os.path.exists(os.path.join(data_home, 'SimLex-999', 'simlex_worts.txt'))):
-		ds = fetch_rare_words_dataset(data_home=data_home)
+		ds = fetch_simlex_999_dataset(data_home=data_home)
 
 		words = set()
 		for w1, w2, _ in ds:
