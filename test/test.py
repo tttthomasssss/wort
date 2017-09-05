@@ -1,4 +1,5 @@
 __author__ = 'thomas'
+from argparse import ArgumentParser
 import json
 import logging
 import math
@@ -38,6 +39,14 @@ from wort.datasets import get_google_analogies_words
 from wort.datasets import get_rubinstein_goodenough_65_words
 from wort.datasets import get_miller_charles_30_words
 from wort.evaluation import intrinsic_word_analogy_evaluation
+
+parser = ArgumentParser()
+parser.add_argument('-ip', '--input-path', type=str, help='path to input file')
+parser.add_argument('-i', '--input-file', type=str, help='input file')
+parser.add_argument('-op', '--output-path', type=str, help='path to output file')
+parser.add_argument('-s', '--sample-size', type=int, help='sample size')
+parser.add_argument('-cs', '--current-sample', type=int, help='current sample')
+parser.add_argument('-cp', '--cache-path', type=str, help='path to cache')
 
 
 def test_hdf():
@@ -525,6 +534,58 @@ def vectorize_bnc():
 							if (not os.path.exists(transformed_out_path)):
 								#cache_path = os.path.join(paths.get_dataset_path(), 'bnc', 'wort_cache_coling')
 								cache_path = os.path.join('/mnt/data3/thk22/_datasets/bnc/corpus', 'wort_cache')
+								if (not os.path.exists(cache_path)):
+									os.makedirs(cache_path)
+
+								vec = VSMVectorizer(window_size=window_size, min_frequency=30, cds=cds, weighting=pmi_type,
+													word_white_list=whitelist, sppmi_shift=log_sppmi, cache_path=cache_path,
+													context_window_weighting=weighting_fn, cache_intermediary_results=True,
+													dim_reduction=reduction, dim_reduction_kwargs={'dimensionality': dim})
+
+								vec.fit(bnc_reader)
+
+								if (not os.path.exists(transformed_out_path)):
+									os.makedirs(transformed_out_path)
+
+								try:
+									print('Saving to file')
+									vec.save_to_file(transformed_out_path)
+									print('Doing the DisCo business...')
+								except OSError as ex:
+									print('FAILFAILFAIL: {}'.format(ex))
+						else:
+							print('{} already exists!'.format(transformed_out_path))
+
+
+def vectorize_bnc_sample(input_file, output_path, cache_path, current_sample):
+	bnc_reader = TextStreamReader(input_file)
+
+	whitelist = get_ws353_words() | \
+				get_men_words() | \
+				get_simlex_999_words() | \
+				get_ws353_words(similarity_type='similarity') | \
+				get_ws353_words(similarity_type='relatedness') | \
+				set(['achieve', 'acquire', 'action', 'activity', 'address', 'age', 'agency', 'air', 'allowance', 'american', 'amount', 'area', 'arm', 'ask', 'assembly', 'assistant', 'attend', 'attention', 'authority', 'basic', 'battle', 'bedroom', 'begin', 'benefit', 'better', 'black', 'board', 'body', 'book', 'building', 'bus', 'business', 'buy', 'call', 'capital', 'care', 'career', 'case', 'cause', 'central', 'centre', 'certain', 'charge', 'child', 'circumstance', 'city', 'close', 'club', 'cold', 'collect', 'college', 'committee', 'community', 'company', 'computer', 'condition', 'conference', 'consider', 'contract', 'control', 'cost', 'council', 'country', 'county', 'course', 'credit', 'cross', 'cut', 'dark', 'datum', 'day', 'defence', 'demand', 'department', 'develop', 'development', 'different', 'difficulty', 'director', 'discuss', 'door', 'drink', 'earlier', 'early', 'economic', 'economy', 'education', 'effect', 'effective', 'efficient', 'elderly', 'emphasise', 'encourage', 'end', 'environment', 'european', 'evening', 'event', 'evidence', 'example', 'exercise', 'express', 'eye', 'face', 'family', 'federal', 'fight', 'follow', 'football', 'form', 'further', 'future', 'game', 'general', 'good', 'government', 'great', 'group', 'hair', 'hall', 'hand', 'head', 'health', 'hear', 'help', 'high', 'hold', 'home', 'hot', 'house', 'housing', 'importance', 'important', 'increase', 'industrial', 'industry', 'influence', 'information', 'injury', 'intelligence', 'interest', 'intervention', 'issue', 'job', 'join', 'kind', 'kitchen', 'knowledge', 'labour', 'lady', 'land', 'language', 'large', 'law', 'leader', 'league', 'leave', 'left', 'letter', 'level', 'life', 'lift', 'like', 'line', 'little', 'local', 'long', 'loss', 'low', 'major', 'majority', 'man', 'management', 'manager', 'market', 'marketing', 'match', 'matter', 'meet', 'meeting', 'member', 'message', 'method', 'minister', 'modern', 'name', 'national', 'need', 'new', 'news', 'northern', 'number', 'offer', 'office', 'officer', 'official', 'oil', 'old', 'older', 'opposition', 'part', 'particular', 'party', 'pass', 'pay', 'people', 'period', 'person', 'personnel', 'phone', 'place', 'plan', 'planning', 'play', 'point', 'policy', 'political', 'pose', 'position', 'pour', 'power', 'practical', 'present', 'previous', 'price', 'principle', 'problem', 'produce', 'programme', 'project', 'property', 'provide', 'public', 'quantity', 'question', 'railway', 'raise', 'rate', 'reach', 'read', 'receive', 'reduce', 'region', 'remember', 'require', 'requirement', 'research', 'result', 'right', 'road', 'role', 'room', 'rule', 'rural', 'satisfy', 'secretary', 'security', 'sell', 'send', 'service', 'set', 'share', 'short', 'shut', 'significant', 'similar', 'situation', 'skill', 'small', 'social', 'special', 'stage', 'start', 'state', 'station', 'stress', 'stretch', 'structure', 'study', 'suffer', 'support', 'system', 'tax', 'tea', 'technique', 'technology', 'telephone', 'television', 'test', 'time', 'town', 'training', 'treatment', 'tv', 'unit', 'use', 'various', 'vast', 'view', 'wage', 'war', 'water', 'wave', 'way', 'weather', 'whole', 'win', 'window', 'woman', 'word', 'work', 'worker', 'world', 'write']) | \
+				set(['argument', 'ball', 'beam', 'body', 'boom', 'bow', 'burn', 'burst', 'butler', 'chatter', 'child', 'cigar', 'cigarette', 'click', 'company', 'concentration', 'conflict', 'courage', 'decline', 'determination', 'digress', 'discussion', 'erupt', 'export', 'eye', 'face', 'falter', 'fear', 'fire', 'flame', 'flare', 'flick', 'flicker', 'flinch', 'flood', 'fluctuate', 'fountain', 'gabble', 'girl', 'glow', 'government', 'gun', 'hand', 'head', 'heart', 'hope', 'industry', 'interest', 'island', 'kick', 'lessen', 'machine', 'man', 'mind', 'noise', 'opinion', 'optimism', 'prosper', 'pulse', 'rally', 'rebound', 'recoil', 'reel', 'ricochet', 'rifle', 'roam', 'row', 'sale', 'screen', 'share', 'shot', 'shoulder', 'shudder', 'sink', 'skin', 'slouch', 'slump', 'stagger', 'stoop', 'storm', 'stray', 'submit', 'subside', 'symptom', 'temper', 'thought', 'throb', 'thunder', 'tongue', 'tooth', 'value', 'vein', 'voice', 'waver', 'whirl'])
+
+
+	print('Word whitelist contains {} words!'.format(len(whitelist)))
+	import math
+	for log_sppmi, sppmi in zip([0, math.log(5), math.log(10)], [0, 5, 10]):
+		for pmi_type in ['ppmi']:
+			for cds in [1., 0.75]:
+				for window_size in [1, 2, 5, 10]:#[3, 5, 10, 7]:
+					for weighting_fn in ['constant']:#['constant', 'aggressive', 'very_aggressive', 'harmonic', 'distance', 'inverse_harmonic', 'gaussian']:
+						for dim, reduction in zip([0], [None]):#zip([0, 25, 50, 100, 300], [None, 'svd', 'svd', 'svd', 'svd']):
+							print('CONFIG: pmi_type={}; window_size={}; cds={}; shift={}; context_weighting={}...'.format(pmi_type, window_size, cds, sppmi, weighting_fn))
+							#transformed_out_path = os.path.join(paths.get_dataset_path(), 'bnc', 'coling_wort', 'wort_model_ppmi_lemma-True_window-{}_cds-{}-sppmi_shift-{}_{}'.format(
+							#	window_size, cds, sppmi, weighting_fn
+							#))
+							transformed_out_path = os.path.join(output_path, 'wort_model_ppmi_lemma-True_window-{}_cds-{}-dim-{}_sppmi_shift-{}_sample-{}'.format(
+								window_size, cds, '{}-{}'.format(reduction, dim), sppmi, current_sample
+							))
+							if (not os.path.exists(transformed_out_path)):
+								#cache_path = os.path.join(paths.get_dataset_path(), 'bnc', 'wort_cache_coling')
 								if (not os.path.exists(cache_path)):
 									os.makedirs(cache_path)
 
@@ -1122,6 +1183,8 @@ def test_read_ukwac():
 
 
 if (__name__ == '__main__'):
+	args = parser.parse_args()
+
 	#test_token_and_vocab_count()
 	#vectorize_pizza_epic()
 	#test_pizza()
@@ -1163,7 +1226,9 @@ if (__name__ == '__main__'):
 	#vectorize_amazon_reviews()
 	#vectorize_ukwac()
 	#vectorize_wikipedia_epic()
-	vectorize_bnc()
+	#vectorize_bnc()
+	print('Running BNC samples...')
+	#vectorize_bnc_samples()
 	exit(0)
 
 
