@@ -387,7 +387,7 @@ def fetch_men_dataset(data_home='~/.wort_data', lemma=True):
 	form = 'lemma' if lemma else 'natural'
 
 	if (not os.path.exists(os.path.join(data_home, 'MEN'))):
-		url = 'http://clic.cimec.unitn.it/~elia.bruni/resources/MEN.zip'
+		url = 'https://staff.fnwi.uva.nl/e.bruni/resources/MEN.zip'
 
 		with urllib.request.urlopen(url) as men:
 			meta = men.info()
