@@ -489,7 +489,7 @@ def test_token_and_vocab_count():
 def vectorize_bnc():
 	#p = os.path.join(paths.get_dataset_path(), 'bnc', 'corpus', 'bnc_lc_lemma.txt')
 	#p = os.path.join('/data/thk22/_datasets', 'bnc', 'corpus', 'bnc_lc_lemma.txt')
-	p = '/infinity/_datasets/bnc/corpus/bnc_lc_empty_removed.txt'
+	p = '/mnt/data3/thk22/_datasets/bnc/corpus/bnc_lc_lemma.txt'
 	bnc_reader = TextStreamReader(p)
 
 	#whitelist = get_miller_charles_30_words() | get_rubinstein_goodenough_65_words() | get_ws353_words() | get_mturk_words() | get_men_words() | get_rare_words() | get_simlex_999_words() | get_msr_syntactic_analogies_words() | get_google_analogies_words()
@@ -512,19 +512,19 @@ def vectorize_bnc():
 	for log_sppmi, sppmi in zip([0, math.log(5), math.log(10)], [0, 5, 10]):
 		for pmi_type in ['ppmi']:
 			for cds in [1., 0.75]:
-				for window_size in [1, 2, 5]:#[3, 5, 10, 7]:
+				for window_size in [1, 2, 5, 10]:#[3, 5, 10, 7]:
 					for weighting_fn in ['constant']:#['constant', 'aggressive', 'very_aggressive', 'harmonic', 'distance', 'inverse_harmonic', 'gaussian']:
-						for dim, reduction in zip([0, 25, 50, 100, 300], [None, 'svd', 'svd', 'svd', 'svd']):
+						for dim, reduction in zip([0], [None]):#zip([0, 25, 50, 100, 300], [None, 'svd', 'svd', 'svd', 'svd']):
 							print('CONFIG: pmi_type={}; window_size={}; cds={}; shift={}; context_weighting={}...'.format(pmi_type, window_size, cds, sppmi, weighting_fn))
 							#transformed_out_path = os.path.join(paths.get_dataset_path(), 'bnc', 'coling_wort', 'wort_model_ppmi_lemma-True_window-{}_cds-{}-sppmi_shift-{}_{}'.format(
 							#	window_size, cds, sppmi, weighting_fn
 							#))
-							transformed_out_path = os.path.join('/infinity/_datasets/bnc/', 'wort_vectors', 'wort_model_ppmi_lemma-True_window-{}_cds-{}-dim-{}_sppmi_shift-{}'.format(
+							transformed_out_path = os.path.join('/mnt/data3/thk22/_datasets/bnc/', 'wort_vectors', 'wort_model_ppmi_lemma-True_window-{}_cds-{}-dim-{}_sppmi_shift-{}'.format(
 								window_size, cds, '{}-{}'.format(reduction, dim), sppmi
 							))
 							if (not os.path.exists(transformed_out_path)):
 								#cache_path = os.path.join(paths.get_dataset_path(), 'bnc', 'wort_cache_coling')
-								cache_path = os.path.join('/infinity/_datasets/bnc/', 'wort_cache')
+								cache_path = os.path.join('/mnt/data3/thk22/_datasets/bnc/corpus', 'wort_cache')
 								if (not os.path.exists(cache_path)):
 									os.makedirs(cache_path)
 
@@ -1159,12 +1159,12 @@ if (__name__ == '__main__'):
 
 
 	#'''
-	vectorize_wikipedia()
+	#vectorize_wikipedia()
 	#vectorize_amazon_reviews()
 	#vectorize_ukwac()
 	#vectorize_wikipedia_epic()
+	vectorize_bnc()
 	exit(0)
-	#vectorize_bnc()
 
 
 	print('Running evaluations...')

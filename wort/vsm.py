@@ -30,7 +30,7 @@ from wort.core.utils import determine_chunk_size
 	# Hellinger PCA (do we need that?)
 	# NMF as an alternative to SVD (sklearns NMF is _very_ slow for dimensions > 100!!)
 	# Support min_df and max_df
-	# Optimise the shizzle-whizzle
+	# Optimise the shizzle-whizzle (map-reduce vs cython -- cython co-occurrence matrix: https://github.com/maciejkula/glove-python/blob/master/glove/corpus_cython.pyx#L217)
 	# Memmap option?
 	# Improve numerical precision
 	# Support other thresholds
