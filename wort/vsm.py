@@ -509,6 +509,9 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.nn = NearestNeighbors(algorithm=algorithm, metric=nn_metric, n_neighbors=num_neighbours+1).fit(self.T_)
 
 	def neighbours(self, w, return_distance=False):
+		if (w not in self.inverted_index_): # Lexeme not in model
+			return [] if not return_distance else (None, [])
+
 		D, I = self.nn.kneighbors(self[w], return_distance=True)
 
 		if (D[0, 0] <= self.nn_eps): # Make sure first neighbour isn't query item
