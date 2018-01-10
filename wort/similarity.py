@@ -1,3 +1,5 @@
+import math
+
 from scipy import sparse
 from scipy.spatial import distance
 from scipy.stats import entropy
@@ -46,7 +48,7 @@ def lin(x, y):
 	return (enum / denom)
 
 
-def jenson_shannon(x, y, square_root=False):
+def jensen_shannon(x, y, square_root=False):
 	x, y = _check_xy(x, y)
 
 	m = 0.5 * (x + y)
@@ -55,6 +57,54 @@ def jenson_shannon(x, y, square_root=False):
 	y_m = entropy(y, m, base=2)
 
 	sim = 1 - (0.5 * (x_m + y_m))
-	
+
 	return np.sqrt(sim) if square_root else sim
 
+
+def weeds_precision(x, y):
+	x, y = _check_xy(x, y)
+
+	idx = np.intersect1d(np.where(x > 0), np.where(y > 0))
+
+	enum = x[idx].sum()
+	denom = x.sum()
+
+	return (enum / denom)
+
+def weeds_recall(x, y):
+	x, y = _check_xy(x, y)
+
+	idx = np.intersect1d(np.where(x > 0), np.where(y > 0))
+
+	enum = y[idx].sum()
+	denom = y.sum()
+
+	return (enum / denom)
+
+
+def weeds_f1(x, y):
+	x, y = _check_xy(x, y)
+
+	prec = weeds_precision(x, y)
+	rec = weeds_recall(x, y)
+
+	f1 = 2 * ((rec * prec) / (rec + prec))
+
+	return f1
+
+
+def binc(x, y):
+	x, y = _check_xy(x, y)
+
+	lin_sim = lin(x, y)
+	weeds_prec = weeds_precision(x, y)
+
+	return math.sqrt(lin_sim * weeds_prec)
+
+
+def alpha_skew(x, y, alpha=0.99):
+	x, y = _check_xy(x, y)
+
+	y = (alpha * y) + ((1 - alpha) * x)
+
+	return 1 - entropy(x, y, base=2)
