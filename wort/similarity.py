@@ -108,3 +108,12 @@ def alpha_skew(x, y, alpha=0.99):
 	y = (alpha * y) + ((1 - alpha) * x)
 
 	return 1 - entropy(x, y, base=2)
+
+
+def weeds_cosine(x, y):
+	x, y = _check_xy(x, y)
+
+	cos = cosine(x, y)
+	weeds_prec = weeds_precision(x, y)
+
+	return math.sqrt(cos * weeds_prec)
