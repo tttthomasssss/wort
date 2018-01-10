@@ -117,3 +117,17 @@ def weeds_cosine(x, y):
 	weeds_prec = weeds_precision(x, y)
 
 	return math.sqrt(cos * weeds_prec)
+
+
+def clarke_inclusion(x, y):
+	x, y = _check_xy(x, y)
+
+	return np.minimum(x, y).sum() / x.sum()
+
+
+def inverse_clarke_inclusion(x, y):
+	x, y = _check_xy(x, y)
+
+	cde = clarke_inclusion(x, y)
+
+	return math.sqrt(cde * (1 - cde))
