@@ -131,3 +131,11 @@ def inverse_clarke_inclusion(x, y):
 	cde = clarke_inclusion(x, y)
 
 	return math.sqrt(cde * (1 - cde))
+
+
+def slqs(x, y):
+	# BE CAREFUL, x and y ARE NOT THE WORD REPRESENTATIONS BUT SHOULD BE THE MEDIAN ENTROPIES OF THE `N`
+	# LARGEST CONTEXTS OF x AND y.
+	x, y = _check_xy(x, y)
+
+	return 1 - (x / y)

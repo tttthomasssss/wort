@@ -10,6 +10,7 @@ from scipy import sparse
 from scipy.sparse import sputils
 from sklearn.base import BaseEstimator
 from sklearn.feature_extraction.text import VectorizerMixin
+from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.neighbors import NearestNeighbors
 from tqdm import *
 import numpy as np
@@ -23,6 +24,7 @@ from wort.core import vector_composition
 from wort.core.config_registry import ConfigRegistry
 from wort.core.io_handler import IOHandler
 from wort.core.utils import determine_chunk_size
+from wort import similarity
 
 # TODO: SVD based on http://www.aclweb.org/anthology/Q/Q15/Q15-1016.pdf, esp. chapter 7, practical recommendations
 	# Subsampling
@@ -133,8 +135,9 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.p_w_ = None
 		self.vocab_count_ = 0
 		self.token_count_ = 0
-		self.M_ = None
-		self.T_ = None
+		self.M_ = None # Raw frequency matrix
+		self.T_ = None # Transformed matrix
+		self.S_ = None # Similarity matrix (based on `T_`)
 		self.density_ = 0.
 
 		self.config_registry_ = ConfigRegistry(path=cache_path, min_frequency=self.min_frequency, lowercase=self.lowercase,
@@ -505,7 +508,42 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		return self
 
+	def init_similarities(self, sim_metric='cosine', **kwargs):
+		if (sim_metric == 'slqs'):
+			Aux = feature_transformation.probability_ratio_transformation(M=self.M_, p_w=self.p_w_, p_c=self.p_w_)
+
+			# Calculate entropy
+			Aux.data = -Aux.data * np.log2(Aux.data) # Elementwise entropy on the data array (the non-zero entries)
+			h = np.asarray(Aux.sum(axis=1)).reshape(-1) # Entropy for _all_ contexts
+
+			# Find `n` most informative contexts in `T_`
+			n = kwargs.pop('slqs_n', 50)
+			idx = np.argpartition(-self.T_, self.T_.shape[1]-n, axis=1)[:, :self.T_.shape[1]-n]
+
+			# Median entropy (`h`) of the `n` most informative contexts (`idx`)
+			Med = np.median(h[idx], axis=1)
+
+			self.S_ = pairwise_distances(X=Med.reshape(-1, 1), metric=similarity.slqs)
+		else:
+			if (sim_metric in ['lin', 'jensen_shannon', 'weeds_precision', 'weeds_recall', 'weeds_f1',
+						  'weeds_cosine', 'binc', 'alpha_skew', 'clarke_inclusion',
+						  'inverse_clarke_inclusion']):
+				self.S_ = pairwise_distances(X=self.T_, metric=getattr(similarity, sim_metric))
+			else:
+				self.S_ = pairwise_distances(X=self.T_, metric=sim_metric)
+
 	def init_neighbours(self, algorithm='brute', nn_metric='cosine', num_neighbours=10):
+		if (nn_metric == 'precomputed'): # If precomputed, fit `NearestNeighbors` using the similarity matrix
+			self.nn = NearestNeighbors(algorithm=algorithm, metric=nn_metric, n_neighbors=num_neighbours+1).fit(
+				self.S_)
+			return
+
+		# Replace string by callable if its non-standard sklearn metric; i.e. it is `wort` specific
+		if (nn_metric in ['lin', 'jensen_shannon', 'weeds_precision', 'weeds_recall', 'weeds_f1',
+						  'weeds_cosine', 'binc', 'alpha_skew', 'clarke_inclusion',
+						  'inverse_clarke_inclusion']):
+			nn_metric = getattr(similarity, nn_metric)
+
 		self.nn = NearestNeighbors(algorithm=algorithm, metric=nn_metric, n_neighbors=num_neighbours+1).fit(self.T_)
 
 	def neighbours(self, w, return_distance=False):
@@ -657,10 +695,11 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		model.inverted_index_ = model.io_handler_.load_inverted_index('')
 		model.p_w_ = model.io_handler_.load_p_w('')
 		model.M_ = model.io_handler_.load_cooccurrence_matrix('')
+		model.S_ = model.io_handler_.load_similarity_matrix('')
 
 		return model
 
-	def save_to_file(self, path, store_cooccurrence_matrix=False):
+	def save_to_file(self, path, store_cooccurrence_matrix=False, store_similarity_matrix=False):
 		# If as_dict=True, call to_dict on self.T_ prior to serialisation
 		# Store a few type infos in a metadata file, e.g. the type of self.T_
 		# Get all params as well
@@ -670,3 +709,5 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.io_handler_.save_p_w(self.p_w_, sub_folder='', base_path=path)
 		if (store_cooccurrence_matrix):
 			self.io_handler_.save_cooccurrence_matrix(self.M_, sub_folder='', base_path=path)
+		if (store_similarity_matrix):
+			self.io_handler_.save_similarity_matrix(self.S_, sub_folder='', base_path=path)
