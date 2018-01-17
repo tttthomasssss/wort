@@ -4,6 +4,14 @@ import numpy as np
 
 
 def probability_ratio_transformation(M, p_w, p_c):
+	'''
+	TODO: Compare speed of this vs. the current implementation!
+
+	c_given_w = np.asarray(1 / M.sum(axis=1)).reshape(-1, 1)
+
+	return M.multiply(c_given_w).tocsr()
+	'''
+
 	# Need the conditional probability P(c | w) and the marginal P(c), but need to maintain the sparsity structure of the matrix
 	# Doing it this way, keeps the matrices sparse: http://stackoverflow.com/questions/3247775/how-to-elementwise-multiply-a-scipy-sparse-matrix-by-a-broadcasted-dense-1d-arra
 	P_w = sparse.lil_matrix(M.shape, dtype=np.float64)
