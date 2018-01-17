@@ -45,7 +45,6 @@ def lin(x, y):
 	enum = np.sum(x[idx] + y[idx])
 	denom = x.sum() + y.sum()
 
-	print('ENUM={}; DENOM={}; SIM={}'.format(enum, denom, (enum/denom)))
 	return (enum / denom)
 
 
