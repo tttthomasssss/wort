@@ -40,7 +40,7 @@ def lin(x, y):
 	'''
 	x, y = _check_xy(x, y)
 
-	idx = np.intersect1d(np.where(x>0), np.where(y>0))
+	idx = np.intersect1d(np.where(x!=0), np.where(y!=0))
 
 	enum = np.sum(x[idx] + y[idx])
 	denom = x.sum() + y.sum()
@@ -65,7 +65,7 @@ def jensen_shannon(x, y, square_root=False):
 def weeds_precision(x, y):
 	x, y = _check_xy(x, y)
 
-	idx = np.intersect1d(np.where(x > 0), np.where(y > 0))
+	idx = np.intersect1d(np.where(x!=0), np.where(y!=0))
 
 	enum = x[idx].sum()
 	denom = x.sum()
@@ -75,7 +75,7 @@ def weeds_precision(x, y):
 def weeds_recall(x, y):
 	x, y = _check_xy(x, y)
 
-	idx = np.intersect1d(np.where(x > 0), np.where(y > 0))
+	idx = np.intersect1d(np.where(x!=0), np.where(y!=0))
 
 	enum = y[idx].sum()
 	denom = y.sum()
