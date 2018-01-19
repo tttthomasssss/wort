@@ -152,7 +152,7 @@ def apinc(x, y, **kwargs):
 
 	precision_at_rank = 0
 	for i in range(n):
-		pr = np.intersect1d(x_ranked[:i], y_ranked[:i]).shape[0] / i
+		pr = np.intersect1d(x_ranked[:i+1], y_ranked[:i+1]).shape[0] / (i + 1)
 
 		if (x_ranked[i] in y_ranked[:n]):
 			rel_f = 1 - (np.where(y_ranked == x_ranked[i])[0][0] / (np.count_nonzero(y) + 1))
