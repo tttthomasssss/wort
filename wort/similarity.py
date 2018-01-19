@@ -167,7 +167,7 @@ def apinc(x, y, **kwargs):
 def balapinc(x, y, **kwargs):
 	x, y = _check_xy(x, y)
 
-	apinc_score = apinc(x, y, kwargs)
+	apinc_score = apinc(x, y, **kwargs)
 	lin_score = lin(x, y)
 
 	return math.sqrt(lin_score * apinc_score)
