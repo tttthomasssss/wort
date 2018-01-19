@@ -18,13 +18,13 @@ def _check_xy(x, y):
 	return x_prime, y_prime
 
 
-def cosine(x, y):
+def cosine(x, y, **_):
 	x, y = _check_xy(x, y)
 
 	return 1 - distance.cosine(x, y)
 
 
-def lin(x, y):
+def lin(x, y, **_):
 	'''
 	Calculate the Lin distance between two numpy vectors.
 
@@ -48,8 +48,9 @@ def lin(x, y):
 	return (enum / denom)
 
 
-def jensen_shannon(x, y, square_root=False):
+def jensen_shannon(x, y, **kwargs):
 	x, y = _check_xy(x, y)
+	square_root = kwargs.pop('square_root', False)
 
 	m = 0.5 * (x + y)
 
@@ -61,7 +62,7 @@ def jensen_shannon(x, y, square_root=False):
 	return np.sqrt(sim) if square_root else sim
 
 
-def weeds_precision(x, y):
+def weeds_precision(x, y, **_):
 	x, y = _check_xy(x, y)
 
 	idx = np.intersect1d(np.where(x!=0), np.where(y!=0))
@@ -71,7 +72,7 @@ def weeds_precision(x, y):
 
 	return (enum / denom)
 
-def weeds_recall(x, y):
+def weeds_recall(x, y, **_):
 	x, y = _check_xy(x, y)
 
 	idx = np.intersect1d(np.where(x!=0), np.where(y!=0))
@@ -82,7 +83,7 @@ def weeds_recall(x, y):
 	return (enum / denom)
 
 
-def weeds_f1(x, y):
+def weeds_f1(x, y, **_):
 	x, y = _check_xy(x, y)
 
 	prec = weeds_precision(x, y)
@@ -93,7 +94,7 @@ def weeds_f1(x, y):
 	return f1
 
 
-def binc(x, y):
+def binc(x, y, **_):
 	x, y = _check_xy(x, y)
 
 	lin_sim = lin(x, y)
@@ -102,15 +103,16 @@ def binc(x, y):
 	return math.sqrt(lin_sim * weeds_prec)
 
 
-def alpha_skew(x, y, alpha=0.99):
+def alpha_skew(x, y, **kwargs):
 	x, y = _check_xy(x, y)
+	alpha = kwargs.pop('alpha', 0.99)
 
 	y = (alpha * y) + ((1 - alpha) * x)
 
 	return 1 - entropy(x, y, base=2)
 
 
-def weeds_cosine(x, y):
+def weeds_cosine(x, y, **_):
 	x, y = _check_xy(x, y)
 
 	cos = cosine(x, y)
@@ -119,13 +121,13 @@ def weeds_cosine(x, y):
 	return math.sqrt(cos * weeds_prec)
 
 
-def clarke_inclusion(x, y):
+def clarke_inclusion(x, y, **_):
 	x, y = _check_xy(x, y)
 
 	return np.minimum(x, y).sum() / x.sum()
 
 
-def inverse_clarke_inclusion(x, y):
+def inverse_clarke_inclusion(x, y, **_):
 	x, y = _check_xy(x, y)
 
 	cde = clarke_inclusion(x, y)
@@ -133,9 +135,39 @@ def inverse_clarke_inclusion(x, y):
 	return math.sqrt(cde * (1 - cde))
 
 
-def slqs(x, y):
+def slqs(x, y, **kwargs):
 	# BE CAREFUL, x and y ARE NOT THE WORD REPRESENTATIONS BUT SHOULD BE THE MEDIAN ENTROPIES OF THE `N`
 	# LARGEST CONTEXTS OF x AND y.
 	x, y = _check_xy(x, y)
 
 	return 1 - (x / y)
+
+
+def apinc(x, y, **kwargs):
+	x, y = _check_xy(x, y)
+
+	n = min(kwargs.pop('balapinc_n', 500), np.count_nonzero(x))
+	y_ranked = np.argsort(y if y.max() <= 0 else -y)
+	x_ranked = np.argsort(x if x.max() <= 0 else -x)
+
+	precision_at_rank = 0
+	for i in range(n):
+		pr = np.intersect1d(x_ranked[:i], y_ranked[:i]).shape[0] / i
+
+		if (x_ranked[i] in y_ranked[:n]):
+			rel_f = 1 - (np.where(y_ranked == x_ranked[i])[0][0] / (np.count_nonzero(y) + 1))
+		else:
+			rel_f = 0
+
+		precision_at_rank += (pr * rel_f)
+
+	return precision_at_rank / n
+
+
+def balapinc(x, y, **kwargs):
+	x, y = _check_xy(x, y)
+
+	apinc_score = apinc(x, y, kwargs)
+	lin_score = lin(x, y)
+
+	return math.sqrt(lin_score * apinc_score)
