@@ -25,10 +25,10 @@ def get_bless_words(data_home='~/.wort_data'):
 			if (relatum != ''):
 				words.add(relatum)
 
-		with open(os.path.join(data_home, 'bless-gems', 'bless_worts.txt', 'w')) as word_file:
+		with open(os.path.join(data_home, 'bless-gems', 'bless_worts.txt'), 'w') as word_file:
 			word_file.write('{}'.format(','.join(words)))
 	else:
-		with open(os.path.join(data_home, 'bless-gems', 'bless_worts.txt', 'r')) as word_file:
+		with open(os.path.join(data_home, 'bless-gems', 'bless_worts.txt'), 'r') as word_file:
 			words = set(word_file.read().split(','))
 
 	return words
