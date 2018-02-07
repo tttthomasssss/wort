@@ -7,12 +7,13 @@ csv.field_size_limit(sys.maxsize)
 
 
 class TextStreamReader(object):
-	def __init__(self, path, lowercase=True):
+	def __init__(self, path, lowercase=True, encoding='utf-8'):
 		self.path_ = path
 		self.lowercase_ = lowercase
+		self.encoding_ = encoding
 
 	def __iter__(self):
-		with open(self.path_, 'r') as text_file:
+		with open(self.path_, 'r', encoding=self.encoding_) as text_file:
 			for line in text_file:
 				processed_line = line.strip() if not self.lowercase_ else line.strip().lower()
 
@@ -20,7 +21,8 @@ class TextStreamReader(object):
 
 
 class CoNLLStreamReader(object):
-	def __init__(self, path, data_index, order='seq', lowercase=True, sep='\t', num_columns=7, head_idx=-2, token_idx=0): # order supports 'dep' (dependency order) or 'seq' (standard sequential order)
+	def __init__(self, path, data_index, order='seq', lowercase=True, sep='\t', num_columns=7, head_idx=-2, token_idx=0,
+				 encoding='utf-8'): # order supports 'dep' (dependency order) or 'seq' (standard sequential order)
 		self.path_ = path
 		self.data_index_ = data_index
 		self.order_ = order
@@ -29,9 +31,10 @@ class CoNLLStreamReader(object):
 		self.num_columns_ = num_columns
 		self.head_idx_ = head_idx
 		self.token_idx_ = token_idx
+		self.encoding_ = encoding
 
 	def __iter__(self):
-		with open(self.path_, 'r') as conll_file:
+		with open(self.path_, 'r', encoding=self.encoding_) as conll_file:
 			curr_line = []
 			root_idx = -1
 			for line in conll_file:
@@ -69,12 +72,13 @@ class CoNLLStreamReader(object):
 
 
 class GzipStreamReader(object):
-	def __init__(self, path, lowercase=True):
+	def __init__(self, path, lowercase=True, encoding='utf-8'):
 		self.path_ = path
 		self.lowercase_ = lowercase
+		self.encoding_ = encoding
 
 	def __iter__(self):
-		with gzip.open(self.path_, 'rt', encoding='utf-8', errors='replace') as in_file:
+		with gzip.open(self.path_, 'rt', encoding=self.encoding_, errors='replace') as in_file:
 			for line in in_file:
 				processed_line = line if not self.lowercase_ else line.lower()
 
@@ -82,14 +86,15 @@ class GzipStreamReader(object):
 
 
 class CSVStreamReader(object):
-	def __init__(self, path, lowercase=True, delimiter=',', data_index=0):
+	def __init__(self, path, lowercase=True, delimiter=',', data_index=0, encoding='utf-8'):
 		self.path_ = path
 		self.delimiter = delimiter
 		self.data_index = data_index
 		self.lowercase_ = lowercase
+		self.encoding_ = encoding
 
 	def __iter__(self):
-		with open(self.path_, 'r') as csv_file:
+		with open(self.path_, 'r', encoding=self.encoding_) as csv_file:
 			csv_reader = csv.reader(csv_file, delimiter=self.delimiter)
 
 			for line in csv_reader:
