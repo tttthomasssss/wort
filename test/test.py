@@ -599,7 +599,8 @@ def vectorize_bnc_samples(input_file, output_path, cache_path, current_sample):
 								vec = VSMVectorizer(window_size=window_size, min_frequency=30, cds=cds, weighting=pmi_type,
 													word_white_list=whitelist, sppmi_shift=log_sppmi, cache_path=cache_path,
 													context_window_weighting=weighting_fn, cache_intermediary_results=True,
-													dim_reduction=reduction, dim_reduction_kwargs={'dimensionality': dim})
+													dim_reduction=reduction, dim_reduction_kwargs={'dimensionality': dim},
+													decode_error='replace')
 
 								vec.fit(bnc_reader)
 
