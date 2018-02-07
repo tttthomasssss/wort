@@ -38,6 +38,7 @@ from wort.datasets import get_msr_syntactic_analogies_words
 from wort.datasets import get_google_analogies_words
 from wort.datasets import get_rubinstein_goodenough_65_words
 from wort.datasets import get_miller_charles_30_words
+from wort.datasets import get_bless_words
 from wort.evaluation import intrinsic_word_analogy_evaluation
 
 parser = ArgumentParser()
@@ -560,6 +561,7 @@ def vectorize_bnc():
 def vectorize_bnc_samples(input_file, output_path, cache_path, current_sample):
 	bnc_reader = TextStreamReader(input_file)
 
+	'''
 	whitelist = get_ws353_words() | \
 				get_men_words() | \
 				get_simlex_999_words() | \
@@ -567,11 +569,12 @@ def vectorize_bnc_samples(input_file, output_path, cache_path, current_sample):
 				get_ws353_words(similarity_type='relatedness') | \
 				set(['achieve', 'acquire', 'action', 'activity', 'address', 'age', 'agency', 'air', 'allowance', 'american', 'amount', 'area', 'arm', 'ask', 'assembly', 'assistant', 'attend', 'attention', 'authority', 'basic', 'battle', 'bedroom', 'begin', 'benefit', 'better', 'black', 'board', 'body', 'book', 'building', 'bus', 'business', 'buy', 'call', 'capital', 'care', 'career', 'case', 'cause', 'central', 'centre', 'certain', 'charge', 'child', 'circumstance', 'city', 'close', 'club', 'cold', 'collect', 'college', 'committee', 'community', 'company', 'computer', 'condition', 'conference', 'consider', 'contract', 'control', 'cost', 'council', 'country', 'county', 'course', 'credit', 'cross', 'cut', 'dark', 'datum', 'day', 'defence', 'demand', 'department', 'develop', 'development', 'different', 'difficulty', 'director', 'discuss', 'door', 'drink', 'earlier', 'early', 'economic', 'economy', 'education', 'effect', 'effective', 'efficient', 'elderly', 'emphasise', 'encourage', 'end', 'environment', 'european', 'evening', 'event', 'evidence', 'example', 'exercise', 'express', 'eye', 'face', 'family', 'federal', 'fight', 'follow', 'football', 'form', 'further', 'future', 'game', 'general', 'good', 'government', 'great', 'group', 'hair', 'hall', 'hand', 'head', 'health', 'hear', 'help', 'high', 'hold', 'home', 'hot', 'house', 'housing', 'importance', 'important', 'increase', 'industrial', 'industry', 'influence', 'information', 'injury', 'intelligence', 'interest', 'intervention', 'issue', 'job', 'join', 'kind', 'kitchen', 'knowledge', 'labour', 'lady', 'land', 'language', 'large', 'law', 'leader', 'league', 'leave', 'left', 'letter', 'level', 'life', 'lift', 'like', 'line', 'little', 'local', 'long', 'loss', 'low', 'major', 'majority', 'man', 'management', 'manager', 'market', 'marketing', 'match', 'matter', 'meet', 'meeting', 'member', 'message', 'method', 'minister', 'modern', 'name', 'national', 'need', 'new', 'news', 'northern', 'number', 'offer', 'office', 'officer', 'official', 'oil', 'old', 'older', 'opposition', 'part', 'particular', 'party', 'pass', 'pay', 'people', 'period', 'person', 'personnel', 'phone', 'place', 'plan', 'planning', 'play', 'point', 'policy', 'political', 'pose', 'position', 'pour', 'power', 'practical', 'present', 'previous', 'price', 'principle', 'problem', 'produce', 'programme', 'project', 'property', 'provide', 'public', 'quantity', 'question', 'railway', 'raise', 'rate', 'reach', 'read', 'receive', 'reduce', 'region', 'remember', 'require', 'requirement', 'research', 'result', 'right', 'road', 'role', 'room', 'rule', 'rural', 'satisfy', 'secretary', 'security', 'sell', 'send', 'service', 'set', 'share', 'short', 'shut', 'significant', 'similar', 'situation', 'skill', 'small', 'social', 'special', 'stage', 'start', 'state', 'station', 'stress', 'stretch', 'structure', 'study', 'suffer', 'support', 'system', 'tax', 'tea', 'technique', 'technology', 'telephone', 'television', 'test', 'time', 'town', 'training', 'treatment', 'tv', 'unit', 'use', 'various', 'vast', 'view', 'wage', 'war', 'water', 'wave', 'way', 'weather', 'whole', 'win', 'window', 'woman', 'word', 'work', 'worker', 'world', 'write']) | \
 				set(['argument', 'ball', 'beam', 'body', 'boom', 'bow', 'burn', 'burst', 'butler', 'chatter', 'child', 'cigar', 'cigarette', 'click', 'company', 'concentration', 'conflict', 'courage', 'decline', 'determination', 'digress', 'discussion', 'erupt', 'export', 'eye', 'face', 'falter', 'fear', 'fire', 'flame', 'flare', 'flick', 'flicker', 'flinch', 'flood', 'fluctuate', 'fountain', 'gabble', 'girl', 'glow', 'government', 'gun', 'hand', 'head', 'heart', 'hope', 'industry', 'interest', 'island', 'kick', 'lessen', 'machine', 'man', 'mind', 'noise', 'opinion', 'optimism', 'prosper', 'pulse', 'rally', 'rebound', 'recoil', 'reel', 'ricochet', 'rifle', 'roam', 'row', 'sale', 'screen', 'share', 'shot', 'shoulder', 'shudder', 'sink', 'skin', 'slouch', 'slump', 'stagger', 'stoop', 'storm', 'stray', 'submit', 'subside', 'symptom', 'temper', 'thought', 'throb', 'thunder', 'tongue', 'tooth', 'value', 'vein', 'voice', 'waver', 'whirl'])
-
+	'''
+	whitelist = get_bless_words()
 
 	print('Word whitelist contains {} words!'.format(len(whitelist)))
 	import math
-	for log_sppmi, sppmi in zip([0, math.log(5), math.log(10)], [0, 5, 10]):
+	for log_sppmi, sppmi in zip([math.log(1), math.log(5), math.log(10), math.log(40), math.log(100)], [0, 5, 10, 40, 100]):#zip([0, math.log(5), math.log(10)], [0, 5, 10]):
 		for pmi_type in ['ppmi']:
 			for cds in [1., 0.75]:
 				for window_size in [1, 2, 5, 10]:#[3, 5, 10, 7]:

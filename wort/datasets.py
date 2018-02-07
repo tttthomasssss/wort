@@ -8,6 +8,31 @@ import urllib
 
 # TODO: Lots of the dataset loaders work the same way --> encapsulate into single function (e.g. WS353 full, MEN, RW, ...)
 # TODO: Ditto with the `words` loaders
+# TODO: Load target URLs from a config file to avoid hardcoding them here (e.g. to better handle broken links)
+
+
+def get_bless_words(data_home='~/.wort_data'):
+	data_home = os.path.expanduser(data_home) if '~' in data_home else data_home
+
+	if (not os.path.exists(os.path.join(data_home, 'bless-gems', 'bless_worts.txt'))):
+		ds = fetch_bless_dataset(data_home=data_home, use_pos_tags=False)
+
+		words = set()
+		for concept, _, _, relatum in ds:
+			if (concept != ''):
+				words.add(concept)
+
+			if (relatum != ''):
+				words.add(relatum)
+
+		with open(os.path.join(data_home, 'bless-gems', 'bless_worts.txt', 'w')) as word_file:
+			word_file.write('{}'.format(','.join(words)))
+	else:
+		with open(os.path.join(data_home, 'bless-gems', 'bless_worts.txt', 'r')) as word_file:
+			words = set(word_file.read().split(','))
+
+	return words
+
 
 def get_msr_syntactic_analogies_words(data_home='~/.wort_data'):
 	data_home = os.path.expanduser(data_home) if '~' in data_home else data_home
@@ -520,6 +545,38 @@ def fetch_msr_syntactic_analogies_dataset(data_home='~/.wort_data'):
 	return ds
 
 
+def fetch_bless_dataset(data_home='~/.wort_data', **kwargs):
+	data_home = os.path.expanduser(data_home) if '~' in data_home else data_home
+
+	if (not os.path.exists(data_home)):
+		os.makedirs(data_home)
+
+	if (not os.path.exists(os.path.join(data_home, 'bless-gems'))):
+
+		url = 'https://sites.google.com/site/geometricalmodels/shared-evaluation/bless-gems.zip'
+
+		with urllib.request.urlopen(url) as bless:
+			meta = bless.info()
+			print('Downloading data from {} ({} kb)'.format(url, round(int(meta['Content-Length']) / 1000)))
+
+			zip = ZipFile(BytesIO(bless.read()))
+			zip.extractall(path=data_home)
+			zip.close()
+
+	ds = []
+	use_pos_tags = kwargs.pop('use_pos_tags', True)
+	with open(os.path.join(data_home, 'bless-gems', 'BLESS.txt')) as in_file:
+		for line in in_file:
+			parts = line.strip().split('\t')
+
+			if (use_pos_tags):
+				ds.append([parts[0].split('-')[0], parts[1], parts[2], parts[3].split('-')[0]])
+			else:
+				ds.append(parts)
+
+	return ds
+
+
 DATASET_KEYS = [
 	#'msr_syntactic_analogies', TODO
 	#'google_analogies', TODO
@@ -531,7 +588,8 @@ DATASET_KEYS = [
 	'rw',
 	'men',
 	'mturk',
-	'simlex999'
+	'simlex999',
+	'bless'
 ]
 
 DATASET_FETCH_MAP = {
@@ -543,5 +601,6 @@ DATASET_FETCH_MAP = {
 	'rw': fetch_rare_words_dataset,
 	'men': fetch_men_dataset,
 	'mturk': fetch_mturk_dataset,
-	'simlex999': fetch_simlex_999_dataset
+	'simlex999': fetch_simlex_999_dataset,
+	'bless': fetch_bless_dataset
 }
