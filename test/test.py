@@ -584,8 +584,8 @@ def vectorize_bnc_samples(input_file, output_path, cache_path, current_sample):
 							#transformed_out_path = os.path.join(paths.get_dataset_path(), 'bnc', 'coling_wort', 'wort_model_ppmi_lemma-True_window-{}_cds-{}-sppmi_shift-{}_{}'.format(
 							#	window_size, cds, sppmi, weighting_fn
 							#))
-							transformed_out_path = os.path.join(output_path, 'wort_model_ppmi_lemma-True_window-{}_cds-{}-dim-{}_sppmi_shift-{}_sample-{}'.format(
-								window_size, cds, '{}-{}'.format(reduction, dim), sppmi, current_sample
+							transformed_out_path = os.path.join(output_path, 'wort_model_ppmi_lemma-True_window-{}_cds-{}-dim-{}_sppmi_shift-{}'.format(
+								window_size, cds, '{}-{}'.format(reduction, dim), sppmi
 							))
 							if (not os.path.exists(transformed_out_path)):
 								#cache_path = os.path.join(paths.get_dataset_path(), 'bnc', 'wort_cache_coling')
