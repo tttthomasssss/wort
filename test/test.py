@@ -11,7 +11,11 @@ from scipy.spatial import distance
 import joblib
 import numpy as np
 
-from common import paths
+try:
+	from common import paths
+except ImportError as ex:
+	print(ex)
+	print('Continuing anyway...')
 from scipy.spatial.distance import cosine
 from scipy.stats import spearmanr
 from wort.core import utils
