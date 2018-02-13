@@ -50,7 +50,7 @@ parser.add_argument('-ip', '--input-path', type=str, help='path to input file')
 parser.add_argument('-i', '--input-file', type=str, help='input file')
 parser.add_argument('-op', '--output-path', type=str, help='path to output file')
 parser.add_argument('-s', '--sample-size', type=int, help='sample size')
-parser.add_argument('-cs', '--current-sample', type=int, help='current sample')
+parser.add_argument('-cs', '--current-sample', type=int, help='current sample', default=-1)
 parser.add_argument('-cp', '--cache-path', type=str, help='path to cache')
 
 
@@ -578,7 +578,7 @@ def vectorize_bnc_samples(input_file, output_path, cache_path, current_sample):
 
 	print('Word whitelist contains {} words!'.format(len(whitelist)))
 	import math
-	for log_sppmi, sppmi in zip([math.log(1), math.log(5), math.log(10), math.log(40), math.log(100)], [0, 5, 10, 40, 100]):#zip([0, math.log(5), math.log(10)], [0, 5, 10]):
+	for log_sppmi, sppmi in zip([math.log(20)], [20]): #zip([math.log(1), math.log(5), math.log(10), math.log(40), math.log(100)], [0, 5, 10, 40, 100]):#zip([0, math.log(5), math.log(10)], [0, 5, 10]):
 		for pmi_type in ['ppmi']:
 			for cds in [1., 0.75]:
 				for window_size in [1, 2, 5, 10]:#[3, 5, 10, 7]:
