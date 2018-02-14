@@ -613,8 +613,8 @@ def vectorize_bnc_samples(input_file, output_path, cache_path, current_sample):
 									print('Doing the DisCo business...')
 								except OSError as ex:
 									print('FAILFAILFAIL: {}'.format(ex))
-						else:
-							print('{} already exists!'.format(transformed_out_path))
+							else:
+								print('{} already exists!'.format(transformed_out_path))
 
 
 def vectorize_amazon_reviews():
