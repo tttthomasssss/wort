@@ -415,9 +415,12 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		for i in range(0, self.T_.shape[0]):
 			x = self.T_.data[self.T_.indptr[i]:self.T_.indptr[i + 1]]
 
-			cols = np.hstack((cols, np.argpartition(-x, num_contexts)[:num_contexts]))
-			rows = np.hstack((rows, np.full((num_contexts,), i)))
-			data = np.hstack((data, x[np.argpartition(-x, num_contexts)[:num_contexts]]))
+			m = min(num_contexts, x.shape[0])
+			p = np.argpartition(-x, m-1)[:m]
+
+			cols = np.hstack((cols, p))
+			rows = np.hstack((rows, np.full((m,), i)))
+			data = np.hstack((data, x[p]))
 		logging.info('Selected top {} contexts!'.format(num_contexts))
 
 		if (self.context_selection_kwargs.get('in_place', False)):
