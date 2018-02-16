@@ -7,7 +7,7 @@ from sparsesvd import sparsesvd
 import numpy as np
 
 
-def svd_dim_reduction(X, **kwargs):
+def svd_dim_reduction(X, **kwargs): # TODO: Support discarding top m contexts (see Sahlgren & Lenci 2016, and my thesis)
 	dim = kwargs['dimensionality'] # Fail loudly if not provided
 	eig_weighting = kwargs.pop('eig_weighting', 1.)
 

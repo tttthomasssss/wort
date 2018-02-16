@@ -1,5 +1,6 @@
 __author__ = 'thomas'
 from argparse import ArgumentParser
+import csv
 import json
 import logging
 import math
@@ -52,7 +53,7 @@ parser.add_argument('-op', '--output-path', type=str, help='path to output file'
 parser.add_argument('-s', '--sample-size', type=int, help='sample size')
 parser.add_argument('-cs', '--current-sample', type=int, help='current sample', default=-1)
 parser.add_argument('-cp', '--cache-path', type=str, help='path to cache')
-
+parser.add_argument('-ef', '--experiment-file', type=str, help='path to experiment file')
 
 def test_hdf():
 	X = np.maximum(0, np.random.rand(5, 5) - 0.5)
@@ -1190,6 +1191,19 @@ def test_read_ukwac():
 		print('[{}]: {}'.format(idx, line))
 
 
+def perform_context_selection(input_path, output_path, num_contexts):
+	print('Processing {}...'.format(input_path))
+	wort = VSMVectorizer.load_from_file(input_path)
+	print('Wort Model loaded!')
+
+	print('Performing Context selection...')
+	wort.fit_context_selection(num_contexts=num_contexts)
+	print('Context selection done!')
+
+	print('Storing...')
+	wort.save_to_file(output_path, store_context_selection_matrix=True)
+	print('Done!')
+
 if (__name__ == '__main__'):
 	args = parser.parse_args()
 
@@ -1228,6 +1242,21 @@ if (__name__ == '__main__'):
 	#lemmatise_wackypedia()
 	#print('Lemmatisation Done!')
 
+	# Load experiment id file
+	if (args.experiment_file is not None):
+		with open(args.experiment_file, 'r') as csv_file:
+			csv_reader = csv.reader(csv_file)
+			experiments = []
+
+			for line in csv_reader:
+				experiments.append(line)
+
+		if (args.experiment_id > 0):
+			logging.info('Running experiment with id={}...'.format(args.experiment_id))
+			experiments = [experiments[args.experiment_id - 1]]
+		else:
+			logging.info('Running all {} experiments!'.format(len(experiments)))
+
 
 	#'''
 	#vectorize_wikipedia()
@@ -1235,11 +1264,17 @@ if (__name__ == '__main__'):
 	#vectorize_ukwac()
 	#vectorize_wikipedia_epic()
 	#vectorize_bnc()
-	print('Running BNC samples...')
-	vectorize_bnc_samples(input_file=os.path.join(args.input_path, args.input_file), output_path=args.output_path,
-						  cache_path=args.cache_path, current_sample=args.current_sample)
-	exit(0)
+	#print('Running BNC samples...')
+	#vectorize_bnc_samples(input_file=os.path.join(args.input_path, args.input_file), output_path=args.output_path,
+	#					  cache_path=args.cache_path, current_sample=args.current_sample)
+	#exit(0)
 
+	print('Running context selection...')
+	for in_sub_path, out_sub_path, num_contexts in experiments:
+		perform_context_selection(input_path=os.path.join(args.input_path, in_sub_path),
+								  output_path=os.path.join(args.output_path, out_sub_path),
+								  num_contexts=int(num_contexts))
+	exit(0)
 
 	print('Running evaluations...')
 	rg65_scores = test_rg65_evaluation('ukwac')

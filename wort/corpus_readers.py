@@ -20,7 +20,7 @@ class TextStreamReader(object):
 				yield processed_line
 
 
-class CoNLLStreamReader(object):
+class CoNLLStreamReader(object): # TODO: Support Turney's Domain and Function business
 	def __init__(self, path, data_index, order='seq', lowercase=True, sep='\t', num_columns=7, head_idx=-2, token_idx=0,
 				 encoding='utf-8'): # order supports 'dep' (dependency order) or 'seq' (standard sequential order)
 		self.path_ = path

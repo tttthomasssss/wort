@@ -131,6 +131,22 @@ class IOHandler(object):
 
 		utils.sparse_matrix_to_hdf(S, os.path.join(base_path, sub_folder), 'S.hdf')
 
+	def load_context_selection_matrix(self, sub_folder):
+		p = os.path.join(self.cache_path_, sub_folder, 'C.hdf')
+		if (not os.path.exists(p)):
+			logging.warning('No context selection matrix found at path={}!'.format(p))
+			return None
+		return utils.hdf_to_sparse_csx_matrix(os.path.join(self.cache_path_, sub_folder), 'C.hdf', sparse_format='csr')
+
+	def save_context_selection_matrix(self, C, sub_folder, base_path=None):
+		if (not os.path.exists(os.path.join(self.cache_path_, sub_folder))):
+			os.makedirs(os.path.join(self.cache_path_, sub_folder))
+
+		if (base_path is None):
+			base_path = self.cache_path_
+
+		utils.sparse_matrix_to_hdf(C, os.path.join(base_path, sub_folder), 'C.hdf')
+
 	def load_cooccurrence_matrix(self, sub_folder):
 		p = os.path.join(self.cache_path_, sub_folder, 'M.hdf')
 		if (not os.path.exists(p)):

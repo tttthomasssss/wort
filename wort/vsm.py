@@ -48,7 +48,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				 ngram_range=(1, 1), cds=1., dim_reduction=None, dim_reduction_kwargs={}, random_state=1105,
 				 context_window_weighting='constant', context_vector_integration=None, context_vector_integration_kwargs={},
 				 word_white_list=set(), subsampling_rate=None, cache_intermediary_results=False, cache_path='~/.wort_data/model_cache',
-				 log_level=logging.INFO, log_file=None, nn_eps=1.e-14):
+				 log_level=logging.INFO, log_file=None, nn_eps=1.e-14, context_selection=None, context_selection_kwargs={}):
 		"""
 		TODO: documentation...
 		:param window_size:
@@ -129,6 +129,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.cache_path = cache_path
 		self.nn = None
 		self.nn_eps = nn_eps
+		self.context_selection = context_selection
+		self.context_selection_kwargs = context_selection_kwargs
 
 		self.inverted_index_ = {}
 		self.index_ = {}
@@ -138,6 +140,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.M_ = None # Raw frequency matrix
 		self.T_ = None # Transformed matrix
 		self.S_ = None # Similarity matrix (based on `T_`)
+		self.C_ = None # Context Selection matrix
 		self.density_ = 0.
 
 		self.config_registry_ = ConfigRegistry(path=cache_path, min_frequency=self.min_frequency, lowercase=self.lowercase,
@@ -403,6 +406,25 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		return dim_reduction_fn(X=self.T_, **self.dim_reduction_kwargs)
 
+	def fit_context_selection(self, num_contexts): # TODO: Option for skipping contexts
+		logging.info('Performing context selection with {} dimensions...'.format(num_contexts))
+		rows = np.array([], dtype=np.uint32)
+		cols = np.array([], dtype=np.uint32)
+		data = np.array([], dtype=np.float64)
+
+		for i in range(0, self.T_.shape[0]):
+			x = self.T_.data[self.T_.indptr[i]:self.T_.indptr[i + 1]]
+
+			cols = np.hstack((cols, np.argpartition(-x, num_contexts)[:num_contexts]))
+			rows = np.hstack((rows, np.full((num_contexts,), i)))
+			data = np.hstack((data, x[np.argpartition(-x, num_contexts)[:num_contexts]]))
+		logging.info('Selected top {} contexts!'.format(num_contexts))
+
+		if (self.context_selection_kwargs.get('in_place', False)):
+			self.T_ = sparse.csr_matrix((data, (rows, cols)), shape=(self.vocab_count_, self.vocab_count_))
+		else:
+			self.C_ = sparse.csr_matrix((data, (rows, cols)), shape=(self.vocab_count_, self.vocab_count_))
+
 	def fit(self, raw_documents, y=None):
 
 		# Shameless copy/paste from Radims word2vec Tutorial, no generators matey, need multi-pass!!!
@@ -477,6 +499,11 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				logging.info('Storing PMI matrix cache to folder {}...'.format(sub_folder))
 				self.io_handler_.save_pmi_matrix(self.T_, sub_folder)
 				logging.info('Cache stored!')
+		##################
+
+		##### FIT CONTEXT SELECTION
+		if (self.context_selection is not None):
+			self.fit_context_selection(num_contexts=self.context_selection)
 		##################
 
 		##### FIT DIMENSIONALITY REDUCTION
@@ -696,10 +723,12 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		model.p_w_ = model.io_handler_.load_p_w('')
 		model.M_ = model.io_handler_.load_cooccurrence_matrix('')
 		model.S_ = model.io_handler_.load_similarity_matrix('')
+		model.C_ = model.io_handler_.load_context_selection_matrix('')
 
 		return model
 
-	def save_to_file(self, path, store_cooccurrence_matrix=False, store_similarity_matrix=False):
+	def save_to_file(self, path, store_cooccurrence_matrix=False, store_similarity_matrix=False,
+					 store_context_selection_matrix=False):
 		# If as_dict=True, call to_dict on self.T_ prior to serialisation
 		# Store a few type infos in a metadata file, e.g. the type of self.T_
 		# Get all params as well
@@ -711,3 +740,5 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			self.io_handler_.save_cooccurrence_matrix(self.M_, sub_folder='', base_path=path)
 		if (store_similarity_matrix):
 			self.io_handler_.save_similarity_matrix(self.S_, sub_folder='', base_path=path)
+		if (store_context_selection_matrix):
+			self.io_handler_.save_context_selection_matrix(self.C_, sub_folder='', base_path=path)
