@@ -423,7 +423,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			data = np.hstack((data, x[p]))
 		logging.info('Selected top {} contexts!'.format(num_contexts))
 
-		logging.debug('rows.shape={}; rows.max={}; cols.shape={}; cols.max={}; data.shape={}'.format(
+		logging.info('rows.shape={}; rows.max={}; cols.shape={}; cols.max={}; data.shape={}'.format(
 			rows.shape, rows.max(), cols.shape, cols.max(), data.shape
 		))
 		if (self.context_selection_kwargs.get('in_place', False)):
