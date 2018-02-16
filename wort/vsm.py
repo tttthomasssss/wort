@@ -423,6 +423,9 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			data = np.hstack((data, x[p]))
 		logging.info('Selected top {} contexts!'.format(num_contexts))
 
+		logging.debug('rows.shape={}; rows.max={}; cols.shape={}; cols.max={}; data.shape={}'.format(
+			rows.shape, rows.max(), cols.shape, cols.max(), data.shape
+		))
 		if (self.context_selection_kwargs.get('in_place', False)):
 			self.T_ = sparse.csr_matrix((data, (rows, cols)), shape=(self.vocab_count_, self.vocab_count_))
 		else:
