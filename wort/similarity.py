@@ -136,6 +136,8 @@ def inverse_clarke_inclusion(x, y, **_):
 
 
 def slqs(x, y, **kwargs):
+	raise NotImplementedError
+	# TODO: REDO
 	# BE CAREFUL, x and y ARE NOT THE WORD REPRESENTATIONS BUT SHOULD BE THE MEDIAN ENTROPIES OF THE `N`
 	# LARGEST CONTEXTS OF x AND y.
 	x, y = _check_xy(x, y)
