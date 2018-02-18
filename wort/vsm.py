@@ -731,6 +731,13 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		model.S_ = model.io_handler_.load_similarity_matrix('')
 		model.C_ = model.io_handler_.load_context_selection_matrix('')
 
+		props = model.io_handler_.load_model_properties('')
+		if (props is not None):
+			for key, val in props.items():
+				setattr(model, key, val)
+		else:
+			model.vocab_count_ = len(model.inverted_index_) # Try to set whatever we can
+
 		return model
 
 	def save_to_file(self, path, store_cooccurrence_matrix=False, store_similarity_matrix=False,
@@ -748,3 +755,28 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			self.io_handler_.save_similarity_matrix(self.S_, sub_folder='', base_path=path)
 		if (store_context_selection_matrix):
 			self.io_handler_.save_context_selection_matrix(self.C_, sub_folder='', base_path=path)
+
+		props = { # TODO: tighter sklearn compatibility should start here (e.g. get_params, set_params)
+			'weighting': self.weighting,
+			'min_frequency': self.min_frequency,
+			'lowercase': self.lowercase,
+			'stop_words': self.stop_words,
+			'encoding': self.encoding,
+			'max_features': self.max_features,
+			'binary':  self.binary,
+			'sppmi_shift': self.sppmi_shift,
+			'token_pattern': self.token_pattern,
+			'decode_error': self.decode_error,
+			'strip_accents': self.strip_accents,
+			'ngram_range': self.ngram_range,
+			'context_window_weighting': self.context_window_weighting,
+			'random_state': self.random_state,
+			'cds': self.cds,
+			'dim_reduction': self.dim_reduction,
+			'context_vector_integration': self.context_vector_integration,
+			'word_white_list':  self.word_white_list,
+			'subsampling_rate': self.subsampling_rate,
+			'context_selection': self.context_selection,
+		}
+
+		self.io_handler_.save_model_properties(properties=props, sub_folder='', base_path=path)
