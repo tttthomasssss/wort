@@ -178,8 +178,7 @@ class IOHandler(object):
 		if (base_path is None):
 			base_path = self.cache_path_
 
-		with open(os.path.join(base_path, sub_folder, 'model_properties.json'), 'w') as prop_file:
-			json.dump(properties, prop_file, indent=4)
+		joblib.dump(properties, os.path.join(base_path, sub_folder, 'model_properties.joblib'), compress=3)
 
 	def load_model_properties(self, sub_folder):
 		p = os.path.join(self.cache_path_, sub_folder, 'model_properties.json')
@@ -187,6 +186,4 @@ class IOHandler(object):
 			logging.warning('Model property file not found at path={}!'.format(p))
 			return None
 
-		with open(os.path.join(self.cache_path_, sub_folder, 'model_properties.json')) as prop_file:
-			props = json.load(prop_file)
-		return props
+		return joblib.load(os.path.join(self.cache_path_, sub_folder, 'model_properties.joblib'))
