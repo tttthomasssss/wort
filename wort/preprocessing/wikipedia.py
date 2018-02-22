@@ -3,6 +3,7 @@ from urllib.request import urlopen
 import bz2
 import gzip
 import os
+import subprocess
 
 
 def download_page_view_statistics(data_home='~/.wort_data/wikipedia', url='https://dumps.wikimedia.org'
@@ -39,9 +40,17 @@ def download_corpus_dump(data_home='~/.wort_data/wikipedia', url='https://dumps.
 	print('Download finished!')
 
 
-def extract_corpus_dump():
-	# TODO: check for extractor: http://medialab.di.unipi.it/wiki/Wikipedia_Extractor
-	pass
+def extract_corpus_dump(data_home='~/.wort_data/wikipedia'):
+	data_home = os.path.expanduser(data_home) if '~' in data_home else data_home
+	if (not os.path.exists(data_home)):
+		os.makedirs(data_home)
+
+	if (not os.path.exists(os.path.join(data_home, 'wikiextractor'))):
+		print('WikiExtractor not found, cloning from https://github.com/attardi/wikiextractor.git...')
+		process = subprocess.Popen('git clone https://github.com/attardi/wikiextractor.git {}'.format(data_home),
+								   stdout=subprocess.PIPE)
+		output, error = process.communicate()
+		print('OUTPUT={}; ERROR={}'.format(output, error))
 
 
 def preprocess_corpus_dump(min_page_views=0, top_n_pages='all'):
@@ -49,4 +58,5 @@ def preprocess_corpus_dump(min_page_views=0, top_n_pages='all'):
 
 
 if (__name__ == '__main__'):
-	download_corpus_dump()
+	download_corpus_dump(data_home='/lustre/scratch/inf/thk22/_datasets/wikipedia/corpus/')
+	extract_corpus_dump()
