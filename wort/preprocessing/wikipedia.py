@@ -2,6 +2,7 @@ __author__ = 'thomas'
 from urllib.request import urlopen
 import bz2
 import gzip
+import logging
 import os
 import subprocess
 
@@ -15,13 +16,13 @@ def download_page_view_statistics(data_home='~/.wort_data/wikipedia', url='https
 		os.makedirs(data_home)
 
 	dump_url = '{}/{}'.format(url, filename)
-	print('Downloading page view statistics...')
+	logging.info('Downloading page view statistics...')
 	with urlopen(dump_url) as page_view_dump:
 		meta = page_view_dump.info()
-		print('Downloading data from {} ({} mb)'.format(dump_url, round(int(meta['Content-Length']) / 1000000)))
+		logging.info('Downloading data from {} ({} mb)'.format(dump_url, round(int(meta['Content-Length']) / 1000000)))
 		with gzip.open(os.path.join(data_home, filename), 'wb') as gz:
 			gz.write(page_view_dump.read())
-	print('Download finished!')
+	logging.info('Download finished!')
 
 
 def download_corpus_dump(data_home='~/.wort_data/wikipedia', url='https://dumps.wikimedia.org/enwiki', dump='latest',
@@ -33,11 +34,11 @@ def download_corpus_dump(data_home='~/.wort_data/wikipedia', url='https://dumps.
 	dump_url = '{}/{}/{}'.format(url, dump, filename)
 	with urlopen(dump_url) as wikipedia_dump:
 		meta = wikipedia_dump.info()
-		print('Downloading data from {} ({} mb)'.format(dump_url, round(int(meta['Content-Length'])/1000000)))
+		logging.info('Downloading data from {} ({} mb)'.format(dump_url, round(int(meta['Content-Length'])/1000000)))
 
 		with bz2.open(os.path.join(data_home, filename), 'w') as wiki_dump:
 			wiki_dump.write(wikipedia_dump.read())
-	print('Download finished!')
+	logging.info('Download finished!')
 
 
 def extract_corpus_dump(data_home='~/.wort_data/wikipedia'):
@@ -46,11 +47,11 @@ def extract_corpus_dump(data_home='~/.wort_data/wikipedia'):
 		os.makedirs(data_home)
 
 	if (not os.path.exists(os.path.join(data_home, 'wikiextractor'))):
-		print('WikiExtractor not found, cloning from https://github.com/attardi/wikiextractor.git...')
+		logging.info('WikiExtractor not found, cloning from https://github.com/attardi/wikiextractor.git...')
 		process = subprocess.Popen('git clone https://github.com/attardi/wikiextractor.git {}'.format(data_home),
 								   stdout=subprocess.PIPE)
 		output, error = process.communicate()
-		print('OUTPUT={}; ERROR={}'.format(output, error))
+		logging.info('OUTPUT={}; ERROR={}'.format(output, error))
 
 
 def preprocess_corpus_dump(min_page_views=0, top_n_pages='all'):
