@@ -30,14 +30,17 @@ def download_corpus_dump(data_home='~/.wort_data/wikipedia', url='https://dumps.
 	if (not os.path.exists(data_home)):
 		os.makedirs(data_home)
 
-	dump_url = '{}/{}/{}'.format(url, dump, filename)
-	with urlopen(dump_url) as wikipedia_dump:
-		meta = wikipedia_dump.info()
-		print('Downloading data from {} ({} mb)'.format(dump_url, round(int(meta['Content-Length'])/1000000)))
+	if (not os.path.exists(os.path.join(data_home, filename))):
+		dump_url = '{}/{}/{}'.format(url, dump, filename)
+		with urlopen(dump_url) as wikipedia_dump:
+			meta = wikipedia_dump.info()
+			print('Downloading data from {} ({} mb)'.format(dump_url, round(int(meta['Content-Length'])/1000000)))
 
-		with bz2.open(os.path.join(data_home, filename), 'w') as wiki_dump:
-			wiki_dump.write(wikipedia_dump.read())
-	print('Download finished!')
+			with bz2.open(os.path.join(data_home, filename), 'w') as wiki_dump:
+				wiki_dump.write(wikipedia_dump.read())
+		print('Download finished!')
+	else:
+		print('{} already exists at {}!'.format(filename, data_home))
 
 
 def extract_corpus_dump(data_home='~/.wort_data/wikipedia'):
