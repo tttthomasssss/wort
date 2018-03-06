@@ -427,8 +427,10 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			rows.shape, rows.max(), cols.shape, cols.max(), data.shape, self.vocab_count_
 		))
 		if (self.context_selection_kwargs.get('in_place', False)):
+			logging.info('Performing context selection in place!')
 			self.T_ = sparse.csr_matrix((data, (rows, cols)), shape=(self.vocab_count_, self.vocab_count_))
 		else:
+			logging.info('Creating new context selection matrix!')
 			self.C_ = sparse.csr_matrix((data, (rows, cols)), shape=(self.vocab_count_, self.vocab_count_))
 
 	def fit(self, raw_documents, y=None):
