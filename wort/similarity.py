@@ -26,7 +26,7 @@ def cosine(x, y, **_):
 
 def lin(x, y, **_):
 	'''
-	Calculate the Lin distance between two numpy vectors.
+	Calculate the Lin similarity between two numpy vectors.
 
 	The formula is on p. 770 of Lin (1998) - Automatic Retrieval and Clustering of Similar Words
 		http://aclweb.org/anthology/P/P98/P98-2127.pdf
@@ -48,6 +48,10 @@ def lin(x, y, **_):
 	return (enum / denom)
 
 
+def lin_distance(x, y, **_):
+	return 1 - lin(x, y)
+
+
 def jensen_shannon(x, y, **kwargs):
 	x, y = _check_xy(x, y)
 	square_root = kwargs.pop('square_root', False)
@@ -62,6 +66,10 @@ def jensen_shannon(x, y, **kwargs):
 	return np.sqrt(sim) if square_root else sim
 
 
+def jensen_shannon_distance(x, y, **kwargs):
+	return 1 - jensen_shannon(x, y, **kwargs)
+
+
 def weeds_precision(x, y, **_):
 	x, y = _check_xy(x, y)
 
@@ -72,6 +80,11 @@ def weeds_precision(x, y, **_):
 
 	return (enum / denom)
 
+
+def weeds_precision_distance(x, y, **_):
+	return 1 - weeds_precision(x, y)
+
+
 def weeds_recall(x, y, **_):
 	x, y = _check_xy(x, y)
 
@@ -81,6 +94,10 @@ def weeds_recall(x, y, **_):
 	denom = y.sum()
 
 	return (enum / denom)
+
+
+def weeds_recall_distance(x, y, **_):
+	return 1 - weeds_recall(x, y)
 
 
 def weeds_f1(x, y, **_):
@@ -94,6 +111,10 @@ def weeds_f1(x, y, **_):
 	return f1
 
 
+def weeds_f1_distance(x, y, **_):
+	return 1 - weeds_f1(x, y)
+
+
 def binc(x, y, **_):
 	x, y = _check_xy(x, y)
 
@@ -103,13 +124,21 @@ def binc(x, y, **_):
 	return math.sqrt(lin_sim * weeds_prec)
 
 
+def binc_distance(x, y, **_):
+	return 1 - binc(x, y)
+
+
 def alpha_skew(x, y, **kwargs):
+	return 1 - alpha_skew_distance(x, y, **kwargs)
+
+
+def alpha_skew_distance(x, y, **kwargs):
 	x, y = _check_xy(x, y)
 	alpha = kwargs.pop('alpha', 0.99)
 
 	y = (alpha * y) + ((1 - alpha) * x)
 
-	return 1 - entropy(x, y, base=2)
+	return entropy(x, y, base=2)
 
 
 def weeds_cosine(x, y, **_):
@@ -121,10 +150,18 @@ def weeds_cosine(x, y, **_):
 	return math.sqrt(cos * weeds_prec)
 
 
+def weeds_cosine_distance(x, y, **_):
+	return 1 - weeds_cosine(x, y)
+
+
 def clarke_inclusion(x, y, **_):
 	x, y = _check_xy(x, y)
 
 	return np.minimum(x, y).sum() / x.sum()
+
+
+def clarke_inclusion_distance(x, y, **_):
+	return 1 - clarke_inclusion(x, y)
 
 
 def inverse_clarke_inclusion(x, y, **_):
@@ -133,6 +170,10 @@ def inverse_clarke_inclusion(x, y, **_):
 	cde = clarke_inclusion(x, y)
 
 	return math.sqrt(cde * (1 - cde))
+
+
+def inverse_clarke_inclusion_distance(x, y, **_):
+	return 1 - inverse_clarke_inclusion(x, y)
 
 
 def slqs(x, y, **kwargs):

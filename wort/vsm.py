@@ -755,17 +755,17 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			if (self.M_ is not None):
 				self.io_handler_.save_cooccurrence_matrix(self.M_, sub_folder='', base_path=path)
 			else:
-				logging.warning('[WARNING] - store_coocurrence_matrix=True, but the co-occurrence matrix is None, nothing can be stored!')
+				logging.warning('store_coocurrence_matrix=True, but the co-occurrence matrix is None, nothing can be stored!')
 		if (store_similarity_matrix):
 			if (self.S_ is not None):
 				self.io_handler_.save_similarity_matrix(self.S_, sub_folder='', base_path=path)
 			else:
-				logging.warning('[WARNING] - store_similarity_matrix=True, but the similarity matrix is None, nothing can be stored!')
+				logging.warning('store_similarity_matrix=True, but the similarity matrix is None, nothing can be stored!')
 		if (store_context_selection_matrix):
 			if (self.C_ is not None):
 				self.io_handler_.save_context_selection_matrix(self.C_, sub_folder='', base_path=path)
 			else:
-				logging.warning('[WARNING] - store_context_selection_matrix=True, but the context selection matrix is None, nothing can be stored!')
+				logging.warning('store_context_selection_matrix=True, but the context selection matrix is None, nothing can be stored!')
 
 		props = { # TODO: tighter sklearn compatibility should start here (e.g. get_params, set_params)
 			'weighting': self.weighting,
