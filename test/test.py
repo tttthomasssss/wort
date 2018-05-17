@@ -679,11 +679,11 @@ def vectorize_wikipedia():
 	from wort.datasets import get_rubinstein_goodenough_65_words
 
 	#p = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wikipedia_utf8_filtered_20pageviews_lc_noid_lemma.tsv')
-	p = '/mnt/data0/thk22/_datasets/wikipedia/corpus/wikipedia_utf8_filtered_20pageviews_noid.csv'
+	p = '/disk/data/tkober/_datasets/wikipedia/corpus/wikipedia_utf8_filtered_20pageviews_noid.csv'
 	wiki_reader = CSVStreamReader(p, delimiter='\t')
 
 	#out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors')
-	out_path = os.path.join('/mnt/data0/thk22/_datasets/wikipedia/corpus/phd_thesis', 'wort_vectors')
+	out_path = os.path.join('/disk/data/tkober/_datasets/wikipedia/', 'wort_vectors')
 	if (not os.path.exists(out_path)):
 		os.makedirs(out_path)
 
@@ -697,37 +697,38 @@ def vectorize_wikipedia():
 	
 	print('Word whitelist contains {} words!'.format(len(whitelist)))
 	import math
-	for log_sppmi, sppmi in zip([0], [0]):#zip([0, math.log(5), math.log(10), math.log(20), math.log(40), math.log(100), math.log(250)], [0, 5, 10, 20, 40, 100, 250]):
+	for log_sppmi, sppmi in zip([0, math.log(5), math.log(10)], [0, 5, 10]):#zip([0, math.log(5), math.log(10), math.log(20), math.log(40), math.log(100), math.log(250)], [0, 5, 10, 20, 40, 100, 250]):
 		for pmi_type in ['ppmi']:
-			for cds in [1.]:#[1., 0.75]:
-				for window_size in [10, 20]:#[2, 1, 5]:# [5, 2]:
-					#for dim in [50, 100, 300]:
-					print('CONFIG: pmi_type={}; window_size={}; cds={}; shift={}; ...'.format(pmi_type, window_size, cds, sppmi))
-					transformed_out_path = os.path.join('/mnt/data0/thk22/_datasets/wikipedia/corpus/phd_thesis', 'wort_vectors', 'wort_model_ppmi_lemma-False_pos-False_window-{}_cds-{}-sppmi_shift-{}'.format(
-						window_size, cds, sppmi
-					))
-					if (not os.path.exists(transformed_out_path)):
-						cache_path = os.path.join('/mnt/data0/thk22/_datasets/', 'wikipedia', 'wort_cache', 'phd_thesis')
-						if (not os.path.exists(cache_path)):
-							os.makedirs(cache_path)
-
-						vec = VSMVectorizer(window_size=window_size, min_frequency=50, cds=cds, weighting=pmi_type,
-											word_white_list=whitelist, sppmi_shift=log_sppmi, cache_path=cache_path,
-											cache_intermediary_results=True)
-
-						vec.fit(wiki_reader)
-
+			for cds in [1., 0.75]:#[1., 0.75]:
+				for window_size in [1, 2, 5, 10]:#[2, 1, 5]:# [5, 2]:
+					for dim in [25, 50, 100, 300]:
+						print('CONFIG: pmi_type={}; window_size={}; cds={}; shift={}; ...'.format(pmi_type, window_size, cds, sppmi))
+						transformed_out_path = os.path.join('/disk/data/tkober/_datasets/wikipedia/', 'wort_vectors', 'wort_model_ppmi_lemma-False_pos-False_window-{}_cds-{}-sppmi_shift-{}_dim-{}'.format(
+							window_size, cds, sppmi, dim
+						))
 						if (not os.path.exists(transformed_out_path)):
-							os.makedirs(transformed_out_path)
+							cache_path = os.path.join('/disk/data/tkober/_datasets/wikipedia/', 'wort_cache', )
+							if (not os.path.exists(cache_path)):
+								os.makedirs(cache_path)
 
-						try:
-							print('Saving to file')
-							vec.save_to_file(transformed_out_path)
-							print('Doing the DisCo business...')
-						except OSError as ex:
-							print('FAILFAILFAIL: {}'.format(ex))
-					else:
-						print('{} already exists!'.format(transformed_out_path))
+							vec = VSMVectorizer(window_size=window_size, min_frequency=50, cds=cds, weighting=pmi_type,
+												word_white_list=whitelist, sppmi_shift=log_sppmi, cache_path=cache_path,
+												cache_intermediary_results=True, dim_reduction='nmf',
+												dim_reduction_kwargs={'dimensionality': dim})
+
+							vec.fit(wiki_reader)
+
+							if (not os.path.exists(transformed_out_path)):
+								os.makedirs(transformed_out_path)
+
+							try:
+								print('Saving to file')
+								vec.save_to_file(transformed_out_path, store_context_representation_matrix=True)
+								print('Doing the DisCo business...')
+							except OSError as ex:
+								print('FAILFAILFAIL: {}'.format(ex))
+						else:
+							print('{} already exists!'.format(transformed_out_path))
 
 
 def vectorize_kafka():
@@ -1259,7 +1260,7 @@ if (__name__ == '__main__'):
 
 
 	#'''
-	#vectorize_wikipedia()
+	vectorize_wikipedia()
 	#vectorize_amazon_reviews()
 	#vectorize_ukwac()
 	#vectorize_wikipedia_epic()
@@ -1267,14 +1268,14 @@ if (__name__ == '__main__'):
 	#print('Running BNC samples...')
 	#vectorize_bnc_samples(input_file=os.path.join(args.input_path, args.input_file), output_path=args.output_path,
 	#					  cache_path=args.cache_path, current_sample=args.current_sample)
-	#exit(0)
-
-	print('Running context selection...')
-	for in_sub_path, out_sub_path, num_contexts in experiments:
-		perform_context_selection(input_path=os.path.join(args.input_path, in_sub_path),
-								  output_path=os.path.join(args.output_path, out_sub_path),
-								  num_contexts=int(num_contexts))
 	exit(0)
+
+	#print('Running context selection...')
+	#for in_sub_path, out_sub_path, num_contexts in experiments:
+	#	perform_context_selection(input_path=os.path.join(args.input_path, in_sub_path),
+	#							  output_path=os.path.join(args.output_path, out_sub_path),
+	#							  num_contexts=int(num_contexts))
+	#exit(0)
 
 	print('Running evaluations...')
 	rg65_scores = test_rg65_evaluation('ukwac')

@@ -174,6 +174,17 @@ class IOHandler(object):
 			base_path = self.cache_path_
 		utils.sparse_matrix_to_hdf(T, os.path.join(base_path, sub_folder), 'T.hdf')
 
+	def load_context_representation_matrix(self, sub_folder):
+		return utils.hdf_to_numpy(os.path.join(self.cache_path_, sub_folder), 'O.hdf')
+
+	def save_context_representation_matrix(self, O, sub_folder, base_path=None):
+		if (not os.path.exists(os.path.join(self.cache_path_, sub_folder))):
+			os.makedirs(os.path.join(self.cache_path_, sub_folder))
+
+		if (base_path is None):
+			base_path = self.cache_path_
+		utils.numpy_to_hdf(O, os.path.join(base_path, sub_folder), 'O.hdf')
+
 	def save_model_properties(self, properties, sub_folder, base_path=None):
 		if (base_path is None):
 			base_path = self.cache_path_

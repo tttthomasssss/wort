@@ -141,6 +141,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.T_ = None # Transformed matrix
 		self.S_ = None # Similarity matrix (based on `T_`)
 		self.C_ = None # Context Selection matrix
+		self.O_ = None # cOntext representations (i.e. from a dimensionality reduction method)
 		self.density_ = 0.
 
 		self.config_registry_ = ConfigRegistry(path=cache_path, min_frequency=self.min_frequency, lowercase=self.lowercase,
@@ -530,6 +531,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 			W, C = self.fit_dimensionality_reduction()
 			logging.info('Dimensionality reduction fitted!')
 
+			self.O_ = C
+
 			# Add context vectors
 			if (context_vector_integration_fn is not None):
 				self.T_ = context_vector_integration_fn(W=W, C=C, **self.context_vector_integration_kwargs)
@@ -732,6 +735,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		model.M_ = model.io_handler_.load_cooccurrence_matrix('')
 		model.S_ = model.io_handler_.load_similarity_matrix('')
 		model.C_ = model.io_handler_.load_context_selection_matrix('')
+		model.O_ = model.io_handler_.load_context_representation_matrix('')
 
 		props = model.io_handler_.load_model_properties('')
 		if (props is not None):
@@ -743,7 +747,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		return model
 
 	def save_to_file(self, path, store_cooccurrence_matrix=False, store_similarity_matrix=False,
-					 store_context_selection_matrix=False):
+					 store_context_selection_matrix=False, store_context_representation_matrix=False):
 		# If as_dict=True, call to_dict on self.T_ prior to serialisation
 		# Store a few type infos in a metadata file, e.g. the type of self.T_
 		# Get all params as well
@@ -766,6 +770,11 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				self.io_handler_.save_context_selection_matrix(self.C_, sub_folder='', base_path=path)
 			else:
 				logging.warning('store_context_selection_matrix=True, but the context selection matrix is None, nothing can be stored!')
+		if (store_context_representation_matrix):
+			if (self.O_ is not None):
+				self.io_handler_.save_context_representation_matrix(self.O_, sub_folder='', base_path=path)
+			else:
+				logging.warning('store_context_representation_matrix=True, but the context representation matrix is None, nothing can be stored!')
 
 		props = { # TODO: tighter sklearn compatibility should start here (e.g. get_params, set_params)
 			'weighting': self.weighting,
