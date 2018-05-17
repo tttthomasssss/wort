@@ -702,7 +702,7 @@ def vectorize_wikipedia():
 			for cds in [1., 0.75]:#[1., 0.75]:
 				for window_size in [1, 2, 5, 10]:#[2, 1, 5]:# [5, 2]:
 					for dim in [25, 50, 100, 300]:
-						print('CONFIG: pmi_type={}; window_size={}; cds={}; shift={}; ...'.format(pmi_type, window_size, cds, sppmi))
+						print('CONFIG: pmi_type={}; window_size={}; cds={}; shift={} dim={}; ...'.format(pmi_type, window_size, cds, sppmi, dim))
 						transformed_out_path = os.path.join('/disk/data/tkober/_datasets/wikipedia/', 'wort_vectors', 'wort_model_ppmi_lemma-False_pos-False_window-{}_cds-{}-sppmi_shift-{}_dim-{}'.format(
 							window_size, cds, sppmi, dim
 						))
