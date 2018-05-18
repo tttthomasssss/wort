@@ -529,7 +529,9 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		if (self.dim_reduction is not None):
 			logging.info('Fitting dimensionality reduction...')
 			W, C = self.fit_dimensionality_reduction()
-			logging.info('Dimensionality reduction fitted!')
+			logging.info('Dimensionality reduction fitted [W.shape={}; type(W)={}; C.shape={}; type(C)={}]!'.format(
+				W.shape, type(W), C.shape, type(C)
+			))
 
 			self.O_ = C
 
