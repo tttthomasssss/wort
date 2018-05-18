@@ -164,6 +164,10 @@ class IOHandler(object):
 		utils.sparse_matrix_to_hdf(M, os.path.join(base_path, sub_folder), 'M.hdf')
 
 	def load_pmi_matrix(self, sub_folder):
+		p = os.path.join(self.cache_path_, sub_folder, 'T.hdf')
+		if (not os.path.exists(p)):
+			logging.warning('No PMI matrix found at path={}!'.format(p))
+			return None
 		return utils.hdf_to_sparse_csx_matrix(os.path.join(self.cache_path_, sub_folder), 'T.hdf', sparse_format='csr')
 
 	def save_pmi_matrix(self, T, sub_folder, base_path=None):
@@ -173,6 +177,17 @@ class IOHandler(object):
 		if (base_path is None):
 			base_path = self.cache_path_
 		utils.sparse_matrix_to_hdf(T, os.path.join(base_path, sub_folder), 'T.hdf')
+
+	def load_embedding_matrix(self, sub_folder):
+		return utils.hdf_to_numpy(os.path.join(self.cache_path_, sub_folder), 'E.hdf')
+
+	def save_embedding_matrix(self, E, sub_folder, base_path=None):
+		if (not os.path.exists(os.path.join(self.cache_path_, sub_folder))):
+			os.makedirs(os.path.join(self.cache_path_, sub_folder))
+
+		if (base_path is None):
+			base_path = self.cache_path_
+		utils.numpy_to_hdf(E, os.path.join(base_path, sub_folder), 'E.hdf')
 
 	def load_context_representation_matrix(self, sub_folder):
 		return utils.hdf_to_numpy(os.path.join(self.cache_path_, sub_folder), 'O.hdf')

@@ -142,6 +142,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.S_ = None # Similarity matrix (based on `T_`)
 		self.C_ = None # Context Selection matrix
 		self.O_ = None # cOntext representations (i.e. from a dimensionality reduction method)
+		self.E_ = None # Low-dimensional Embedding of T
 		self.density_ = 0.
 
 		self.config_registry_ = ConfigRegistry(path=cache_path, min_frequency=self.min_frequency, lowercase=self.lowercase,
@@ -537,9 +538,15 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 			# Add context vectors
 			if (context_vector_integration_fn is not None):
-				self.T_ = context_vector_integration_fn(W=W, C=C, **self.context_vector_integration_kwargs)
+				if (sparse.issparse(W)):
+					self.T_ = context_vector_integration_fn(W=W, C=C, **self.context_vector_integration_kwargs)
+				else:
+					self.E_ = context_vector_integration_fn(W=W, C=C, **self.context_vector_integration_kwargs)
 			else:
-				self.T_ = W
+				if (sparse.issparse(W)):
+					self.T_ = W
+				else:
+					self.E_ = W
 		else:
 			# Add context vectors for the sparse case
 			if (context_vector_integration_fn is not None):
@@ -738,6 +745,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		model.S_ = model.io_handler_.load_similarity_matrix('')
 		model.C_ = model.io_handler_.load_context_selection_matrix('')
 		model.O_ = model.io_handler_.load_context_representation_matrix('')
+		model.E_ = model.io_handler_.load_embedding_matrix('')
 
 		props = model.io_handler_.load_model_properties('')
 		if (props is not None):
@@ -749,11 +757,13 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		return model
 
 	def save_to_file(self, path, store_cooccurrence_matrix=False, store_similarity_matrix=False,
-					 store_context_selection_matrix=False, store_context_representation_matrix=False):
+					 store_context_selection_matrix=False, store_context_representation_matrix=False,
+					 save_pmi_and_embedding_matrices_if_dim_reduction=True):
 		# If as_dict=True, call to_dict on self.T_ prior to serialisation
 		# Store a few type infos in a metadata file, e.g. the type of self.T_
 		# Get all params as well
-		self.io_handler_.save_pmi_matrix(self.T_, sub_folder='', base_path=path)
+		if (self.dim_reduction is None or (self.dim_reduction is not None and save_pmi_and_embedding_matrices_if_dim_reduction)):
+			self.io_handler_.save_pmi_matrix(self.T_, sub_folder='', base_path=path)
 		self.io_handler_.save_index(self.index_, sub_folder='', base_path=path)
 		self.io_handler_.save_inverted_index(self.inverted_index_, sub_folder='', base_path=path)
 		self.io_handler_.save_p_w(self.p_w_, sub_folder='', base_path=path)
@@ -777,6 +787,9 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				self.io_handler_.save_context_representation_matrix(self.O_, sub_folder='', base_path=path)
 			else:
 				logging.warning('store_context_representation_matrix=True, but the context representation matrix is None, nothing can be stored!')
+		if (self.dim_reduction is not None):
+			if (self.E_ is not None and self.dim_reduction != 'context_selection'):
+				self.io_handler_.save_embedding_matrix(self.E_, sub_folder='', base_path=path)
 
 		props = { # TODO: tighter sklearn compatibility should start here (e.g. get_params, set_params)
 			'weighting': self.weighting,
