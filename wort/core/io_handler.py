@@ -207,7 +207,7 @@ class IOHandler(object):
 		joblib.dump(properties, os.path.join(base_path, sub_folder, 'model_properties.joblib'), compress=3)
 
 	def load_model_properties(self, sub_folder):
-		p = os.path.join(self.cache_path_, sub_folder, 'model_properties.json')
+		p = os.path.join(self.cache_path_, sub_folder, 'model_properties.joblib')
 		if (not os.path.exists(p)):
 			logging.warning('Model property file not found at path={}!'.format(p))
 			return None
