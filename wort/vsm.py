@@ -784,7 +784,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				logging.warning('store_context_selection_matrix=True, but the context selection matrix is None, nothing can be stored!')
 		if (store_context_representation_matrix):
 			if (self.O_ is not None):
-				self.io_handler_.save_context_representation_matrix(self.O_, sub_folder='', base_path=path)
+				self.io_handler_.save_context_representation_matrix(self.O_.T, sub_folder='', base_path=path)
 			else:
 				logging.warning('store_context_representation_matrix=True, but the context representation matrix is None, nothing can be stored!')
 		if (self.dim_reduction is not None):
