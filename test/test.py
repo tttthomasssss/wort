@@ -680,7 +680,7 @@ def vectorize_1bn_word_benchmark():
 
 	# p = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wikipedia_utf8_filtered_20pageviews_lc_noid_lemma.tsv')
 	p = '/disk/data/tkober/_datasets/1b_word_benchmark/training.tokenised.shuffled.txt'
-	giga_reader = TextStreamReader(p)
+	bn_reader = TextStreamReader(p)
 
 	# out_path = os.path.join(paths.get_dataset_path(), 'wikipedia', 'wort_vectors')
 	out_path = os.path.join('/disk/data/tkober/_datasets/1b_word_benchmark/', 'wort_vectors')
@@ -720,7 +720,7 @@ def vectorize_1bn_word_benchmark():
 											word_white_list=whitelist, sppmi_shift=log_sppmi, cache_path=cache_path,
 											cache_intermediary_results=True)
 
-						vec.fit(giga_reader)
+						vec.fit(bn_reader)
 
 						if (not os.path.exists(transformed_out_path)):
 							os.makedirs(transformed_out_path)
@@ -1385,7 +1385,8 @@ if (__name__ == '__main__'):
 
 	#'''
 	#vectorize_wikipedia()
-	vectorize_gigaword()
+	#vectorize_gigaword()
+	vectorize_1bn_word_benchmark()
 	#vectorize_amazon_reviews()
 	#vectorize_ukwac()
 	#vectorize_wikipedia_epic()
