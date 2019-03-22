@@ -344,6 +344,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		cols = np.array(cols, dtype=np.uint32, copy=False)
 
 		logging.info('Finalising sparse matrix...')
+		# TODO: arithmetic ops are very slow with lil_matrices: https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.lil_matrix.html
 		self.M_ += sparse.csr_matrix((data.astype(dtype), (rows, cols)), shape=(self.vocab_count_, self.vocab_count_)).tolil()
 		self.M_ = self.M_.tocsr()
 		logging.info('M.shape={}'.format(self.M_.shape))
