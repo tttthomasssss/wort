@@ -701,6 +701,19 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.fit(raw_documents)
 		return self.transform(raw_documents, as_matrix=as_matrix, oov=oov)
 
+	def get_lexicalised_cooccurrences(self, w, min_threshold=0., max_threshold=np.inf, use_transformed_matrix=True):
+		idx = self.inverted_index_.get(w, -1)
+		if idx < 0: return {}
+
+		x = self.M_[idx].todok() if not use_transformed_matrix else self.T_[idx].todok()
+
+		lexicalised_coocs = {}
+		for (_, col), val in x.items():
+			if val > min_threshold and val < max_threshold:
+				lexicalised_coocs[self.index_[col]] = val
+
+		return lexicalised_coocs
+
 	def to_dict(self):
 		d = {}
 		nnz_col_idx = 1 if sparse.issparse(self.T_) else 0

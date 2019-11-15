@@ -135,6 +135,11 @@ def test_pizza():
 
 	vec.fit(f)
 
+	print(vec.get_lexicalised_cooccurrences('pizza', use_transformed_matrix=False))
+	print(vec.get_lexicalised_cooccurrences('pasta', use_transformed_matrix=False))
+	print(vec.get_lexicalised_cooccurrences('beer', use_transformed_matrix=False))
+	print(vec.get_lexicalised_cooccurrences('favourite', use_transformed_matrix=False))
+
 	vec.init_neighbours(num_neighbours=2)
 	print('Pizza Neighbours: {}'.format(vec.neighbours('pizza')))
 	print('Favourite Neighbours: {}'.format(vec.neighbours('favourite')))
@@ -1334,7 +1339,7 @@ if (__name__ == '__main__'):
 
 	#test_token_and_vocab_count()
 	#vectorize_pizza_epic()
-	#test_pizza()
+	test_pizza()
 	#test_conll_reader()
 	#exit(0)
 	#transform_wikipedia_from_cache()
