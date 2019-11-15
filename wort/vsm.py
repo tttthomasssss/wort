@@ -701,6 +701,13 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.fit(raw_documents)
 		return self.transform(raw_documents, as_matrix=as_matrix, oov=oov)
 
+	def get_cooccurrence_magnitude(self, w1, w2, use_transformed_matrix=True):
+		idx1 = self.inverted_index_.get(w1, -1)
+		idx2 = self.inverted_index_.get(w2, -1)
+		if idx1 < 0 or idx2 < 0: return 0
+
+		return self.M_[idx1, idx2] if not use_transformed_matrix else self.T_[idx1, idx2]
+
 	def get_lexicalised_cooccurrences(self, w, min_threshold=0., max_threshold=np.inf, use_transformed_matrix=True):
 		idx = self.inverted_index_.get(w, -1)
 		if idx < 0: return {}
