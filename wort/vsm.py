@@ -48,7 +48,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				 ngram_range=(1, 1), cds=1., dim_reduction=None, dim_reduction_kwargs={}, random_state=1105,
 				 context_window_weighting='constant', context_vector_integration=None, context_vector_integration_kwargs={},
 				 word_white_list=set(), subsampling_rate=None, cache_intermediary_results=False, cache_path='~/.wort_data/model_cache',
-				 log_level=logging.INFO, log_file=None, nn_eps=1.e-14, context_selection=None, context_selection_kwargs={}):
+				 log_level=logging.INFO, log_file=None, nn_eps=1.e-14, context_selection=None, context_selection_kwargs={},
+				 dtype_int=np.uint16, dtype_float=np.float32, max_frequency='dtype_max'):
 		"""
 		TODO: documentation...
 		:param window_size:
@@ -131,6 +132,12 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		self.nn_eps = nn_eps
 		self.context_selection = context_selection
 		self.context_selection_kwargs = context_selection_kwargs
+		self.dtype_int = dtype_int
+		self.dtype_float= dtype_float
+		if isinstance(max_frequency, int):
+			self.max_frequency = max_frequency
+		else:
+			self.max_frequency = np.iinfo(self.dtype_int).max
 
 		self.inverted_index_ = {}
 		self.index_ = {}
@@ -153,7 +160,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 											   random_state=self.random_state, subsampling_rate=self.subsampling_rate,
 											   wort_white_list=self.word_white_list, window_size=window_size,
 											   context_window_weighting=self.context_window_weighting, binary=binary,
-											   weighting=weighting, cds=cds, sppmi_shift=sppmi_shift)
+											   weighting=weighting, cds=cds, sppmi_shift=sppmi_shift, max_frequency=self.max_frequency)
 		self.io_handler_ = IOHandler(cache_path=cache_path, log_file=log_file, log_level=log_level)
 		self.io_handler_.setup_logging()
 
@@ -276,7 +283,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		else:
 			window_weighting_fn = getattr(context_weighting, '{}_window_weighting'.format(self.context_window_weighting))
 
-		dtype = np.uint64 if self.context_window_weighting == 'constant' else np.float64
+		dtype = self.dtype_int if self.context_window_weighting == 'constant' else self.dtype_float
 
 		# Chunking the co-occurrence matrix construction, because the 3 arrays `rows`, `cols` and `data` become huge and overflow memory
 		# This is probably a pretty bad hack, but if it works, its at least possible to create (could use `psutil`(https://pypi.python.org/pypi/psutil))
@@ -284,7 +291,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		# Rather fix it properly than hacking around like this...
 		# On OS X/BSD this works: `os.popen('sysctl -n hw.memsize').readlines()`, on Linux, this works: `os.popen('free -m').readlines()`, ignore Windows
 		if (self.io_handler_.base_config_.get('num_chunks', -1) <= 0):
-			dtype_size = self.io_handler_.base_config_.get('dtype_size', 64)
+			dtype_size = np.iinfo(self.dtype_int).bits
 			chunk_size = determine_chunk_size(dtype_size=dtype_size)
 			num_chunks = math.floor(self.token_count_ / chunk_size)
 		else:
@@ -324,7 +331,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 				logging.info('Chunk limit for chunk {}/{} reached, creating sparse matrix and continuing...'.format(processed_chunks, num_chunks))
 				processed_tokens = 0
 
-				arr_data = np.array(data, dtype=np.uint8 if self.context_window_weighting == 'constant' else np.float64, copy=False)
+				arr_data = np.array(data, dtype=np.uint8 if self.context_window_weighting == 'constant' else np.float32, copy=False)
 				arr_rows = np.array(rows, dtype=np.uint32, copy=False)
 				arr_cols = np.array(cols, dtype=np.uint32, copy=False)
 
@@ -339,7 +346,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 
 		# Add the trailing chunk to the rest
 		logging.info('Numpyifying co-occurrence data...')
-		data = np.array(data, dtype=np.uint8 if self.context_window_weighting == 'constant' else np.float64, copy=False)
+		data = np.array(data, dtype=np.uint8 if self.context_window_weighting == 'constant' else np.float32, copy=False)
 		rows = np.array(rows, dtype=np.uint32, copy=False)
 		cols = np.array(cols, dtype=np.uint32, copy=False)
 
@@ -390,8 +397,8 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		if (self.sppmi_shift is not None and self.sppmi_shift > 0):
 			logging.info('Applying shift={}...'.format(self.sppmi_shift))
 			rows, cols = T.nonzero()
-			data = np.full(rows.shape, self.sppmi_shift, dtype=np.float64)
-			T -= sparse.csr_matrix((data, (rows, cols)), shape=T.shape, dtype=np.float64)
+			data = np.full(rows.shape, self.sppmi_shift, dtype=self.dtype_float)
+			T -= sparse.csr_matrix((data, (rows, cols)), shape=T.shape, dtype=self.dtype_float)
 
 		logging.info('Applying the threshold [type(PMI)={}]...'.format(type(T)))
 		# Apply threshold
@@ -413,7 +420,7 @@ class VSMVectorizer(BaseEstimator, VectorizerMixin):
 		logging.info('Performing context selection with {} dimensions...'.format(num_contexts))
 		rows = np.array([], dtype=np.uint32)
 		cols = np.array([], dtype=np.uint32)
-		data = np.array([], dtype=np.float64)
+		data = np.array([], dtype=self.dtype_float)
 
 		for i in range(0, self.T_.shape[0]):
 			x = self.T_.data[self.T_.indptr[i]:self.T_.indptr[i + 1]]

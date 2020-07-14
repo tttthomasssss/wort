@@ -72,13 +72,14 @@ class CoNLLStreamReader(object): # TODO: Support Turney's Domain and Function bu
 
 
 class GzipStreamReader(object):
-	def __init__(self, path, lowercase=True, encoding='utf-8'):
+	def __init__(self, path, lowercase=True, encoding='utf-8', errors='replace'):
 		self.path_ = path
 		self.lowercase_ = lowercase
 		self.encoding_ = encoding
+		self.errors_ = errors
 
 	def __iter__(self):
-		with gzip.open(self.path_, 'rt', encoding=self.encoding_, errors='replace') as in_file:
+		with gzip.open(self.path_, 'rt', encoding=self.encoding_, errors=self.errors_) as in_file:
 			for line in in_file:
 				processed_line = line if not self.lowercase_ else line.lower()
 
