@@ -9,7 +9,7 @@ import os
 from scipy import sparse
 from scipy.sparse import sputils
 from sklearn.base import BaseEstimator
-from sklearn.feature_extraction.text import VectorizerMixin
+from sklearn.feature_extraction.text import _VectorizerMixin
 from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.neighbors import NearestNeighbors
 from tqdm import *
@@ -41,7 +41,7 @@ from wort import similarity
 	# Cythonize spare matrix constructions(?)
 	# Also serialise vocab as part of the model, makes a faster __contains__ lookup
 	# When applying SVD, the result is a dense matrix, change the type accordingly to not waste any memory/computing time by storing a dense matrix in sparse type
-class VSMVectorizer(BaseEstimator, VectorizerMixin):
+class VSMVectorizer(BaseEstimator, _VectorizerMixin):
 	def __init__(self, window_size, weighting='ppmi', min_frequency=0, lowercase=True, stop_words=None, encoding='utf-8',
 				 max_features=None, preprocessor=None, tokenizer=None, analyzer='word', binary=False, sppmi_shift=0,
 				 token_pattern=r'(?u)\b\w\w+\b', decode_error='strict', strip_accents=None, input='content',
